@@ -46,6 +46,11 @@ export default function AdminLoginPage() {
                 localStorage.setItem('authToken', authToken);
             }
             
+            // Store admin profile data for use in other components
+            if (result.data) {
+                localStorage.setItem('adminProfile', JSON.stringify(result.data));
+            }
+            
             // Show success notification
             toast.success('Welcome back! Redirecting to admin dashboard...');
             
@@ -60,7 +65,7 @@ export default function AdminLoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute top-0 left-0 w-full h-full">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[120px]" />
@@ -77,51 +82,51 @@ export default function AdminLoginPage() {
                     <div className="mx-auto bg-emerald-500 p-4 rounded-2xl w-20 h-20 flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20">
                         <ShieldCheck className="text-white" size={40} />
                     </div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">Admin Portal</h1>
-                    <p className="text-slate-400 mt-2">Secure access for platform administrators</p>
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Admin Portal</h1>
+                    <p className="text-muted-foreground mt-2">Secure access for platform administrators</p>
                 </div>
 
-                <Card className="bg-slate-900/50 backdrop-blur-xl border-slate-800 shadow-2xl">
+                <Card className="backdrop-blur-xl shadow-2xl">
                     <CardHeader>
-                        <CardTitle className="text-xl text-white">Sign In</CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardTitle className="text-xl text-foreground">Sign In</CardTitle>
+                        <CardDescription className="text-muted-foreground">
                             Enter your credentials to manage the HRFlow SaaS platform
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleSubmit}>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-slate-300">Admin Email</Label>
+                                <Label htmlFor="email" className="text-foreground">Admin Email</Label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" size={18} />
+                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
                                     <Input
                                         id="email"
                                         name="email"
                                         type="email"
                                         placeholder="admin@hrflow.com"
-                                        className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20"
+                                        className="pl-10 text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:ring-emerald-500/20"
                                         required
                                     />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password" className="text-slate-300">Password</Label>
+                                    <Label htmlFor="password" className="text-foreground">Password</Label>
                                     <Link href="#" className="text-xs text-emerald-400 hover:text-emerald-300">Forgot password?</Link>
                                 </div>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" size={18} />
+                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
                                     <Input
                                         id="password"
                                         name="password"
                                         type={showPassword ? "text" : "password"}
                                         placeholder="••••••••"
-                                        className="pl-10 pr-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20"
+                                        className="pl-10 pr-10 text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:ring-emerald-500/20"
                                         required
                                     />
                                     <button
                                         type="button"
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                         onClick={() => setShowPassword(!showPassword)}
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -139,7 +144,7 @@ export default function AdminLoginPage() {
                                 <ArrowRight className="ml-2 size-5 group-hover:translate-x-1 transition-transform" />
                             </Button>
                             <div className="text-center">
-                                <Link href="/" className="text-sm text-slate-500 hover:text-slate-300 flex items-center justify-center gap-1">
+                                <Link href="/" className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1">
                                     Back to main site
                                 </Link>
                             </div>

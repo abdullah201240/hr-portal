@@ -1,22 +1,21 @@
 'use client';
 
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Building2, 
-  Settings, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  Building2,
+  Settings,
+  LogOut,
   ChevronRight,
   ShieldCheck,
   BarChart3,
-  Users2
+  Users2,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 const navItems = [
@@ -47,78 +46,201 @@ const navItems = [
   },
 ];
 
-function LogoutButton() {
+function LogoutButton({ isCollapsed }: { isCollapsed?: boolean }) {
   const { logout } = useAdminAuth();
-  
+
   const handleLogout = () => {
     logout();
   };
-  
+
   return (
-    <button 
+    <button
       onClick={handleLogout}
-      className="flex items-center gap-3 px-3 py-3 w-full rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
+      className={cn(
+        "flex items-center gap-3 px-3 py-3 w-full rounded-xl text-muted-foreground hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 group",
+        isCollapsed && "justify-center"
+      )}
+      title={isCollapsed ? "Sign Out" : undefined}
     >
-      <LogOut className="size-5" />
-      <span className="font-medium">Sign Out</span>
+      <LogOut className="size-5 group-hover:rotate-12 transition-transform duration-200" />
+      {!isCollapsed && <span className="font-medium">Sign Out</span>}
     </button>
   );
 }
 
-export function AdminNav() {
+type AdminNavProps = {
+  toggleSidebar?: () => void;
+  isCollapsed?: boolean;
+  toggleCollapse?: () => void;
+};
+
+export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNavProps) {
   const pathname = usePathname();
 
+  const handleClick = (href: string) => {
+    if (toggleSidebar) {
+      toggleSidebar();
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full bg-slate-950 border-r border-slate-800 w-64 text-slate-300">
-      <div className="p-6">
-        <Link href="/admin" className="flex items-center gap-3 px-2">
-          <div className="bg-emerald-500 p-2 rounded-lg">
-            <ShieldCheck className="text-white size-6" />
-          </div>
-          <span className="text-xl font-bold text-white tracking-tight">
-            Admin<span className="text-emerald-500">Panel</span>
-          </span>
-        </Link>
+    <div className={cn(
+      "flex flex-col h-full relative overflow-hidden transition-all duration-300 custom-scrollbar",
+      "glass-strong border-r border-white/10",
+      isCollapsed ? 'w-16' : 'w-64'
+    )}>
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5 pointer-events-none" />
+
+      {/* Logo Section */}
+      <div className={cn(
+        "relative p-6 border-b border-white/10",
+        isCollapsed && "p-4"
+      )}>
+        <div className="flex items-center justify-between gap-2">
+          <Link
+            href="/admin"
+            className={cn(
+              "flex items-center gap-3 group",
+              isCollapsed ? 'justify-center' : 'px-2'
+            )}
+            onClick={() => toggleSidebar && toggleSidebar()}
+          >
+            <motion.div
+              className="gradient-emerald p-2.5 rounded-xl shadow-lg glow-emerald"
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ShieldCheck className="text-white size-6" />
+            </motion.div>
+            <AnimatePresence>
+              {!isCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center gap-2"
+                >
+                  <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                    AdminPanel
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Link>
+
+          {/* Collapse Toggle Button */}
+          <motion.button
+            onClick={toggleCollapse}
+            className={cn(
+              "p-2 rounded-lg glass hover:glass-strong transition-all duration-200 group shrink-0",
+              isCollapsed && "mx-auto"
+            )}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 group-hover:translate-x-0.5 transition-transform">
+                <path d="m6 17 5-5-5-5" />
+                <path d="m13 17 5-5-5-5" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 group-hover:-translate-x-0.5 transition-transform">
+                <path d="m18 17-5-5 5-5" />
+                <path d="m11 17-5-5 5-5" />
+              </svg>
+            )}
+          </motion.button>
+        </div>
       </div>
 
-      <nav className="flex-1 px-4 space-y-2 py-4">
-        {navItems.map((item) => {
+      {/* Navigation Items */}
+      <nav className="flex-1 py-6 px-3 space-y-1 relative">
+        {navItems.map((item, index) => {
           const isActive = pathname === item.href;
           return (
-            <Link
+            <motion.div
               key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center justify-between px-3 py-3 rounded-xl transition-all duration-200 group relative",
-                isActive 
-                  ? "bg-emerald-500/10 text-emerald-400" 
-                  : "hover:bg-slate-900 hover:text-white"
-              )}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
             >
-              <div className="flex items-center gap-3">
-                <item.icon className={cn(
-                  "size-5 transition-colors",
-                  isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-emerald-400"
-                )} />
-                <span className="font-medium">{item.title}</span>
-              </div>
-              {isActive && (
-                <motion.div 
-                  layoutId="active-pill"
-                  className="absolute left-0 w-1 h-6 bg-emerald-500 rounded-r-full"
-                />
-              )}
-              <ChevronRight className={cn(
-                "size-4 opacity-0 group-hover:opacity-100 transition-all",
-                isActive ? "text-emerald-400 opacity-100" : "text-slate-500"
-              )} />
-            </Link>
+              <Link
+                href={item.href}
+                onClick={() => handleClick(item.href)}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
+                  isCollapsed && 'justify-center px-3',
+                  isActive
+                    ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 shadow-lg glow-emerald"
+                    : "hover:bg-white/5 text-muted-foreground hover:text-foreground"
+                )}
+                title={isCollapsed ? item.title : undefined}
+              >
+                {/* Active Indicator */}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-xl"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+
+                {/* Icon */}
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                  className="relative z-10"
+                >
+                  <item.icon className={cn(
+                    "size-5 transition-colors",
+                    isActive ? "text-emerald-400" : "text-muted-foreground group-hover:text-emerald-400"
+                  )} />
+                </motion.div>
+
+                {/* Label */}
+                <AnimatePresence>
+                  {!isCollapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      className="font-medium relative z-10 whitespace-nowrap"
+                    >
+                      {item.title}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+
+                {/* Chevron */}
+                {!isCollapsed && (
+                  <ChevronRight className={cn(
+                    "size-4 ml-auto opacity-0 group-hover:opacity-100 transition-all relative z-10",
+                    isActive ? "text-emerald-400 opacity-100" : "text-muted-foreground"
+                  )} />
+                )}
+
+                {/* Collapsed Active Indicator */}
+                {isCollapsed && isActive && (
+                  <motion.div
+                    layoutId="active-pill"
+                    className="absolute left-0 w-1 h-8 bg-gradient-to-b from-emerald-400 to-teal-400 rounded-r-full shadow-lg"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </Link>
+            </motion.div>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-slate-800">
-        <LogoutButton />
+      {/* Bottom Section */}
+      <div className="relative p-2 border-t border-white/10">
+        {/* Logout Button */}
+        <LogoutButton isCollapsed={isCollapsed} />
       </div>
     </div>
   );

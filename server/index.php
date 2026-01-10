@@ -29,6 +29,7 @@ $routes = [
     '@/api/companies/?$@' => ['GET' => 'index', 'POST' => 'store'],
     '@/api/companies/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/admins/login/?$@' => ['POST' => 'login'],
+    '@/api/admins/logout/?$@' => ['POST' => 'logout'],
     '@/api/admins/?$@' => ['GET' => 'index', 'POST' => 'store'],
     '@/api/admins/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy']
 ];

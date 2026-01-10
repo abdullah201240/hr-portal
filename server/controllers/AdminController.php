@@ -158,4 +158,16 @@ class AdminController
             jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
+    public function logout()
+    {
+        // In a real implementation, you would invalidate the token here
+        // For now, we'll just return a success response
+        // In a production system, you'd implement token blacklisting
+        
+        jsonResponse([
+            'success' => true, 
+            'message' => 'Logout successful'
+        ]);
+    }
 }

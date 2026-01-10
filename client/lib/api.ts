@@ -31,9 +31,7 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
     if (!response.ok) {
-      // Don't redirect for login endpoints - let the UI handle login errors
       if (response.status === 401 && !endpoint.includes('/login')) {
-        // Clear auth token if unauthorized (only for non-login requests)
         if (typeof window !== 'undefined') {
           localStorage.removeItem('authToken');
           window.location.href = '/login';
@@ -103,4 +101,7 @@ export const adminApi = {
   // Login an admin
   loginAdmin: (credentials: { email: string; password: string }) => 
     makeRequest('/admins/login', { method: 'POST', body: credentials }),
+  
+  // Logout an admin
+  logoutAdmin: () => makeRequest('/admins/logout', { method: 'POST' }),
 };
