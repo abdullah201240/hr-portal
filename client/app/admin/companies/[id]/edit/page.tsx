@@ -144,14 +144,14 @@ export default function EditCompanyPage({ params }: { params: { id: string } }) 
 
   if (!companyData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4 pt-16">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
+    <div className="flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4 pt-16">
       <Card className="w-full max-w-4xl bg-white/10 backdrop-blur-lg border-white/20 shadow-xl">
         <CardHeader className="text-center">
           <div className="mx-auto bg-gradient-to-br from-purple-500/30 to-pink-500/30 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">

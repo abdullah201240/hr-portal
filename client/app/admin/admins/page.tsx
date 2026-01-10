@@ -87,7 +87,7 @@ export default function ManageAdmins() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background pt-16">
         <div className="relative">
           <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-emerald-500"></div>
           <div className="absolute inset-0 flex items-center justify-center">
@@ -99,7 +99,7 @@ export default function ManageAdmins() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
