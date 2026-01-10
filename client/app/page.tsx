@@ -221,10 +221,10 @@ export default function HRPortalLanding() {
                   <ChevronDown className="ml-1" size={16} />
                 </Button>
                 <div className="absolute top-full right-0 mt-1 w-56 bg-black/80 backdrop-blur-lg rounded-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <a href="/admin/login" className="block px-4 py-2 hover:bg-white/10 text-white flex items-center gap-2">
+                  <Link href="/login/admin" className="block px-4 py-2 hover:bg-white/10 text-white flex items-center gap-2">
                     <LogIn size={16} />
                     Admin Login
-                  </a>
+                  </Link>
                 </div>
               </motion.div>
             </div>
@@ -306,6 +306,14 @@ export default function HRPortalLanding() {
                   <Link href="/register/employee" className="block px-3 py-2 hover:bg-white/10 rounded-md flex items-center gap-2">
                     <UserPlus size={16} />
                     Register Employee
+                  </Link>
+                </div>
+                
+                <div className="pt-2 border-t border-white/10">
+                  <h4 className="font-semibold px-2 py-1 text-sm text-purple-300">Admin</h4>
+                  <Link href="/login/admin" className="block px-3 py-2 hover:bg-white/10 rounded-md flex items-center gap-2">
+                    <Shield size={16} />
+                    Admin Login
                   </Link>
                 </div>
               </div>

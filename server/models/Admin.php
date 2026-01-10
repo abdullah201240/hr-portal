@@ -62,4 +62,25 @@ class Admin extends Model
         $stmt = $this->db->prepare("UPDATE {$this->table} SET last_login = NOW() WHERE id = ?");
         return $stmt->execute([$id]);
     }
+    
+    public function create($data)
+    {
+        // Hash password if it exists in the data and is not already hashed
+        if (isset($data['password']) && !str_starts_with($data['password'], '$2y$')) {
+            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+        }
+        
+        $columns = implode(',', array_keys($data));
+        $placeholders = ':' . implode(', :', array_keys($data));
+        
+        $sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$placeholders})";
+        $stmt = $this->db->prepare($sql);
+        
+        try {
+            $stmt->execute($data);
+            return $this->db->lastInsertId();
+        } catch (PDOException $e) {
+            throw new Exception("Error creating record: " . $e->getMessage());
+        }
+    }
 }

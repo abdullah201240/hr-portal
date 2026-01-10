@@ -121,9 +121,9 @@ export default function AdminLoginPage() {
                                     </button>
                                 </div>
                             </div>
+                            {error && <div className="text-red-400 text-sm text-center w-full">{error}</div>}
                         </CardContent>
                         <CardFooter className="flex flex-col space-y-4">
-                            {error && <div className="text-red-400 text-sm text-center w-full">{error}</div>}
                             <Button
                                 type="submit"
                                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-6 text-lg group"
