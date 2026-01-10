@@ -83,7 +83,7 @@ export default function AdminLayout({
                 <div className={`flex flex-col flex-1 transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
                     {/* Header */}
                     <div className={`fixed top-0 right-0 z-50 transition-all duration-300 ${sidebarCollapsed ? 'md:left-16' : 'md:left-64'} left-0`}>
-                        <div className="md:hidden flex items-center h-16 px-4 glass-strong border-b border-border">
+                        <div className="md:hidden flex items-center h-16 px-4 glass-strong">
                             <Button
                                 variant="ghost"
                                 size="icon"

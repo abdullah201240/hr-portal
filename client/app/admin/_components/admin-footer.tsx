@@ -8,7 +8,7 @@ export function AdminFooter({ className }: { className?: string }) {
 
     return (
         <footer className={cn(
-            "border-t border-border glass-strong py-3 px-6 text-center z-40 transition-all duration-300",
+            " glass-strong py-3 px-6 text-center z-40 transition-all duration-300",
             className
         )}>
             <div className="flex items-center justify-center gap-2">

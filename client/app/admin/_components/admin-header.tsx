@@ -60,7 +60,7 @@ export function AdminHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border glass-strong">
+    <header className="sticky top-0 z-50 w-full glass-strong">
       {/* Gradient accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
@@ -75,9 +75,9 @@ export function AdminHeader() {
               name="search"
               type="text"
               placeholder="Search anything..."
-              className="pl-11 pr-4 py-2.5 w-full rounded-xl border border-border glass focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/50 transition-all placeholder:text-muted-foreground/80 dark:placeholder:text-muted-foreground/60"
+              className="pl-11 pr-4 py-2.5 w-full rounded-xl glass focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/50 transition-all placeholder:text-muted-foreground/80 dark:placeholder:text-muted-foreground/60"
             />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-6 select-none items-center gap-1 rounded-lg border border-border bg-muted/50 px-2 font-mono text-[10px] font-medium text-muted-foreground">
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-6 select-none items-center gap-1 rounded-lg  bg-muted/50 px-2 font-mono text-[10px] font-medium text-muted-foreground">
               <Command className="h-3 w-3" />
               K
             </kbd>
@@ -132,9 +132,9 @@ export function AdminHeader() {
                 </Button>
               </motion.div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72 glass-strong border-border p-0 overflow-hidden">
+            <DropdownMenuContent align="end" className="w-72 glass-strong  p-0 overflow-hidden">
               {/* Profile Header */}
-              <div className="relative p-2 border-b border-border gradient-card">
+              <div className="relative p-2  gradient-card">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl gradient-emerald flex items-center justify-center text-white font-bold shadow-lg glow-emerald">
                     {getInitials(adminProfile?.name)}

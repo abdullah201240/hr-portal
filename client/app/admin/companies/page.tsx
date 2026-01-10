@@ -612,14 +612,16 @@ export default function ManageCompanies() {
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center space-x-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="p-2 hover:bg-blue-500/10 hover:text-blue-400"
-                              title="View Details"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                            <Link href={`/admin/companies/${company.id}`}>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="p-2 hover:bg-blue-500/10 hover:text-blue-400"
+                                title="View Details"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
                             <Link href={`/admin/companies/${company.id}/edit`}>
                               <Button
                                 size="sm"
@@ -756,13 +758,15 @@ export default function ManageCompanies() {
 
                     <div className="flex items-center justify-between pt-2 border-t border-border">
                       <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-9 w-9 p-0 hover:bg-blue-500/10 hover:text-blue-400"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <Link href={`/admin/companies/${company.id}`}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-9 w-9 p-0 hover:bg-blue-500/10 hover:text-blue-400"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
                         <Link href={`/admin/companies/${company.id}/edit`}>
                           <Button
                             size="sm"
