@@ -1,0 +1,23 @@
+{
+    "name": "hr-portal/server",
+    "description": "Server-side API for HR Portal",
+    "type": "project",
+    "autoload": {
+        "classmap": [
+            "models/",
+            "controllers/",
+            "database/",
+            "migrations/",
+            "helpers/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Developer",
+            "email": "developer@example.com"
+        }
+    ],
+    "require": {
+        "php": "^8.0"
+    }
+}
