@@ -7,14 +7,50 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, Users, Mail, Lock } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function EmployeeLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Employee login submitted');
-    // Here you would typically handle the login logic
+    
+    const formData = new FormData(e.target as HTMLFormElement);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    
+    if (!email || !password) {
+      toast.error('Please enter both email and password');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      // Simulate employee login since there's no employee API endpoint yet
+      // In a real implementation, this would call an employee login API
+      
+      // For demo purposes, we'll simulate a successful login
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Store a placeholder token for employee
+      localStorage.setItem('authToken', 'employee_placeholder_token');
+      
+      // Show success notification
+      toast.success('Welcome back! Redirecting to employee dashboard...');
+      
+      // Redirect to employee dashboard (currently using admin companies as placeholder)
+      // In a real implementation, this would redirect to employee-specific dashboard
+      router.push('/admin/companies');
+    } catch (err: any) {
+      toast.error(err.message || 'An error occurred during login');
+      console.error('Employee login error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,6 +73,7 @@ export default function EmployeeLoginPage() {
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400" size={18} />
                 <Input 
                   id="email" 
+                  name="email"
                   type="email" 
                   placeholder="employee@example.com" 
                   className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-purple-300"
@@ -50,6 +87,7 @@ export default function EmployeeLoginPage() {
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400" size={18} />
                 <Input 
                   id="password" 
+                  name="password"
                   type={showPassword ? "text" : "password"} 
                   placeholder="Enter your password" 
                   className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-purple-300"
@@ -69,8 +107,9 @@ export default function EmployeeLoginPage() {
             <Button 
               type="submit" 
               className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-6 text-lg"
+              disabled={loading}
             >
-              Sign In as Employee
+              {loading ? 'Signing In...' : 'Sign In as Employee'}
             </Button>
             <div className="text-center text-purple-200 text-sm">
               Don't have an account?{' '}

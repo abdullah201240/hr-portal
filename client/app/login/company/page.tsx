@@ -9,6 +9,7 @@ import { Eye, EyeOff, Building2, Mail, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { companyApi } from '@/lib/api';
+import { toast } from 'sonner';
 
 export default function CompanyLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -42,11 +43,14 @@ export default function CompanyLoginPage() {
           localStorage.setItem('authToken', 'placeholder_token');
         }
         
+        // Show success notification
+        toast.success('Welcome back! Redirecting to dashboard...');
+        
         // Redirect to company dashboard after successful login
         router.push('/admin/companies'); // Redirect to company dashboard after login
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
+      toast.error(err.message || 'An error occurred during login');
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -67,7 +71,6 @@ export default function CompanyLoginPage() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {error && <div className="text-red-300 text-sm text-center">{error}</div>}
             
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white">Email</Label>

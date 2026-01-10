@@ -10,11 +10,11 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { adminApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function AdminLoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -25,27 +25,34 @@ export default function AdminLoginPage() {
         const password = formData.get('password') as string;
         
         if (!email || !password) {
-            setError('Please enter both email and password');
+            toast.error('Please enter both email and password');
             return;
         }
         
         setLoading(true);
-        setError('');
         
         try {
             const result = await adminApi.loginAdmin({ email, password });
             
-            if (result.data) {
-                // Store auth token if returned
-                if (result.data.data && result.data.data.token) {
-                    localStorage.setItem('authToken', result.data.data.token);
-                }
-                
-                // Redirect to admin dashboard
-                router.push('/admin');
+            // The API now returns a token in the response
+            // Response structure: { success: boolean, message: string, data: adminUserData, token: string }
+            
+            // Store the token returned by the API
+            if (result.token) {
+                localStorage.setItem('authToken', result.token);
+            } else {
+                // Fallback: create a simple token if server doesn't return one
+                const authToken = `admin_${result.data?.id || Date.now()}`;
+                localStorage.setItem('authToken', authToken);
             }
+            
+            // Show success notification
+            toast.success('Welcome back! Redirecting to admin dashboard...');
+            
+            // Redirect to admin dashboard
+            router.push('/admin');
         } catch (err: any) {
-            setError(err.message || 'Invalid credentials');
+            toast.error(err.message || 'Invalid credentials');
             console.error('Admin login error:', err);
         } finally {
             setLoading(false);
@@ -121,7 +128,6 @@ export default function AdminLoginPage() {
                                     </button>
                                 </div>
                             </div>
-                            {error && <div className="text-red-400 text-sm text-center w-full">{error}</div>}
                         </CardContent>
                         <CardFooter className="flex flex-col space-y-4">
                             <Button

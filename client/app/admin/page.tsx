@@ -2,8 +2,36 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function AdminDashboard() {
+  const { isAuthenticated, isLoading, logout } = useAdminAuth();
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      toast.error('Session expired. Please log in again.');
+      router.push('/login/admin');
+    }
+  }, [isAuthenticated, isLoading, router]);
+  
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return null; // Will redirect via useEffect
+  }
+  
   return (
     <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>

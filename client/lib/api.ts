@@ -31,8 +31,9 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
     if (!response.ok) {
-      if (response.status === 401) {
-        // Clear auth token if unauthorized
+      // Don't redirect for login endpoints - let the UI handle login errors
+      if (response.status === 401 && !endpoint.includes('/login')) {
+        // Clear auth token if unauthorized (only for non-login requests)
         if (typeof window !== 'undefined') {
           localStorage.removeItem('authToken');
           window.location.href = '/login';

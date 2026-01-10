@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { AdminNav } from './_components/admin-nav';
-import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -11,12 +11,12 @@ export default function AdminLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading } = useAdminAuth();
     const router = useRouter();
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            router.push('/login/company');
+            router.push('/login/admin');
         }
     }, [isAuthenticated, isLoading, router]);
 

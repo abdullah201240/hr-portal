@@ -145,10 +145,14 @@ class AdminController
             // Don't return password in the response
             unset($result['password']);
             
+            // Generate a simple token (in production, use JWT or similar)
+            $token = 'admin_' . $result['id'] . '_' . time();
+            
             jsonResponse([
                 'success' => true, 
                 'message' => 'Login successful', 
-                'data' => $result
+                'data' => $result,
+                'token' => $token
             ]);
         } catch (Exception $e) {
             jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);

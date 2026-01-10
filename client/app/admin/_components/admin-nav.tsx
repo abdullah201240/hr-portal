@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 const navItems = [
   {
@@ -48,7 +48,7 @@ const navItems = [
 ];
 
 function LogoutButton() {
-  const { logout } = useAuth();
+  const { logout } = useAdminAuth();
   
   const handleLogout = () => {
     logout();
