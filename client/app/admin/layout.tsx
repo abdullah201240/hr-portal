@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminNav } from './_components/admin-nav';
 import { AdminHeader } from './_components/admin-header';
+import { AdminFooter } from './_components/admin-footer';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useRouter } from 'next/navigation';
 import { Menu } from 'lucide-react';
@@ -81,8 +82,8 @@ export default function AdminLayout({
 
                 <div className={`flex flex-col flex-1 transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
                     {/* Header */}
-                    <div className="sticky top-0 z-30">
-                        <div className="md:hidden flex items-center h-16 px-4 glass-strong border-b border-white/10">
+                    <div className={`fixed top-0 right-0 z-30 transition-all duration-300 ${sidebarCollapsed ? 'md:left-16' : 'md:left-64'} left-0`}>
+                        <div className="md:hidden flex items-center h-16 px-4 glass-strong border-b border-border">
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -92,7 +93,7 @@ export default function AdminLayout({
                             >
                                 <Menu className="h-5 w-5" />
                             </Button>
-                            <span className="text-lg font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                            <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
                                 AdminPanel
                             </span>
                         </div>
@@ -102,9 +103,12 @@ export default function AdminLayout({
                     </div>
 
                     {/* Main Content */}
-                    <main className="flex-1 p-0 md:p-4 animate-fade-in">
+                    <main className="flex-1 p-0 md:p-6 pt-16 pb-20 animate-fade-in relative">
                         {children}
                     </main>
+
+                    {/* Footer */}
+                    <AdminFooter className={`fixed bottom-0 right-0 z-40 ${sidebarCollapsed ? 'md:left-16' : 'md:left-64'} left-0 transition-all duration-300`} />
                 </div>
             </div>
         </div>

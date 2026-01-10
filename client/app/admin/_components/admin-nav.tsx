@@ -90,7 +90,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
   return (
     <div className={cn(
       "flex flex-col h-full relative overflow-hidden transition-all duration-300 custom-scrollbar",
-      "glass-strong border-r border-white/10",
+      "glass-strong border-r border-border",
       isCollapsed ? 'w-16' : 'w-64'
     )}>
       {/* Gradient Overlay */}
@@ -98,7 +98,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
 
       {/* Logo Section */}
       <div className={cn(
-        "relative p-6 border-b border-white/10",
+        "relative p-6 border-b border-border",
         isCollapsed && "p-4"
       )}>
         {isCollapsed ? (
@@ -154,7 +154,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
                 transition={{ duration: 0.2 }}
                 className="flex items-center gap-2"
               >
-                <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                <span className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
                   AdminPanel
                 </span>
               </motion.div>
@@ -196,8 +196,8 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
                   "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
                   isCollapsed && 'justify-center px-3',
                   isActive
-                    ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 shadow-lg glow-emerald"
-                    : "hover:bg-white/5 text-muted-foreground hover:text-foreground"
+                    ? "bg-emerald-500/10 dark:bg-gradient-to-r dark:from-emerald-500/20 dark:to-teal-500/20 text-emerald-700 dark:text-emerald-400 shadow-sm dark:shadow-lg dark:glow-emerald"
+                    : "hover:bg-emerald-500/5 dark:hover:bg-white/5 text-muted-foreground hover:text-emerald-600 dark:hover:text-foreground"
                 )}
                 title={isCollapsed ? item.title : undefined}
               >
@@ -218,7 +218,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
                 >
                   <item.icon className={cn(
                     "size-5 transition-colors",
-                    isActive ? "text-emerald-400" : "text-muted-foreground group-hover:text-emerald-400"
+                    isActive ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground group-hover:text-emerald-500 dark:group-hover:text-emerald-400"
                   )} />
                 </motion.div>
 
@@ -240,7 +240,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
                 {!isCollapsed && (
                   <ChevronRight className={cn(
                     "size-4 ml-auto opacity-0 group-hover:opacity-100 transition-all relative z-10",
-                    isActive ? "text-emerald-400 opacity-100" : "text-muted-foreground"
+                    isActive ? "text-emerald-600 dark:text-emerald-400 opacity-100" : "text-muted-foreground"
                   )} />
                 )}
 
@@ -259,7 +259,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
       </nav>
 
       {/* Bottom Section */}
-      <div className="relative p-2 border-t border-white/10">
+      <div className="relative p-2 border-t border-border">
         {/* Logout Button */}
         <LogoutButton isCollapsed={isCollapsed} />
       </div>
