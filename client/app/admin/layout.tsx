@@ -102,7 +102,7 @@ export default function AdminLayout({
                     </div>
 
                     {/* Main Content */}
-                    <main className="flex-1 p-2 animate-fade-in">
+                    <main className="flex-1 p-0 md:p-4 animate-fade-in">
                         {children}
                     </main>
                 </div>

@@ -67,9 +67,13 @@ export default function CompanyDetailsPage({ params }: { params: { id: string } 
                         </div>
                     </div>
                     <div className="flex gap-3">
-                        <button className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <Link href={`/admin/companies/${company.id}/edit`}>
+                        <button 
+                            className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
+                        >
                             Edit Profile
                         </button>
+                        </Link>
                         <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all">
                             Manage License
                         </button>

@@ -29,6 +29,11 @@ const navItems = [
     icon: Building2,
   },
   {
+    title: 'Admin Management',
+    href: '/admin/admins',
+    icon: ShieldCheck,
+  },
+  {
     title: 'Analytics',
     href: '/admin/analytics',
     icon: BarChart3,
