@@ -64,10 +64,10 @@ export function AdminHeader() {
       {/* Gradient accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
-      <div className="container flex h-16 items-center px-6">
+      <div className="flex h-16 items-center justify-between px-6 w-full">
         {/* Left section with search */}
-        <div className="flex flex-1 items-center space-x-4">
-          <form onSubmit={handleSearch} className="relative max-w-md flex-1">
+        <div className="flex items-center space-x-4 flex-1 max-w-2xl">
+          <form onSubmit={handleSearch} className="relative w-full">
             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
               <Search className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -85,7 +85,7 @@ export function AdminHeader() {
         </div>
 
         {/* Right section with actions */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 ml-4">
           {/* Theme Toggle */}
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button

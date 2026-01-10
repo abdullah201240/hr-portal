@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -97,64 +96,81 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
         "relative p-6 border-b border-white/10",
         isCollapsed && "p-4"
       )}>
-        <div className="flex items-center justify-between gap-2">
-          <Link
-            href="/admin"
-            className={cn(
-              "flex items-center gap-3 group",
-              isCollapsed ? 'justify-center' : 'px-2'
-            )}
-            onClick={() => toggleSidebar && toggleSidebar()}
-          >
-            <motion.div
-              className="gradient-emerald p-2.5 rounded-xl shadow-lg glow-emerald"
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
+        {isCollapsed ? (
+          // Collapsed state - show only logo and toggle button stacked vertically
+          <div className="flex flex-col items-center gap-3">
+            <Link
+              href="/admin"
+              className="flex items-center justify-center"
+              onClick={() => toggleSidebar && toggleSidebar()}
             >
-              <ShieldCheck className="text-white size-6" />
-            </motion.div>
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex items-center gap-2"
-                >
-                  <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                    AdminPanel
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Link>
+              <motion.div
+                className="gradient-emerald p-2.5 rounded-xl shadow-lg glow-emerald"
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ShieldCheck className="text-white size-6" />
+              </motion.div>
+            </Link>
 
-          {/* Collapse Toggle Button */}
-          <motion.button
-            onClick={toggleCollapse}
-            className={cn(
-              "p-2 rounded-lg glass hover:glass-strong transition-all duration-200 group shrink-0",
-              isCollapsed && "mx-auto"
-            )}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? (
+            {/* Collapse Toggle Button - Always visible */}
+            <motion.button
+              onClick={toggleCollapse}
+              className="p-2 rounded-lg glass hover:glass-strong transition-all duration-200 group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Expand sidebar"
+              title="Expand sidebar"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 group-hover:translate-x-0.5 transition-transform">
                 <path d="m6 17 5-5-5-5" />
                 <path d="m13 17 5-5-5-5" />
               </svg>
-            ) : (
+            </motion.button>
+          </div>
+        ) : (
+          // Expanded state - show logo, text, and toggle button horizontally
+          <div className="flex items-center justify-between gap-2">
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 group px-2"
+              onClick={() => toggleSidebar && toggleSidebar()}
+            >
+              <motion.div
+                className="gradient-emerald p-2.5 rounded-xl shadow-lg glow-emerald"
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ShieldCheck className="text-white size-6" />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-2"
+              >
+                <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                  AdminPanel
+                </span>
+              </motion.div>
+            </Link>
+
+            {/* Collapse Toggle Button */}
+            <motion.button
+              onClick={toggleCollapse}
+              className="p-2 rounded-lg glass hover:glass-strong transition-all duration-200 group shrink-0"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Collapse sidebar"
+              title="Collapse sidebar"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 group-hover:-translate-x-0.5 transition-transform">
                 <path d="m18 17-5-5 5-5" />
                 <path d="m11 17-5-5 5-5" />
               </svg>
-            )}
-          </motion.button>
-        </div>
+            </motion.button>
+          </div>
+        )}
       </div>
 
       {/* Navigation Items */}
