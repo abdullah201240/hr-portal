@@ -80,6 +80,17 @@ type AdminNavProps = {
 
 export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNavProps) {
   const pathname = usePathname();
+  const { adminProfile } = useAdminAuth();
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'A';
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const handleClick = (href: string) => {
     if (toggleSidebar) {
@@ -98,170 +109,169 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
 
       {/* Logo Section */}
       <div className={cn(
-        "relative p-6 border-b border-border",
+        "relative p-6 border-b border-emerald-500/10",
         isCollapsed && "p-4"
       )}>
         {isCollapsed ? (
-          // Collapsed state - show only logo and toggle button stacked vertically
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-4">
             <Link
               href="/admin"
               className="flex items-center justify-center"
               onClick={() => toggleSidebar && toggleSidebar()}
             >
-              <motion.div
-                className="gradient-emerald p-2.5 rounded-xl shadow-lg glow-emerald"
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <div className="gradient-emerald p-2.5 rounded-xl shadow-lg shadow-emerald-500/20">
                 <ShieldCheck className="text-white size-6" />
-              </motion.div>
+              </div>
             </Link>
-
-            {/* Collapse Toggle Button - Always visible */}
-            <motion.button
+            
+            <button
               onClick={toggleCollapse}
-              className="p-2 rounded-lg glass hover:glass-strong transition-all duration-200 group"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Expand sidebar"
-              title="Expand sidebar"
+              className="p-2 rounded-lg hover:bg-emerald-500/5 text-emerald-500/60 hover:text-emerald-500 transition-colors"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 group-hover:translate-x-0.5 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m6 17 5-5-5-5" />
                 <path d="m13 17 5-5-5-5" />
               </svg>
-            </motion.button>
+            </button>
           </div>
         ) : (
-          // Expanded state - show logo, text, and toggle button horizontally
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between">
             <Link
               href="/admin"
-              className="flex items-center gap-3 group px-2"
+              className="flex items-center gap-3 group"
               onClick={() => toggleSidebar && toggleSidebar()}
             >
-              <motion.div
-                className="gradient-emerald p-2.5 rounded-xl shadow-lg glow-emerald"
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <ShieldCheck className="text-white size-6" />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center gap-2"
-              >
-                <span className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
-                  AdminPanel
-                </span>
-              </motion.div>
+              <div className="gradient-emerald p-2 rounded-xl shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                <ShieldCheck className="text-white size-5" />
+              </div>
+              <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent tracking-tight">
+                HR Portal
+              </span>
             </Link>
 
-            {/* Collapse Toggle Button */}
-            <motion.button
+            <button
               onClick={toggleCollapse}
-              className="p-2 rounded-lg glass hover:glass-strong transition-all duration-200 group shrink-0"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Collapse sidebar"
-              title="Collapse sidebar"
+              className="p-2 rounded-lg hover:bg-emerald-500/5 text-emerald-500/60 hover:text-emerald-500 transition-colors"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 group-hover:-translate-x-0.5 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m18 17-5-5 5-5" />
                 <path d="m11 17-5-5 5-5" />
               </svg>
-            </motion.button>
+            </button>
           </div>
         )}
       </div>
 
-      {/* Navigation Items */}
-      <nav className="flex-1 py-6 px-3 space-y-1 relative">
-        {navItems.map((item, index) => {
-          const isActive = pathname === item.href;
-          return (
-            <motion.div
-              key={item.href}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <Link
-                href={item.href}
-                onClick={() => handleClick(item.href)}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
-                  isCollapsed && 'justify-center px-3',
-                  isActive
-                    ? "bg-emerald-500/10 dark:bg-gradient-to-r dark:from-emerald-500/20 dark:to-teal-500/20 text-emerald-700 dark:text-emerald-400 shadow-sm dark:shadow-lg dark:glow-emerald"
-                    : "hover:bg-emerald-500/5 dark:hover:bg-white/5 text-muted-foreground hover:text-emerald-600 dark:hover:text-foreground"
-                )}
-                title={isCollapsed ? item.title : undefined}
-              >
-                {/* Active Indicator */}
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-xl"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
+      
 
-                {/* Icon */}
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                  className="relative z-10"
+      {/* Navigation Items */}
+      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 relative custom-scrollbar">
+        {/* Nav Group: Main */}
+        <div className="space-y-1">
+          
+          {navItems.slice(0, 5).map((item, index) => {
+            const isActive = pathname === item.href;
+            return (
+              <motion.div
+                key={item.href}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Link
+                  href={item.href}
+                  onClick={() => handleClick(item.href)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
+                    isCollapsed && 'justify-center px-3',
+                    isActive
+                      ? "bg-emerald-500/10 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shadow-sm"
+                      : "hover:bg-emerald-500/5 text-muted-foreground hover:text-emerald-600"
+                  )}
+                  title={isCollapsed ? item.title : undefined}
+                >
+                  {/* Active Indicator */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-emerald-500/5 rounded-xl"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+
+                  <item.icon className={cn(
+                    "size-5 shrink-0 transition-colors",
+                    isActive ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground group-hover:text-emerald-500"
+                  )} />
+
+                  <AnimatePresence>
+                    {!isCollapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        className="font-medium relative z-10 whitespace-nowrap text-sm"
+                      >
+                        {item.title}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+
+                  {!isCollapsed && (
+                    <ChevronRight className={cn(
+                      "size-4 ml-auto opacity-0 group-hover:opacity-100 transition-all relative z-10",
+                      isActive ? "text-emerald-600 dark:text-emerald-400 opacity-100" : "text-muted-foreground"
+                    )} />
+                  )}
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Nav Group: System */}
+        <div className="space-y-1">
+          
+          {navItems.slice(5).map((item, index) => {
+            const isActive = pathname === item.href;
+            return (
+              <motion.div
+                key={item.href}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: (index + 5) * 0.05 }}
+              >
+                <Link
+                  href={item.href}
+                  onClick={() => handleClick(item.href)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative",
+                    isCollapsed && 'justify-center px-3',
+                    isActive
+                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shadow-sm"
+                      : "hover:bg-emerald-500/5 text-muted-foreground hover:text-emerald-600"
+                  )}
                 >
                   <item.icon className={cn(
-                    "size-5 transition-colors",
-                    isActive ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground group-hover:text-emerald-500 dark:group-hover:text-emerald-400"
+                    "size-5 shrink-0",
+                    isActive ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
                   )} />
-                </motion.div>
-
-                {/* Label */}
-                <AnimatePresence>
-                  {!isCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      className="font-medium relative z-10 whitespace-nowrap"
-                    >
-                      {item.title}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-
-                {/* Chevron */}
-                {!isCollapsed && (
-                  <ChevronRight className={cn(
-                    "size-4 ml-auto opacity-0 group-hover:opacity-100 transition-all relative z-10",
-                    isActive ? "text-emerald-600 dark:text-emerald-400 opacity-100" : "text-muted-foreground"
-                  )} />
-                )}
-
-                {/* Collapsed Active Indicator */}
-                {isCollapsed && isActive && (
-                  <motion.div
-                    layoutId="active-pill"
-                    className="absolute left-0 w-1 h-8 bg-gradient-to-b from-emerald-400 to-teal-400 rounded-r-full shadow-lg"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
-              </Link>
-            </motion.div>
-          );
-        })}
-      </nav>
+                  {!isCollapsed && <span className="font-medium text-sm">{item.title}</span>}
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Bottom Section */}
-      <div className="relative p-2 border-t border-border">
-        {/* Logout Button */}
+      <div className="relative p-4 border-t border-emerald-500/10 space-y-4 bg-emerald-500/5">
         <LogoutButton isCollapsed={isCollapsed} />
+        {!isCollapsed && (
+          <div className="flex items-center justify-center">
+            <span className="text-[10px] text-muted-foreground/60 font-medium tracking-tight">Version 2.0.1 • HR Portal Admin</span>
+          </div>
+        )}
       </div>
     </div>
   );

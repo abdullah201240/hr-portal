@@ -71,7 +71,7 @@ export default function AdminLayout({
 
                 {/* Sidebar */}
                 <aside
-                    className={`fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:flex md:flex-col ${sidebarCollapsed ? 'w-16' : 'w-64'}`}
+                    className={`fixed inset-y-0 left-0 z-[60] transform transition-all duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:flex md:flex-col ${sidebarCollapsed ? 'w-16' : 'w-64'}`}
                 >
                     <AdminNav
                         toggleSidebar={() => setSidebarOpen(false)}
@@ -83,20 +83,19 @@ export default function AdminLayout({
                 <div className={`flex flex-col flex-1 transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
                     {/* Header */}
                     <div className={`fixed top-0 right-0 z-50 transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'} left-0`}>
-                        <div className="md:hidden flex items-center h-16 glass-strong w-full">
-                            <div className="flex items-center">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                                    className="mr-2 rounded-xl glass hover:glass-strong"
-                                    aria-label="Toggle menu"
-                                >
-                                    <Menu className="h-5 w-5" />
-                                </Button>
-                                
+                        <div className="md:hidden flex items-center h-16 glass-strong w-full px-2 border-b border-emerald-500/10">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setSidebarOpen(!sidebarOpen)}
+                                className="h-10 w-10 rounded-full hover:bg-emerald-500/10 text-emerald-600 transition-colors shrink-0"
+                                aria-label="Toggle menu"
+                            >
+                                <Menu className="h-5 w-5" />
+                            </Button>
+                            <div className="flex-1 min-w-0">
+                                <AdminHeader isMobile={true} />
                             </div>
-                            <AdminHeader isMobile={true} />
                         </div>
                         <div className="hidden md:block">
                             <AdminHeader />

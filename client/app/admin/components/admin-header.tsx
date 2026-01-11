@@ -3,8 +3,6 @@
 import { Moon, Sun, Search, User, Settings, LogOut, Command } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -63,59 +61,48 @@ export function AdminHeader({ isMobile = false }: { isMobile?: boolean } = {}) {
 
 
   return (
-    <header className="sticky top-0 z-50 w-full glass-strong">
-      {/* Gradient accent line */}
-      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
-
-      <div className="flex h-16 items-center justify-between px-6 w-full">
+    <header className="sticky top-0 z-50 w-full glass-strong border-b border-emerald-500/10">
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6 w-full max-w-full">
         {isMobile ? (
-          // Mobile view: Show search bar permanently with theme toggle and user menu
+          // Modern Mobile View: Clean layout with permanent sleek search
           <>
-            <div className="flex items-center space-x-2 flex-1">
-              {/* Permanent search bar for mobile */}
-              <div className="flex items-center flex-1 mr-2">
-                <form onSubmit={handleSearch} className="relative flex-1">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <Search className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <Input
-                    name="search"
-                    type="text"
-                    placeholder="Search..."
-                    className="pl-10 pr-3 py-2 w-full rounded-lg glass focus-visible:ring-1 focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/50 transition-all placeholder:text-muted-foreground/80 dark:placeholder:text-muted-foreground/60 text-sm"
-                  />
-                </form>
-                
-                {/* Theme Toggle */}
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                    aria-label="Toggle theme"
-                    className="relative rounded-lg glass hover:glass-strong transition-all ml-2"
-                  >
-                    <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-amber-500" />
-                    <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-blue-400" />
-                  </Button>
-                </motion.div>
-              </div>
+            <div className="flex items-center gap-2 flex-1">
+              {/* Sleek Pill Search */}
+              <form onSubmit={handleSearch} className="relative flex-1 max-w-[180px] xs:max-w-none">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <Search className="h-3.5 w-3.5 text-emerald-500/70" />
+                </div>
+                <Input
+                  name="search"
+                  type="text"
+                  placeholder="Search..."
+                  className="h-9 pl-9 pr-3 py-2 w-full rounded-full bg-emerald-500/5 border-emerald-500/20 focus:bg-emerald-500/10 focus:ring-1 focus:ring-emerald-500/30 transition-all text-xs"
+                />
+              </form>
+              
+              {/* Theme Toggle */}
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="h-9 w-9 rounded-full bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/10"
+                >
+                  <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-amber-500" />
+                  <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-blue-400" />
+                </Button>
+              </motion.div>
             </div>
 
-            <div className="flex items-center">
-              {/* User Menu */}
+            <div className="flex items-center ml-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button variant="ghost" className="relative h-10 rounded-xl glass hover:glass-strong px-2 gap-1">
-                      <div className="w-8 h-8 rounded-lg gradient-emerald flex items-center justify-center text-white font-semibold shadow-lg glow-emerald">
+                    <Button variant="ghost" className="relative h-10 w-10 p-0 rounded-full border-2 border-emerald-500/20 p-[2px] hover:border-emerald-500/40 transition-all">
+                      <div className="w-full h-full rounded-full gradient-emerald flex items-center justify-center text-white text-xs font-bold">
                         {getInitials(adminProfile?.name)}
                       </div>
-                      <div className="hidden sm:flex flex-col items-start">
-                        <span className="text-sm font-medium leading-none max-w-[100px] truncate">{adminProfile?.name || 'Administrator'}</span>
-                        <span className="text-xs text-muted-foreground leading-none mt-1">Admin</span>
-                      </div>
-                      <span className="absolute -bottom-0.5 -right-0.5 block h-3 w-3 rounded-full ring-2 ring-background bg-emerald-500"></span>
+                      <span className="absolute -bottom-0.5 -right-0.5 block h-2.5 w-2.5 rounded-full ring-2 ring-background bg-emerald-500"></span>
                     </Button>
                   </motion.div>
                 </DropdownMenuTrigger>
