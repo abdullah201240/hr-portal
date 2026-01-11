@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AdminNav } from './_components/admin-nav';
-import { AdminHeader } from './_components/admin-header';
-import { AdminFooter } from './_components/admin-footer';
+import { AdminNav } from './components/admin-nav';
+import { AdminHeader } from './components/admin-header';
+import { AdminFooter } from './components/admin-footer';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useRouter } from 'next/navigation';
 import { Menu } from 'lucide-react';
@@ -82,20 +82,21 @@ export default function AdminLayout({
 
                 <div className={`flex flex-col flex-1 transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
                     {/* Header */}
-                    <div className={`fixed top-0 right-0 z-50 transition-all duration-300 ${sidebarCollapsed ? 'md:left-16' : 'md:left-64'} left-0`}>
-                        <div className="md:hidden flex items-center h-16 px-4 glass-strong">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setSidebarOpen(!sidebarOpen)}
-                                className="mr-2 rounded-xl glass hover:glass-strong"
-                                aria-label="Toggle menu"
-                            >
-                                <Menu className="h-5 w-5" />
-                            </Button>
-                            <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
-                                AdminPanel
-                            </span>
+                    <div className={`fixed top-0 right-0 z-50 transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'} left-0`}>
+                        <div className="md:hidden flex items-center h-16 glass-strong w-full">
+                            <div className="flex items-center">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                                    className="mr-2 rounded-xl glass hover:glass-strong"
+                                    aria-label="Toggle menu"
+                                >
+                                    <Menu className="h-5 w-5" />
+                                </Button>
+                                
+                            </div>
+                            <AdminHeader isMobile={true} />
                         </div>
                         <div className="hidden md:block">
                             <AdminHeader />
