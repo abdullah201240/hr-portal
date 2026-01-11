@@ -170,4 +170,44 @@ class AdminController
             'message' => 'Logout successful'
         ]);
     }
+    
+    public function getCurrentProfile()
+    {
+        try {
+            // Extract token from Authorization header
+            $headers = getallheaders();
+            $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : null;
+            
+            if (!$authHeader || !preg_match('/^Bearer\s+(.+)$/i', $authHeader, $matches)) {
+                jsonResponse(['success' => false, 'message' => 'Authorization token required'], 401);
+            }
+            
+            $token = $matches[1];
+            
+            // Validate the token and extract admin ID
+            // In our simple token system: admin_{id}_{timestamp}
+            if (!preg_match('/^admin_(\d+)_\d+$/', $token, $tokenMatches)) {
+                jsonResponse(['success' => false, 'message' => 'Invalid token'], 401);
+            }
+            
+            $adminId = (int)$tokenMatches[1];
+            
+            // Fetch admin by ID
+            $admin = $this->admin->find($adminId);
+            
+            if (!$admin) {
+                jsonResponse(['success' => false, 'message' => 'Admin not found'], 404);
+            }
+            
+            // Don't return password in the response
+            unset($admin['password']);
+            
+            jsonResponse([
+                'success' => true, 
+                'data' => $admin
+            ]);
+        } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }

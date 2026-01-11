@@ -104,4 +104,7 @@ export const adminApi = {
   
   // Logout an admin
   logoutAdmin: () => makeRequest('/admins/logout', { method: 'POST' }),
+  
+  // Get current admin profile
+  getCurrentAdminProfile: () => makeRequest('/admins/me'),
 };

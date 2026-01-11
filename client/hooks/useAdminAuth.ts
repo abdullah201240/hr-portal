@@ -35,6 +35,11 @@ export const useAdminAuth = () => {
     setIsAuthenticated(true);
   };
 
+  const updateAdminProfile = (profile: any) => {
+    setAdminProfile(profile);
+    localStorage.setItem('adminProfile', JSON.stringify(profile));
+  };
+
   const logout = async () => {
     try {
       // Call the server-side logout endpoint
@@ -45,11 +50,13 @@ export const useAdminAuth = () => {
     } finally {
       // Clear the local token regardless of server response
       localStorage.removeItem('authToken');
+      localStorage.removeItem('adminProfile');
+      setAdminProfile(null);
       setIsAuthenticated(false);
       toast.success('Successfully logged out');
       router.push('/login/admin');
     }
   };
 
-  return { isAuthenticated, isLoading, adminProfile, login, logout };
+  return { isAuthenticated, isLoading, adminProfile, setAdminProfile: updateAdminProfile, login, logout };
 };

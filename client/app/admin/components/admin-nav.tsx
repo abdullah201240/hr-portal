@@ -39,6 +39,11 @@ const navItems = [
     icon: BarChart3,
   },
   {
+    title: 'Profile',
+    href: '/admin/profile',
+    icon: Users2,
+  },
+  {
     title: 'User Management',
     href: '/admin/users',
     icon: Users2,
