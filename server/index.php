@@ -26,6 +26,10 @@ $path = $parsedUrl['path'];
 // Define routes
 $routes = [
     '@/api/companies/login/?$@' => ['POST' => 'login'],
+    '@/api/companies/me/?$@' => ['GET' => 'getCurrentProfile'],
+    '@/api/companies/logout/?$@' => ['POST' => 'logout'],
+    '@/api/companies/upload-logo/?$@' => ['POST' => 'uploadLogo'],
+    '@/api/uploads/logos/(?P<filename>[^/]+)/?$@' => ['GET' => 'serveImage'],
     '@/api/companies/?$@' => ['GET' => 'index', 'POST' => 'store'],
     '@/api/companies/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/admins/login/?$@' => ['POST' => 'login'],
@@ -50,12 +54,18 @@ foreach ($routes as $pattern => $actions) {
         if (isset($actions[$method])) {
             $action = $actions[$method];
             
-            if (in_array($action, ['index', 'store', 'login', 'logout', 'getCurrentProfile', 'getDashboardStats'])) {
+            if (in_array($action, ['index', 'store', 'login', 'logout', 'getCurrentProfile', 'getDashboardStats', 'uploadLogo'])) {
                 $controller->$action();
             } else {
                 // For show, update, delete - we need the ID from the route
                 $id = $matches[1] ?? null;
-                $controller->$action($id);
+                // For serveImage, we need the filename from the route
+                if ($action === 'serveImage') {
+                    $filename = $matches['filename'] ?? $matches[1] ?? null;
+                    $controller->$action($filename);
+                } else {
+                    $controller->$action($id);
+                }
             }
         } else {
             jsonResponse(['success' => false, 'message' => 'Method not allowed'], 405);

@@ -20,12 +20,26 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
     ...(body && { body: JSON.stringify(body) }),
   };
 
-  // Add auth token if available - prioritize admin token, fall back to company token
+  // Add auth token if available - choose token based on the endpoint type
   if (typeof window !== 'undefined') {
-    let token = localStorage.getItem('adminAuthToken');
-    if (!token) {
+    let token = null;
+    
+    // If endpoint is for companies, use company token
+    if (endpoint.includes('/companies') || endpoint.includes('/company')) {
       token = localStorage.getItem('companyAuthToken');
+    } 
+    // If endpoint is for admins, use admin token
+    else if (endpoint.includes('/admins') || endpoint.includes('/admin')) {
+      token = localStorage.getItem('adminAuthToken');
     }
+    // For other endpoints, try admin first then company
+    else {
+      token = localStorage.getItem('adminAuthToken');
+      if (!token) {
+        token = localStorage.getItem('companyAuthToken');
+      }
+    }
+    
     if (token) {
       (config.headers as Record<string, string>).Authorization = `Bearer ${token}`;
     }

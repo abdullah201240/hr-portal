@@ -142,13 +142,10 @@ class AdminController
                 jsonResponse(['success' => false, 'message' => $result['error']], 401);
             }
             
-            // Update last login time
             $this->admin->updateLastLogin($result['id']);
             
-            // Don't return password in the response
             unset($result['password']);
             
-            // Generate a simple token (in production, use JWT or similar)
             $token = 'admin_' . $result['id'] . '_' . time();
             
             jsonResponse([
@@ -164,10 +161,6 @@ class AdminController
 
     public function logout()
     {
-        // In a real implementation, you would invalidate the token here
-        // For now, we'll just return a success response
-        // In a production system, you'd implement token blacklisting
-        
         jsonResponse([
             'success' => true, 
             'message' => 'Logout successful'
