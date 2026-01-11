@@ -6,6 +6,7 @@ require_once __DIR__ . '/controllers/CompanyController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/DepartmentController.php';
 require_once __DIR__ . '/controllers/DesignationController.php';
+require_once __DIR__ . '/controllers/EmployeeController.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -43,6 +44,8 @@ $routes = [
     '@/api/departments/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/designations/?$@' => ['GET' => 'index', 'POST' => 'store'],
     '@/api/designations/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/employees/?$@' => ['GET' => 'index', 'POST' => 'store'],
+    '@/api/employees/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/dashboard/stats/?$@' => ['GET' => 'getDashboardStats']
 ];
 
@@ -57,6 +60,8 @@ foreach ($routes as $pattern => $actions) {
             $controller = new DepartmentController();
         } elseif (strpos($path, '/api/designations') !== false) {
             $controller = new DesignationController();
+        } elseif (strpos($path, '/api/employees') !== false) {
+            $controller = new EmployeeController();
         } else {
             $controller = new CompanyController();
         }

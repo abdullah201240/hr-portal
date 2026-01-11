@@ -1,4 +1,6 @@
 // lib/api.ts
+import { Employee, EmployeeFormData } from '@/types/employee';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
 
 interface ApiRequestOptions {
@@ -26,7 +28,8 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
     
     // If endpoint is for companies, use company token
     if (endpoint.includes('/companies') || endpoint.includes('/company') || 
-        endpoint.includes('/departments') || endpoint.includes('/designations')) {
+        endpoint.includes('/departments') || endpoint.includes('/designations') ||
+        endpoint.includes('/employees')) {
       token = localStorage.getItem('companyAuthToken');
     } 
     // If endpoint is for admins, use admin token
@@ -59,7 +62,8 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
           if (endpoint.includes('/admins') || endpoint.includes('/admin')) {
             localStorage.removeItem('adminProfile');
             window.location.href = '/login/admin';
-          } else if (endpoint.includes('/companies') || endpoint.includes('/company')) {
+          } else if (endpoint.includes('/companies') || endpoint.includes('/company') ||
+            endpoint.includes('/employees') || endpoint.includes('/departments') || endpoint.includes('/designations')) {
             localStorage.removeItem('companyProfile');
             window.location.href = '/login/company';
           } else {
@@ -202,6 +206,34 @@ export const designationApi = {
   
   // Delete a designation
   deleteDesignation: (id: number) => makeRequest(`/designations/${id}`, { method: 'DELETE' }),
+};
+
+// Employee API functions
+export const employeeApi = {
+  // Get all employees
+  getAllEmployees: (params?: { page?: number; limit?: number; search?: string; orderBy?: string; orderDir?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    if (params?.search) searchParams.append('search', params.search);
+    if (params?.orderBy) searchParams.append('orderBy', params.orderBy);
+    if (params?.orderDir) searchParams.append('orderDir', params.orderDir);
+    
+    const url = searchParams.toString() ? `/employees?${searchParams.toString()}` : '/employees';
+    return makeRequest(url);
+  },
+  
+  // Get a specific employee
+  getEmployeeById: (id: number) => makeRequest(`/employees/${id}`),
+  
+  // Create a new employee
+  createEmployee: (data: EmployeeFormData) => makeRequest('/employees', { method: 'POST', body: data }),
+  
+  // Update an employee
+  updateEmployee: (id: number, data: Partial<EmployeeFormData>) => makeRequest(`/employees/${id}`, { method: 'PUT', body: data }),
+  
+  // Delete an employee
+  deleteEmployee: (id: number) => makeRequest(`/employees/${id}`, { method: 'DELETE' }),
 };
 
 // Company Department API functions
