@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCompanyAuth } from '@/hooks/useCompanyAuth';
 import { Button } from '@/components/ui/button';
@@ -8,13 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, User, Mail, Phone, Calendar, MapPin, Briefcase, Building, Heart, FileText, Users, CreditCard, Shield, Star } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Briefcase, Building, FileText, Users, CreditCard, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { employeeApi } from '@/lib/api';
 import { Employee } from '@/types/employee';
 
 const EmployeeDetailsPage = () => {
-  const { isAuthenticated, isLoading } = useCompanyAuth();
+  const { isAuthenticated, isLoading: authLoading } = useCompanyAuth();
   const router = useRouter();
   const { id } = useParams();
   const [employee, setEmployee] = useState<Employee | null>(null);
@@ -22,26 +22,17 @@ const EmployeeDetailsPage = () => {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/login/company');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, authLoading, router]);
 
-  // Don't render anything while checking authentication
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-300"></div>
-      </div>
-    );
-  }
-
-  // Don't render if not authenticated
-  if (!isAuthenticated) {
-    return null;
-  }
-
+  // Fetch employee data
   useEffect(() => {
+    if (authLoading || !isAuthenticated) {
+      return; // Don't fetch if still loading auth or not authenticated
+    }
+
     const fetchEmployee = async () => {
       try {
         setLoading(true);
@@ -60,8 +51,23 @@ const EmployeeDetailsPage = () => {
     };
 
     fetchEmployee();
-  }, [id]);
+  }, [id, isAuthenticated, authLoading]);
 
+  // Show loading while authenticating
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-300"></div>
+      </div>
+    );
+  }
+
+  // Show nothing if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // Show loading state for employee data
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
@@ -77,6 +83,7 @@ const EmployeeDetailsPage = () => {
     );
   }
 
+  // Show not found if no employee exists
   if (!employee) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
@@ -162,7 +169,7 @@ const EmployeeDetailsPage = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Date of Birth</span>
-                <span className="font-medium">{employee.dob || 'N/A'}</span>
+                <span className="font-medium">{employee.dob ? new Date(employee.dob).toLocaleDateString() : 'N/A'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Gender</span>
@@ -199,11 +206,11 @@ const EmployeeDetailsPage = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Join Date</span>
-                <span className="font-medium">{employee.joinDate || 'N/A'}</span>
+                <span className="font-medium">{employee.joinDate ? new Date(employee.joinDate).toLocaleDateString() : 'N/A'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Salary</span>
-                <span className="font-medium">{employee.salary || 'N/A'}</span>
+                <span className="font-medium">{employee.salary ? '৳' + parseFloat(employee.salary).toFixed(2) : 'N/A'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Status</span>
@@ -228,11 +235,15 @@ const EmployeeDetailsPage = () => {
                 <span className="text-muted-foreground">Marital Status</span>
                 <span className="font-medium">{employee.maritalStatus || 'N/A'}</span>
               </div>
-             
-             
+              
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Employee Type</span>
                 <span className="font-medium">{employee.employeeType || 'N/A'}</span>
+              </div>
+              
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Personal Mobile</span>
+                <span className="font-medium">{employee.personalMobile || 'N/A'}</span>
               </div>
             </CardContent>
           </Card>
@@ -252,14 +263,13 @@ const EmployeeDetailsPage = () => {
                 <MapPin className="h-5 w-5 mr-2 text-orange-600" />
                 Address Information
               </CardTitle>
-              <CardDescription>Current and permanent addresses</CardDescription>
+              <CardDescription>Current address details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <h4 className="font-medium mb-2">Current Address</h4>
                 <p className="text-muted-foreground">{employee.currentAddress || 'Not provided'}</p>
               </div>
-              
             </CardContent>
           </Card>
 
@@ -277,6 +287,11 @@ const EmployeeDetailsPage = () => {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Phone</span>
                 <span className="font-medium">{employee.emergencyContactNumber || 'N/A'}</span>
+              </div>
+              
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Personal Mobile</span>
+                <span className="font-medium">{employee.personalMobile || 'N/A'}</span>
               </div>
             </CardContent>
           </Card>
@@ -308,6 +323,15 @@ const EmployeeDetailsPage = () => {
                 <p className="font-medium">{employee.accountNumber || 'N/A'}</p>
               </div>
               
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground">Created At</h4>
+                <p className="font-medium">{employee.created_at ? new Date(employee.created_at).toLocaleDateString() : 'N/A'}</p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground">Updated At</h4>
+                <p className="font-medium">{employee.updated_at ? new Date(employee.updated_at).toLocaleDateString() : 'N/A'}</p>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
