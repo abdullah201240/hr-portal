@@ -71,7 +71,7 @@ const EmployeeDetailsPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
-        <div className="max-w-6xl mx-auto">
+        <div >
           <Skeleton className="h-12 w-1/3 mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Skeleton className="h-96 w-full" />
@@ -87,7 +87,7 @@ const EmployeeDetailsPage = () => {
   if (!employee) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
-        <div className="max-w-6xl mx-auto">
+        <div >
           <Card className="p-8 text-center">
             <h2 className="text-2xl font-bold text-destructive">Employee not found</h2>
             <p className="text-muted-foreground mt-2">The requested employee could not be found.</p>
@@ -98,19 +98,9 @@ const EmployeeDetailsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Back Button */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
-          <Button variant="outline" onClick={() => window.history.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Employees
-          </Button>
-        </motion.div>
+    <div className="bg-background">
+      <div >
+        
 
         {/* Header */}
         <motion.div 
