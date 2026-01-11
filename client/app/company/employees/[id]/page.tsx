@@ -228,22 +228,8 @@ const EmployeeDetailsPage = () => {
                 <span className="text-muted-foreground">Marital Status</span>
                 <span className="font-medium">{employee.maritalStatus || 'N/A'}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Spouse Name</span>
-                <span className="font-medium">{employee.spouseName || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">NID</span>
-                <span className="font-medium">{employee.nid || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">TIN</span>
-                <span className="font-medium">{employee.tinNumber || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Religion</span>
-                <span className="font-medium">{employee.religion || 'N/A'}</span>
-              </div>
+             
+             
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Employee Type</span>
                 <span className="font-medium">{employee.employeeType || 'N/A'}</span>
@@ -273,10 +259,7 @@ const EmployeeDetailsPage = () => {
                 <h4 className="font-medium mb-2">Current Address</h4>
                 <p className="text-muted-foreground">{employee.currentAddress || 'Not provided'}</p>
               </div>
-              <div>
-                <h4 className="font-medium mb-2">Permanent Address</h4>
-                <p className="text-muted-foreground">{employee.permanentAddress || 'Not provided'}</p>
-              </div>
+              
             </CardContent>
           </Card>
 
@@ -290,14 +273,7 @@ const EmployeeDetailsPage = () => {
               <CardDescription>Contact information for emergencies</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Name</span>
-                <span className="font-medium">{employee.emergencyContactName || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Relation</span>
-                <span className="font-medium">{employee.emergencyContactRelation || 'N/A'}</span>
-              </div>
+              
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Phone</span>
                 <span className="font-medium">{employee.emergencyContactNumber || 'N/A'}</span>
@@ -326,30 +302,12 @@ const EmployeeDetailsPage = () => {
                 <h4 className="text-sm font-medium text-muted-foreground">Bank Name</h4>
                 <p className="font-medium">{employee.bankName || 'N/A'}</p>
               </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">Branch</h4>
-                <p className="font-medium">{employee.bankBranch || 'N/A'}</p>
-              </div>
+              
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground">Account Number</h4>
                 <p className="font-medium">{employee.accountNumber || 'N/A'}</p>
               </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">Account Type</h4>
-                <p className="font-medium">{employee.accountType || 'N/A'}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">Routing Number</h4>
-                <p className="font-medium">{employee.routingNumber || 'N/A'}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">SWIFT Code</h4>
-                <p className="font-medium">{employee.swiftCode || 'N/A'}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">IBAN Number</h4>
-                <p className="font-medium">{employee.ibanNumber || 'N/A'}</p>
-              </div>
+              
             </CardContent>
           </Card>
         </motion.div>

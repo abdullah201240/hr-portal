@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { 
   Users, 
@@ -15,12 +14,8 @@ import {
   Shield, 
   User, 
   Mail,
-  Briefcase,
-  MapPin,
-  CreditCard,
-  Building
 } from 'lucide-react';
-import { employeeApi } from '@/lib/api';
+import { employeeApi, companyDepartmentApi, companyDesignationApi } from '@/lib/api';
 import { Employee, EmployeeFormData } from '@/types/employee';
 
 interface EmployeeFormProps {
@@ -40,51 +35,49 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
     gender: employee?.gender || '',
     bloodGroup: employee?.bloodGroup || '',
     companyId: employee?.companyId || parseInt(localStorage.getItem('companyId') || '0'),
-    sisterConcernId: employee?.sisterConcernId || undefined,
-    photo: employee?.photo || '',
-    nid: employee?.nid || '',
-    nidPhoto: employee?.nidPhoto || '',
-    tinNumber: employee?.tinNumber || '',
     designation: employee?.designation || '',
     department: employee?.department || '',
     maritalStatus: employee?.maritalStatus || '',
-    spouseName: employee?.spouseName || '',
-    spouseNid: employee?.spouseNid || '',
-    spouseNidPhoto: employee?.spouseNidPhoto || '',
-    marriageCertificate: employee?.marriageCertificate || '',
     currentAddress: employee?.currentAddress || '',
-    permanentAddress: employee?.permanentAddress || '',
     joinDate: employee?.joinDate || '',
     salary: employee?.salary || '',
     status: employee?.status || 'active',
     employeeType: employee?.employeeType || '',
-    isFreedomFighter: employee?.isFreedomFighter || false,
-    freedomFighterDoc: employee?.freedomFighterDoc || '',
-    isThirdGender: employee?.isThirdGender || false,
-    thirdGenderDoc: employee?.thirdGenderDoc || '',
-    hasPF: employee?.hasPF || false,
-    nameBangla: employee?.nameBangla || '',
-    fatherName: employee?.fatherName || '',
-    fatherNameBangla: employee?.fatherNameBangla || '',
-    motherName: employee?.motherName || '',
-    motherNameBangla: employee?.motherNameBangla || '',
-    religion: employee?.religion || '',
     personalMobile: employee?.personalMobile || '',
-    personalEmail: employee?.personalEmail || '',
-    emergencyContactName: employee?.emergencyContactName || '',
-    emergencyContactRelation: employee?.emergencyContactRelation || '',
     emergencyContactNumber: employee?.emergencyContactNumber || '',
     bankName: employee?.bankName || '',
-    bankBranch: employee?.bankBranch || '',
     accountNumber: employee?.accountNumber || '',
-    accountType: employee?.accountType || '',
-    routingNumber: employee?.routingNumber || '',
-    swiftCode: employee?.swiftCode || '',
-    ibanNumber: employee?.ibanNumber || '',
-    bankStatement: employee?.bankStatement || '',
   });
 
   const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [designations, setDesignations] = useState<any[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(true); // Loading state for options
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const [deptResponse, desigResponse] = await Promise.all([
+          companyDepartmentApi.getAllDepartments(),
+          companyDesignationApi.getAllDesignations()
+        ]);
+        
+        if (deptResponse.success) {
+          setDepartments(deptResponse.data || []);
+        }
+        if (desigResponse.success) {
+          setDesignations(desigResponse.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching departments/designations:', error);
+        toast.error('Failed to load departments and designations');
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+
+    fetchOptions();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -131,22 +124,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Profile Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-4 flex flex-col items-center justify-center p-8 bg-emerald-500/5 rounded-2xl border border-emerald-500/10 border-dashed">
-          <div className="relative group">
-            <div className="h-40 w-40 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white text-5xl font-bold shadow-2xl shadow-emerald-500/20 mb-4 overflow-hidden border-4 border-white/50">
-              {formData.name ? formData.name.charAt(0).toUpperCase() : <Users className="h-16 w-16" />}
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-              <Plus className="h-8 w-8 text-white" />
-            </div>
-          </div>
-          <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Click to upload photo</p>
-          <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</p>
-        </div>
-
-        <div className="lg:col-span-8 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="employeeId" className="text-sm font-semibold flex items-center gap-2">
@@ -223,23 +202,33 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="designation" className="text-sm font-semibold">Designation</Label>
-            <Input
-              id="designation"
-              name="designation"
-              value={formData.designation}
-              onChange={handleChange}
-              className="h-11 glass border-border focus:ring-emerald-500/50"
-            />
+            <Select value={formData.designation} onValueChange={(value) => handleSelectChange('designation', value)}>
+              <SelectTrigger className="h-11 glass border-border" disabled={loadingOptions}>
+                <SelectValue placeholder={loadingOptions ? "Loading designations..." : "Select designation"} />
+              </SelectTrigger>
+              <SelectContent className="glass border-border max-h-60">
+                {designations.map((desig) => (
+                  <SelectItem key={desig.id} value={desig.name || desig.id?.toString()}>
+                    {desig.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="department" className="text-sm font-semibold">Department</Label>
-            <Input
-              id="department"
-              name="department"
-              value={formData.department}
-              onChange={handleChange}
-              className="h-11 glass border-border focus:ring-emerald-500/50"
-            />
+            <Select value={formData.department} onValueChange={(value) => handleSelectChange('department', value)}>
+              <SelectTrigger className="h-11 glass border-border" disabled={loadingOptions}>
+                <SelectValue placeholder={loadingOptions ? "Loading departments..." : "Select department"} />
+              </SelectTrigger>
+              <SelectContent className="glass border-border max-h-60">
+                {departments.map((dept) => (
+                  <SelectItem key={dept.id} value={dept.name || dept.id?.toString()}>
+                    {dept.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="joinDate" className="text-sm font-semibold">Join Date</Label>
@@ -262,6 +251,21 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
               className="h-11 glass border-border focus:ring-emerald-500/50"
             />
           </div>
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold">Employee Type</Label>
+            <Select value={formData.employeeType} onValueChange={(value) => handleSelectChange('employeeType', value)}>
+              <SelectTrigger className="h-11 glass border-border">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent className="glass border-border">
+                <SelectItem value="full-time">Full-time</SelectItem>
+                <SelectItem value="part-time">Part-time</SelectItem>
+                <SelectItem value="contract">Contract</SelectItem>
+                <SelectItem value="intern">Intern</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
         </div>
       </div>
 
@@ -327,26 +331,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
           <p className="text-sm text-muted-foreground">National identity and marital status.</p>
         </div>
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="nid" className="text-sm font-semibold">NID Number</Label>
-            <Input
-              id="nid"
-              name="nid"
-              value={formData.nid}
-              onChange={handleChange}
-              className="h-11 glass border-border focus:ring-emerald-500/50"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tinNumber" className="text-sm font-semibold">TIN Number</Label>
-            <Input
-              id="tinNumber"
-              name="tinNumber"
-              value={formData.tinNumber}
-              onChange={handleChange}
-              className="h-11 glass border-border focus:ring-emerald-500/50"
-            />
-          </div>
+
           <div className="space-y-2">
             <Label className="text-sm font-semibold">Marital Status</Label>
             <Select value={formData.maritalStatus} onValueChange={(value) => handleSelectChange('maritalStatus', value)}>
@@ -361,14 +346,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center space-x-2 pt-8">
-            <Switch
-              id="isFreedomFighter"
-              checked={formData.isFreedomFighter}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isFreedomFighter: checked }))}
-            />
-            <Label htmlFor="isFreedomFighter">Freedom Fighter</Label>
-          </div>
+
         </div>
       </div>
 
@@ -439,26 +417,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
               className="h-11 glass border-border focus:ring-emerald-500/50"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="bankBranch" className="text-sm font-semibold">Branch Name</Label>
-            <Input
-              id="bankBranch"
-              name="bankBranch"
-              value={formData.bankBranch}
-              onChange={handleChange}
-              className="h-11 glass border-border focus:ring-emerald-500/50"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="routingNumber" className="text-sm font-semibold">Routing Number</Label>
-            <Input
-              id="routingNumber"
-              name="routingNumber"
-              value={formData.routingNumber}
-              onChange={handleChange}
-              className="h-11 glass border-border focus:ring-emerald-500/50"
-            />
-          </div>
+
         </div>
       </div>
 

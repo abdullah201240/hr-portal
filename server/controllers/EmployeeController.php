@@ -161,8 +161,15 @@ class EmployeeController
                 echo json_encode(['success' => false, 'message' => 'Failed to create employee']);
             }
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Error creating employee: ' . $e->getMessage()]);
+            $errorMessage = $e->getMessage();
+            // Check if this is a validation error (starts with '{')
+            if (substr($errorMessage, 0, 1) === '{') {
+                http_response_code(422);
+                echo json_encode(['success' => false, 'errors' => json_decode($errorMessage, true)]);
+            } else {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Error creating employee: ' . $errorMessage]);
+            }
         }
     }
 

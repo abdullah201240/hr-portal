@@ -63,105 +63,52 @@ class Employee extends Model
             $errors['employeeType'] = 'Invalid employee type';
         }
 
-        if (!empty($data['religion']) && !in_array($data['religion'], ['Islam', 'Hinduism', 'Christianity', 'Buddhism', 'Other'])) {
-            $errors['religion'] = 'Invalid religion';
-        }
-
         return $errors;
     }
 
     public function create($data)
     {
-        // Handle file uploads if needed
-        if (isset($data['photo'])) {
-            $data['photo'] = $this->handleFileUpload($data['photo'], 'photos');
+        // Validate required fields for creation
+        if (empty($data['password'])) {
+            $creationErrors = ['password' => 'Password is required for creating an employee'];
+            throw new Exception(json_encode($creationErrors));
         }
-        if (isset($data['nidPhoto'])) {
-            $data['nidPhoto'] = $this->handleFileUpload($data['nidPhoto'], 'nid_photos');
-        }
-        if (isset($data['spouseNidPhoto'])) {
-            $data['spouseNidPhoto'] = $this->handleFileUpload($data['spouseNidPhoto'], 'spouse_nid_photos');
-        }
-        if (isset($data['marriageCertificate'])) {
-            $data['marriageCertificate'] = $this->handleFileUpload($data['marriageCertificate'], 'marriage_certificates');
-        }
-        if (isset($data['freedomFighterDoc'])) {
-            $data['freedomFighterDoc'] = $this->handleFileUpload($data['freedomFighterDoc'], 'freedom_fighter_docs');
-        }
-        if (isset($data['thirdGenderDoc'])) {
-            $data['thirdGenderDoc'] = $this->handleFileUpload($data['thirdGenderDoc'], 'third_gender_docs');
-        }
-        if (isset($data['bankStatement'])) {
-            $data['bankStatement'] = $this->handleFileUpload($data['bankStatement'], 'bank_statements');
-        }
-
+        
         $stmt = $this->db->prepare("INSERT INTO {$this->table} (
             employeeId, name, email, password, phone, dob, gender, bloodGroup, 
-            companyId, sisterConcernId, photo, nid, nidPhoto, tinNumber, 
-            designation, department, maritalStatus, spouseName, spouseNid, 
-            spouseNidPhoto, marriageCertificate, currentAddress, permanentAddress, 
-            joinDate, salary, status, employeeType, employeeTypeChangeDate, 
-            isFreedomFighter, freedomFighterDoc, isThirdGender, thirdGenderDoc, 
-            hasPF, nameBangla, fatherName, fatherNameBangla, motherName, 
-            motherNameBangla, religion, personalMobile, personalEmail, 
-            emergencyContactName, emergencyContactRelation, emergencyContactNumber, 
-            bankName, bankBranch, accountNumber, accountType, routingNumber, 
-            swiftCode, ibanNumber, bankStatement
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            companyId, designation, department, maritalStatus, currentAddress, 
+            joinDate, salary, status, employeeType, personalMobile, 
+            emergencyContactNumber, bankName, accountNumber
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        
+        // Hash the password if provided, otherwise set a default/empty value
+        $password = $data['password'] ?? '';
+        if (!empty($password)) {
+            $password = password_hash($password, PASSWORD_DEFAULT);
+        }
         
         $result = $stmt->execute([
             $data['employeeId'],
             $data['name'],
             $data['email'],
-            $data['password'] ?? '',
+            $password,
             $data['phone'] ?? '',
             $data['dob'] ?? null,
             $data['gender'] ?? '',
             $data['bloodGroup'] ?? '',
             $data['companyId'],
-            $data['sisterConcernId'] ?? null,
-            $data['photo'] ?? null,
-            $data['nid'] ?? null,
-            $data['nidPhoto'] ?? null,
-            $data['tinNumber'] ?? null,
             $data['designation'] ?? null,
             $data['department'] ?? null,
             $data['maritalStatus'] ?? null,
-            $data['spouseName'] ?? null,
-            $data['spouseNid'] ?? null,
-            $data['spouseNidPhoto'] ?? null,
-            $data['marriageCertificate'] ?? null,
             $data['currentAddress'] ?? null,
-            $data['permanentAddress'] ?? null,
             $data['joinDate'] ?? null,
             $data['salary'] ?? null,
             $data['status'] ?? 'active',
             $data['employeeType'] ?? null,
-            $data['employeeTypeChangeDate'] ?? null,
-            $data['isFreedomFighter'] ?? false,
-            $data['freedomFighterDoc'] ?? null,
-            $data['isThirdGender'] ?? false,
-            $data['thirdGenderDoc'] ?? null,
-            $data['hasPF'] ?? false,
-            $data['nameBangla'] ?? null,
-            $data['fatherName'] ?? null,
-            $data['fatherNameBangla'] ?? null,
-            $data['motherName'] ?? null,
-            $data['motherNameBangla'] ?? null,
-            $data['religion'] ?? null,
             $data['personalMobile'] ?? null,
-            $data['personalEmail'] ?? null,
-            $data['emergencyContactName'] ?? null,
-            $data['emergencyContactRelation'] ?? null,
             $data['emergencyContactNumber'] ?? null,
             $data['bankName'] ?? null,
-            $data['bankBranch'] ?? null,
-            $data['accountNumber'] ?? null,
-            $data['accountType'] ?? null,
-            $data['routingNumber'] ?? null,
-            $data['swiftCode'] ?? null,
-            $data['ibanNumber'] ?? null,
-            $data['bankStatement'] ?? null
+            $data['accountNumber'] ?? null
         ]);
 
         if ($result) {
@@ -172,36 +119,26 @@ class Employee extends Model
 
     public function update($id, $data)
     {
-        // Handle file uploads if needed
-        if (isset($data['photo'])) {
-            $data['photo'] = $this->handleFileUpload($data['photo'], 'photos');
-        }
-        if (isset($data['nidPhoto'])) {
-            $data['nidPhoto'] = $this->handleFileUpload($data['nidPhoto'], 'nid_photos');
-        }
-        if (isset($data['spouseNidPhoto'])) {
-            $data['spouseNidPhoto'] = $this->handleFileUpload($data['spouseNidPhoto'], 'spouse_nid_photos');
-        }
-        if (isset($data['marriageCertificate'])) {
-            $data['marriageCertificate'] = $this->handleFileUpload($data['marriageCertificate'], 'marriage_certificates');
-        }
-        if (isset($data['freedomFighterDoc'])) {
-            $data['freedomFighterDoc'] = $this->handleFileUpload($data['freedomFighterDoc'], 'freedom_fighter_docs');
-        }
-        if (isset($data['thirdGenderDoc'])) {
-            $data['thirdGenderDoc'] = $this->handleFileUpload($data['thirdGenderDoc'], 'third_gender_docs');
-        }
-        if (isset($data['bankStatement'])) {
-            $data['bankStatement'] = $this->handleFileUpload($data['bankStatement'], 'bank_statements');
-        }
-
         $fields = [];
         $values = [];
         
         foreach ($data as $key => $value) {
             if (!in_array($key, ['id', 'created_at', 'updated_at'])) {
-                $fields[] = "$key = ?";
-                $values[] = $value;
+                // Only include known fields in the update
+                $allowedFields = [
+                    'employeeId', 'name', 'email', 'password', 'phone', 'dob', 'gender', 'bloodGroup',
+                    'companyId', 'designation', 'department', 'maritalStatus',
+                    'currentAddress', 'joinDate', 'salary', 'status', 'employeeType',
+                    'personalMobile', 'emergencyContactNumber', 'bankName', 'accountNumber'
+                ];
+                if (in_array($key, $allowedFields)) {
+                    // Hash the password if it's being updated
+                    if ($key === 'password' && !empty($value)) {
+                        $value = password_hash($value, PASSWORD_DEFAULT);
+                    }
+                    $fields[] = "$key = ?";
+                    $values[] = $value;
+                }
             }
         }
         
