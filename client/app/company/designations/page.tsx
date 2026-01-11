@@ -314,24 +314,47 @@ export default function DesignationsPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          whileHover={{ y: -5 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
         >
           <Card className="relative glass border-emerald-500/20 overflow-hidden group hover:border-emerald-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20">
+            {/* 3D Background Graphics */}
             <div className="absolute inset-0 opacity-30">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-emerald-500/20 rounded-full blur-xl animate-pulse" />
             </div>
+
             <CardContent className="relative p-4">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex-1">
                   <p className="text-xs font-medium text-foreground/70 mb-1.5">Total Designations</p>
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                  <motion.h3
+                    className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent"
+                    animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  >
                     {Array.isArray(designations) ? designations.length : 0}
-                  </h3>
+                  </motion.h3>
                 </div>
-                <div className="bg-gradient-to-br from-emerald-500/30 to-teal-500/30 p-3 rounded-xl backdrop-blur-sm border border-emerald-400/20">
-                  <Briefcase className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                </div>
+                <motion.div
+                  className="relative"
+                  animate={{ 
+                    rotate: [0, 5, 0, -5, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 4, 
+                    repeat: Infinity, 
+                    ease: "easeInOut",
+                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
+                  <div className="relative bg-gradient-to-br from-emerald-500/30 to-teal-500/30 p-3 rounded-xl backdrop-blur-sm border border-emerald-400/20">
+                    <Briefcase className="h-6 w-6 text-emerald-600 dark:text-emerald-400 drop-shadow-lg" />
+                  </div>
+                </motion.div>
               </div>
             </CardContent>
           </Card>
@@ -340,24 +363,47 @@ export default function DesignationsPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          whileHover={{ y: -5 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
         >
           <Card className="relative glass border-green-500/20 overflow-hidden group hover:border-green-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-green-500/20">
+            {/* 3D Background Graphics */}
             <div className="absolute inset-0 opacity-30">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-green-400 to-emerald-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-green-500/20 rounded-full blur-xl animate-pulse" />
             </div>
+
             <CardContent className="relative p-4">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex-1">
                   <p className="text-xs font-medium text-foreground/70 mb-1.5">Active</p>
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                  <motion.h3
+                    className="text-2xl font-bold bg-gradient-to-r from-green-400 via-emerald-400 to-green-400 bg-clip-text text-transparent"
+                    animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  >
                     {Array.isArray(designations) ? designations.filter(d => d.status === 'active').length : 0}
-                  </h3>
+                  </motion.h3>
                 </div>
-                <div className="bg-gradient-to-br from-green-500/30 to-emerald-500/30 p-3 rounded-xl backdrop-blur-sm border border-green-400/20">
-                  <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
-                </div>
+                <motion.div
+                  className="relative"
+                  animate={{ 
+                    rotate: [0, 5, 0, -5, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 4, 
+                    repeat: Infinity, 
+                    ease: "easeInOut",
+                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
+                  <div className="relative bg-gradient-to-br from-green-500/30 to-emerald-500/30 p-3 rounded-xl backdrop-blur-sm border border-green-400/20">
+                    <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400 drop-shadow-lg" />
+                  </div>
+                </motion.div>
               </div>
             </CardContent>
           </Card>
@@ -366,24 +412,47 @@ export default function DesignationsPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          whileHover={{ y: -5 }}
+          transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
         >
           <Card className="relative glass border-blue-500/20 overflow-hidden group hover:border-blue-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20">
+            {/* 3D Background Graphics */}
             <div className="absolute inset-0 opacity-30">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-400 to-cyan-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-blue-500/20 rounded-full blur-xl animate-pulse" />
             </div>
+
             <CardContent className="relative p-4">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex-1">
                   <p className="text-xs font-medium text-foreground/70 mb-1.5">Departments</p>
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                  <motion.h3
+                    className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent"
+                    animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  >
                     {Array.isArray(departments) ? departments.length : 0}
-                  </h3>
+                  </motion.h3>
                 </div>
-                <div className="bg-gradient-to-br from-blue-500/30 to-cyan-500/30 p-3 rounded-xl backdrop-blur-sm border border-blue-400/20">
-                  <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
+                <motion.div
+                  className="relative"
+                  animate={{ 
+                    rotate: [0, 5, 0, -5, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 4, 
+                    repeat: Infinity, 
+                    ease: "easeInOut",
+                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
+                  <div className="relative bg-gradient-to-br from-blue-500/30 to-cyan-500/30 p-3 rounded-xl backdrop-blur-sm border border-blue-400/20">
+                    <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400 drop-shadow-lg" />
+                  </div>
+                </motion.div>
               </div>
             </CardContent>
           </Card>
