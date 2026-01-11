@@ -6,13 +6,10 @@ import {
   LayoutDashboard,
   Building2,
   Settings,
-  LogOut,
   ChevronRight,
   ShieldCheck,
   BarChart3,
   Users2,
-  User,
-  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,11 +20,6 @@ const navItems = [
     title: 'Dashboard',
     href: '/admin',
     icon: LayoutDashboard,
-  },
-  {
-    title: 'Profile',
-    href: '/admin/profile',
-    icon: User,
   },
   {
     title: 'Companies',
@@ -55,29 +47,6 @@ const navItems = [
     icon: Settings,
   },
 ];
-
-function LogoutButton({ isCollapsed }: { isCollapsed?: boolean }) {
-  const { logout } = useAdminAuth();
-
-  const handleLogout = () => {
-    logout();
-  };
-
-  return (
-    <button
-      onClick={handleLogout}
-      className={cn(
-        "flex items-center gap-3 px-3 py-3 w-full rounded-xl text-muted-foreground hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 group",
-        isCollapsed && "justify-center"
-      )}
-      title={isCollapsed ? "Sign Out" : undefined}
-    >
-      <LogOut className="size-5 group-hover:rotate-12 transition-transform duration-200" />
-      {!isCollapsed && <span className="font-medium">Sign Out</span>}
-    </button>
-  );
-}
-
 type AdminNavProps = {
   toggleSidebar?: () => void;
   isCollapsed?: boolean;
@@ -270,15 +239,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="relative p-4 border-t border-emerald-500/10 space-y-4 bg-emerald-500/5">
-        <LogoutButton isCollapsed={isCollapsed} />
-        {!isCollapsed && (
-          <div className="flex items-center justify-center">
-            <span className="text-[10px] text-muted-foreground/60 font-medium tracking-tight">Version 2.0.1 • HR Portal Admin</span>
-          </div>
-        )}
-      </div>
+     
     </div>
   );
 }
