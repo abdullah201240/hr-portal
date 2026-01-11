@@ -47,7 +47,7 @@ export default function CompanyLoginPage() {
         toast.success('Welcome back! Redirecting to dashboard...');
         
         // Redirect to company dashboard after successful login
-        router.push('/admin/companies'); // Redirect to company dashboard after login
+        router.push('/company'); // Redirect to company dashboard after login
       }
     } catch (err: any) {
       toast.error(err.message || 'An error occurred during login');
