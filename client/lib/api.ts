@@ -157,3 +157,75 @@ export const adminApi = {
   // Get dashboard statistics
   getDashboardStats: () => makeRequest('/dashboard/stats'),
 };
+
+// Department API functions
+export const departmentApi = {
+  // Get all departments
+  getAllDepartments: () => makeRequest('/departments'),
+  
+  // Get a specific department
+  getDepartmentById: (id: number) => makeRequest(`/departments/${id}`),
+  
+  // Create a new department
+  createDepartment: (data: any) => makeRequest('/departments', { method: 'POST', body: data }),
+  
+  // Update a department
+  updateDepartment: (id: number, data: any) => makeRequest(`/departments/${id}`, { method: 'PUT', body: data }),
+  
+  // Delete a department
+  deleteDepartment: (id: number) => makeRequest(`/departments/${id}`, { method: 'DELETE' }),
+};
+
+// Designation API functions
+export const designationApi = {
+  // Get all designations
+  getAllDesignations: () => makeRequest('/designations'),
+  
+  // Get a specific designation
+  getDesignationById: (id: number) => makeRequest(`/designations/${id}`),
+  
+  // Create a new designation
+  createDesignation: (data: any) => makeRequest('/designations', { method: 'POST', body: data }),
+  
+  // Update a designation
+  updateDesignation: (id: number, data: any) => makeRequest(`/designations/${id}`, { method: 'PUT', body: data }),
+  
+  // Delete a designation
+  deleteDesignation: (id: number) => makeRequest(`/designations/${id}`, { method: 'DELETE' }),
+};
+
+// Company Department API functions
+export const companyDepartmentApi = {
+  // Get all departments for the current company
+  getAllDepartments: () => makeRequest('/departments'),
+  
+  // Get a specific department
+  getDepartmentById: (id: number) => makeRequest(`/departments/${id}`),
+  
+  // Create a new department
+  createDepartment: (data: any) => makeRequest('/departments', { method: 'POST', body: data }),
+  
+  // Update a department
+  updateDepartment: (id: number, data: any) => makeRequest(`/departments/${id}`, { method: 'PUT', body: data }),
+  
+  // Delete a department
+  deleteDepartment: (id: number) => makeRequest(`/departments/${id}`, { method: 'DELETE' }),
+};
+
+// Company Designation API functions
+export const companyDesignationApi = {
+  // Get all designations for the current company
+  getAllDesignations: () => makeRequest('/designations'),
+  
+  // Get a specific designation
+  getDesignationById: (id: number) => makeRequest(`/designations/${id}`),
+  
+  // Create a new designation
+  createDesignation: (data: any) => makeRequest('/designations', { method: 'POST', body: data }),
+  
+  // Update a designation
+  updateDesignation: (id: number, data: any) => makeRequest(`/designations/${id}`, { method: 'PUT', body: data }),
+  
+  // Delete a designation
+  deleteDesignation: (id: number) => makeRequest(`/designations/${id}`, { method: 'DELETE' }),
+};

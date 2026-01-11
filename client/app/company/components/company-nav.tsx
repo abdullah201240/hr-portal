@@ -26,6 +26,16 @@ const navItems = [
     icon: Building2,
   },
   {
+    title: 'Departments',
+    href: '/company/departments',
+    icon: Building2,
+  },
+  {
+    title: 'Designations',
+    href: '/company/designations',
+    icon: Users,
+  },
+  {
     title: 'Employees',
     href: '/company/employees',
     icon: Users,

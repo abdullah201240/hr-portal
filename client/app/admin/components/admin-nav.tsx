@@ -9,7 +9,7 @@ import {
   ChevronRight,
   ShieldCheck,
   BarChart3,
-  Users2,
+  Users2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';

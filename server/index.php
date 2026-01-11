@@ -4,6 +4,8 @@
 require_once __DIR__ . '/helpers/functions.php';
 require_once __DIR__ . '/controllers/CompanyController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
+require_once __DIR__ . '/controllers/DepartmentController.php';
+require_once __DIR__ . '/controllers/DesignationController.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -37,6 +39,10 @@ $routes = [
     '@/api/admins/logout/?$@' => ['POST' => 'logout'],
     '@/api/admins/?$@' => ['GET' => 'index', 'POST' => 'store'],
     '@/api/admins/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/departments/?$@' => ['GET' => 'index', 'POST' => 'store'],
+    '@/api/departments/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/designations/?$@' => ['GET' => 'index', 'POST' => 'store'],
+    '@/api/designations/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/dashboard/stats/?$@' => ['GET' => 'getDashboardStats']
 ];
 
@@ -47,6 +53,51 @@ foreach ($routes as $pattern => $actions) {
         // Determine which controller to use based on the route
         if (strpos($path, '/api/admins') !== false || strpos($path, '/api/dashboard') !== false) {
             $controller = new AdminController();
+        } elseif (strpos($path, '/api/departments') !== false || strpos($path, '/api/designations') !== false) {
+            // Check the authorization header to determine if it's an admin or company request
+            $authHeader = null;
+            
+            if (function_exists('getallheaders')) {
+                $headers = getallheaders();
+                foreach ($headers as $name => $value) {
+                    if (strtolower($name) === 'authorization') {
+                        $authHeader = $value;
+                        break;
+                    }
+                }
+            }
+            
+            if (!$authHeader && isset($_SERVER['HTTP_AUTHORIZATION'])) {
+                $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+            }
+            
+            if ($authHeader && preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
+                $token = trim($matches[1]);
+                
+                // Check if token is for admin (starts with 'admin_') or company (starts with 'company_')
+                if (preg_match('/^admin_/', $token)) {
+                    $controller = new AdminController();
+                } else {
+                    // For departments and designations, we'll use the specialized controllers
+                    // which handle both admin and company auth internally
+                    if (strpos($path, '/api/departments') !== false) {
+                        $controller = new DepartmentController();
+                    } elseif (strpos($path, '/api/designations') !== false) {
+                        $controller = new DesignationController();
+                    } else {
+                        $controller = new CompanyController();
+                    }
+                }
+            } else {
+                // Default to CompanyController for departments/designations if no auth header
+                if (strpos($path, '/api/departments') !== false) {
+                    $controller = new DepartmentController();
+                } elseif (strpos($path, '/api/designations') !== false) {
+                    $controller = new DesignationController();
+                } else {
+                    $controller = new CompanyController();
+                }
+            }
         } else {
             $controller = new CompanyController();
         }
