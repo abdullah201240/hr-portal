@@ -134,13 +134,13 @@ export default function AdminLoginPage() {
                                 </div>
                             </div>
                         </CardContent>
-                        <CardFooter className="flex flex-col space-y-4">
+                        <CardFooter className="flex flex-col space-y-4 mt-8">
                             <Button
                                 type="submit"
                                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-6 text-lg group"
                                 disabled={loading}
                             >
-                                {loading ? 'Signing In...' : 'Enter Dashboard'}
+                                {loading ? 'Signing In...' : 'Login'}
                                 <ArrowRight className="ml-2 size-5 group-hover:translate-x-1 transition-transform" />
                             </Button>
                             <div className="text-center">

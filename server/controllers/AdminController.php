@@ -175,27 +175,54 @@ class AdminController
     {
         try {
             // Extract token from Authorization header
-            $headers = getallheaders();
-            $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : null;
+            $authHeader = null;
             
-            if (!$authHeader || !preg_match('/^Bearer\s+(.+)$/i', $authHeader, $matches)) {
+            // Method 1: Standard getallheaders() function
+            if (function_exists('getallheaders')) {
+                $headers = getallheaders();
+                // Check for both Authorization and authorization (case-insensitive)
+                foreach ($headers as $name => $value) {
+                    if (strtolower($name) === 'authorization') {
+                        $authHeader = $value;
+                        break;
+                    }
+                }
+            }
+            
+            // Method 2: Check for Authorization header in $_SERVER
+            if (!$authHeader) {
+                if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+                    $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+                } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+                    $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+                }
+            }
+            
+            error_log("Auth Header found: " . ($authHeader ? "Yes" : "No"));
+
+            if (!$authHeader || !preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
+                error_log("Authorization token missing or invalid format: " . $authHeader);
                 jsonResponse(['success' => false, 'message' => 'Authorization token required'], 401);
             }
             
-            $token = $matches[1];
+            $token = trim($matches[1]);
+            error_log("Processing token: " . $token);
             
             // Validate the token and extract admin ID
             // In our simple token system: admin_{id}_{timestamp}
-            if (!preg_match('/^admin_(\d+)_\d+$/', $token, $tokenMatches)) {
-                jsonResponse(['success' => false, 'message' => 'Invalid token'], 401);
+            if (!preg_match('/^admin_(\d+)/', $token, $tokenMatches)) {
+                error_log("Token format invalid: " . $token);
+                jsonResponse(['success' => false, 'message' => 'Invalid token format'], 401);
             }
             
             $adminId = (int)$tokenMatches[1];
+            error_log("Extracted admin ID: " . $adminId);
             
             // Fetch admin by ID
             $admin = $this->admin->find($adminId);
             
             if (!$admin) {
+                error_log("Admin not found for ID: " . $adminId);
                 jsonResponse(['success' => false, 'message' => 'Admin not found'], 404);
             }
             
@@ -207,6 +234,7 @@ class AdminController
                 'data' => $admin
             ]);
         } catch (Exception $e) {
+            error_log("Error in getCurrentProfile: " . $e->getMessage());
             jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }

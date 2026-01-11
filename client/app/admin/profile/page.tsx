@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { adminApi } from '@/lib/api';
 import { toast } from 'sonner';
-import { Loader2, Save, User, Mail, KeyRound, ShieldCheck } from 'lucide-react';
+import { Loader2, User, Mail, KeyRound, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export default function ProfilePage() {
@@ -21,9 +20,13 @@ export default function ProfilePage() {
     status: ''
   });
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
   // Load admin profile data
+  useEffect(() => {
+        fetchProfile();
+  }, []); // Only run once on mount
+
+  // Update form data when adminProfile from context changes (e.g. after fetchProfile succeeds)
   useEffect(() => {
     if (adminProfile) {
       setFormData({
@@ -33,20 +36,19 @@ export default function ProfilePage() {
         status: adminProfile.status || ''
       });
       setLoading(false);
-    } else {
-      // Fetch admin profile if not in state
-      fetchProfile();
     }
   }, [adminProfile]);
 
   const fetchProfile = async () => {
     try {
-      setLoading(true);
+      // Don't set loading if we already have data to show (improves UX)
+      if (!adminProfile) setLoading(true);
       
-      // First try to get the profile from the API
-      try {
-        const profile = await adminApi.getCurrentAdminProfile();
-        
+      console.log('Attempting to fetch profile from API...');
+      const profile = await adminApi.getCurrentAdminProfile();
+      console.log('API response:', profile);
+      
+      if (profile.success && profile.data) {
         // Update the profile in localStorage and context
         setAdminProfile(profile.data);
         
@@ -56,26 +58,36 @@ export default function ProfilePage() {
           role: profile.data.role || '',
           status: profile.data.status || ''
         });
-      } catch (apiError) {
-        // If API fails, fallback to localStorage
-        console.warn('Failed to fetch profile from API, using localStorage:', apiError);
+      }
+    } catch (apiError: any) {
+      console.error('API call failed:', apiError);
+      
+      // Check if this is specifically an authentication error
+      const errorMessage = apiError?.message?.toLowerCase() || '';
+      const isAuthError = errorMessage.includes('401') || 
+                         errorMessage.includes('authorization') || 
+                         errorMessage.includes('token');
+      
+      if (isAuthError) {
+        console.log('Authentication error detected, session might be invalid');
+        // We don't redirect here, let the Layout's guard handle it if isAuthenticated becomes false
+        // or just let the user see the current local data if available
+      }
+      
+      // Fallback to local data if not already set
+      if (!adminProfile) {
         const storedProfile = localStorage.getItem('adminProfile');
         if (storedProfile) {
           const profile = JSON.parse(storedProfile);
-          setAdminProfile(profile); // Update context
+          setAdminProfile(profile);
           setFormData({
             name: profile.name || '',
             email: profile.email || '',
             role: profile.role || '',
             status: profile.status || ''
           });
-        } else {
-          toast.error('Profile data not found');
         }
       }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast.error('Failed to load profile data');
     } finally {
       setLoading(false);
     }
@@ -91,7 +103,6 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
     
     try {
       // Extract admin ID from the stored profile
@@ -121,18 +132,19 @@ export default function ProfilePage() {
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast.error(error.message || 'Failed to update profile');
-    } finally {
-      setSaving(false);
-    }
+    } 
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+        <span className="ml-2">Loading profile...</span>
       </div>
     );
   }
+
+  console.log('Rendering profile page with formData:', formData);
 
   return (
     <div className="space-y-6">
@@ -219,53 +231,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 mt-8">
-              {!isEditing ? (
-                <Button 
-                  type="button" 
-                  onClick={() => setIsEditing(true)}
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white"
-                >
-                  Edit Profile
-                </Button>
-              ) : (
-                <>
-                  <Button 
-                    type="submit" 
-                    disabled={saving}
-                    className="bg-emerald-500 hover:bg-emerald-600 text-white"
-                  >
-                    {saving ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Changes
-                      </>
-                    )}
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => {
-                      setIsEditing(false);
-                      // Reset form to original values
-                      setFormData({
-                        name: adminProfile?.name || '',
-                        email: adminProfile?.email || '',
-                        role: adminProfile?.role || '',
-                        status: adminProfile?.status || ''
-                      });
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </>
-              )}
-            </div>
+            
           </form>
         </CardContent>
       </Card>

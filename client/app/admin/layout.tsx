@@ -20,7 +20,9 @@ export default function AdminLayout({
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     useEffect(() => {
+        console.log('AdminLayout - Auth State:', { isLoading, isAuthenticated });
         if (!isLoading && !isAuthenticated) {
+            console.log('AdminLayout - Redirecting to login because not authenticated');
             router.push('/login/admin');
         }
     }, [isAuthenticated, isLoading, router]);

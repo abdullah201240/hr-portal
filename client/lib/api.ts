@@ -5,10 +5,11 @@ interface ApiRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: any;
   headers?: Record<string, string>;
+  skipRedirect?: boolean;  // Add option to skip automatic redirect
 }
 
 const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) => {
-  const { method = 'GET', body, headers = {} } = options;
+  const { method = 'GET', body, headers = {}, skipRedirect = false } = options;
   
   const config: RequestInit = {
     method,
@@ -31,10 +32,16 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
     if (!response.ok) {
-      if (response.status === 401 && !endpoint.includes('/login')) {
+      if (response.status === 401 && !endpoint.includes('/login') && !skipRedirect) {
         if (typeof window !== 'undefined') {
+          console.error(`401 Unauthorized for ${endpoint}. Redirecting to admin login.`);
           localStorage.removeItem('authToken');
-          window.location.href = '/login';
+          // If it's an admin endpoint, redirect to admin login
+          if (endpoint.includes('/admins')) {
+            window.location.href = '/login/admin';
+          } else {
+            window.location.href = '/login';
+          }
         }
       }
       
@@ -103,8 +110,8 @@ export const adminApi = {
     makeRequest('/admins/login', { method: 'POST', body: credentials }),
   
   // Logout an admin
-  logoutAdmin: () => makeRequest('/admins/logout', { method: 'POST' }),
+  logoutAdmin: () => makeRequest('/admins/logout', { method: 'POST', skipRedirect: true }),
   
-  // Get current admin profile
-  getCurrentAdminProfile: () => makeRequest('/admins/me'),
+  // Get current admin profile - skip redirect so profile page can handle auth errors
+  getCurrentAdminProfile: () => makeRequest('/admins/me', { skipRedirect: true }),
 };

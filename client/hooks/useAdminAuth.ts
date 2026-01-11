@@ -13,12 +13,14 @@ export const useAdminAuth = () => {
   useEffect(() => {
     // Check if user is authenticated by checking for token in localStorage
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    console.log('useAdminAuth - Token check:', token ? 'Token exists' : 'No token found');
     setIsAuthenticated(!!token);
     
     // Load admin profile if available in localStorage from login
     if (token) {
       try {
         const storedProfile = localStorage.getItem('adminProfile');
+        console.log('useAdminAuth - Profile check:', storedProfile ? 'Profile exists' : 'No profile found');
         if (storedProfile) {
           setAdminProfile(JSON.parse(storedProfile));
         }

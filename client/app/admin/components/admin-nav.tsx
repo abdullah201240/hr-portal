@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   BarChart3,
   Users2,
+  User,
   Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,11 @@ const navItems = [
     title: 'Dashboard',
     href: '/admin',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'Profile',
+    href: '/admin/profile',
+    icon: User,
   },
   {
     title: 'Companies',
@@ -37,11 +43,6 @@ const navItems = [
     title: 'Analytics',
     href: '/admin/analytics',
     icon: BarChart3,
-  },
-  {
-    title: 'Profile',
-    href: '/admin/profile',
-    icon: Users2,
   },
   {
     title: 'User Management',

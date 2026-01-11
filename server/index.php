@@ -49,11 +49,11 @@ foreach ($routes as $pattern => $actions) {
         if (isset($actions[$method])) {
             $action = $actions[$method];
             
-            if ($action === 'index' || $action === 'store' || $action === 'login') {
+            if (in_array($action, ['index', 'store', 'login', 'logout', 'getCurrentProfile'])) {
                 $controller->$action();
             } else {
                 // For show, update, delete - we need the ID from the route
-                $id = $matches[1];
+                $id = $matches[1] ?? null;
                 $controller->$action($id);
             }
         } else {
