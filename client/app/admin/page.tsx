@@ -85,6 +85,13 @@ export default function AdminDashboard() {
       trend: 'up',
       gradient: 'from-emerald-500 to-teal-500',
       bgGradient: 'from-emerald-500/10 to-teal-500/10',
+      colorClass: 'border-emerald-500/20 hover:border-emerald-500/40',
+      bgClass: 'from-emerald-400 to-teal-500',
+      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      iconBg: 'from-emerald-500/30 to-teal-500/30',
+      glowColor: 'from-emerald-400 to-teal-500',
+      glowBlur: 'blur-3xl',
+      pulseColor: 'bg-emerald-500/20'
     },
     {
       title: 'Active Companies',
@@ -95,6 +102,13 @@ export default function AdminDashboard() {
       trend: 'up',
       gradient: 'from-blue-500 to-cyan-500',
       bgGradient: 'from-blue-500/10 to-cyan-500/10',
+      colorClass: 'border-blue-500/20 hover:border-blue-500/40',
+      bgClass: 'from-blue-500 to-cyan-500',
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      iconBg: 'from-blue-500/30 to-cyan-500/30',
+      glowColor: 'from-blue-400 to-cyan-500',
+      glowBlur: 'blur-3xl',
+      pulseColor: 'bg-blue-500/20'
     },
     {
       title: 'Suspended Companies',
@@ -105,6 +119,13 @@ export default function AdminDashboard() {
       trend: 'down',
       gradient: 'from-amber-500 to-orange-500',
       bgGradient: 'from-amber-500/10 to-orange-500/10',
+      colorClass: 'border-amber-500/20 hover:border-amber-500/40',
+      bgClass: 'from-amber-500 to-orange-500',
+      iconColor: 'text-amber-600 dark:text-amber-400',
+      iconBg: 'from-amber-500/30 to-orange-500/30',
+      glowColor: 'from-amber-400 to-orange-500',
+      glowBlur: 'blur-3xl',
+      pulseColor: 'bg-amber-500/20'
     },
     {
       title: 'Total Admins',
@@ -115,6 +136,13 @@ export default function AdminDashboard() {
       trend: 'up',
       gradient: 'from-purple-500 to-pink-500',
       bgGradient: 'from-purple-500/10 to-pink-500/10',
+      colorClass: 'border-purple-500/20 hover:border-purple-500/40',
+      bgClass: 'from-purple-500 to-pink-500',
+      iconColor: 'text-purple-600 dark:text-purple-400',
+      iconBg: 'from-purple-500/30 to-pink-500/30',
+      glowColor: 'from-purple-400 to-pink-500',
+      glowBlur: 'blur-3xl',
+      pulseColor: 'bg-purple-500/20'
     },
   ];
 
@@ -159,37 +187,54 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground">Welcome back! Here's what's happening with your platform.</p>
       </motion.div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Stats Grid - Updated to match companies page style with color variants */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {statCards.map((stat, index) => (
           <motion.div
             key={stat.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: index * 0.1, type: "spring", stiffness: 200 }}
+            whileHover={{ y: -5, transition: { duration: 0.2 } }}
           >
-            <Card className="glass hover-lift border-white/10 overflow-hidden group cursor-pointer">
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <div className={`p-2 rounded-lg bg-gradient-to-br ${stat.gradient}`}>
-                  <stat.icon className="h-4 w-4 text-white" />
-                </div>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-3xl font-bold mb-1">{stat.value}</div>
-                <div className="flex items-center text-xs">
-                  {stat.trend === 'up' ? (
-                    <ArrowUpRight className="h-3 w-3 text-emerald-400 mr-1" />
-                  ) : (
-                    <ArrowDownRight className="h-3 w-3 text-red-400 mr-1" />
-                  )}
-                  <span className={stat.trend === 'up' ? 'text-emerald-400' : 'text-red-400'}>
-                    {stat.change}
-                  </span>
-                  <span className="text-muted-foreground ml-1">{stat.changeLabel}</span>
+            <Card className={`relative glass ${stat.colorClass} overflow-hidden group hover:shadow-2xl transition-all duration-500`}>
+              {/* 3D Background Graphics with color variants */}
+              <div className="absolute inset-0 opacity-30">
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.glowColor} ${stat.glowBlur} group-hover:scale-150 transition-transform duration-700`} />
+                <div className={`absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr ${stat.glowColor.replace('to-', 'to-')} rounded-full ${stat.glowBlur.replace('blur-', 'blur-2')} group-hover:scale-125 transition-transform duration-700`} />
+                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 ${stat.pulseColor} rounded-full blur-xl animate-pulse`} />
+              </div>
+
+              <CardContent className="relative p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-foreground/70 mb-1.5">{stat.title}</p>
+                    <motion.h3
+                      className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent"
+                      animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    >
+                      {stat.value}
+                    </motion.h3>
+                  </div>
+                  <motion.div
+                    className="relative"
+                    animate={{ 
+                      rotate: [0, 5, 0, -5, 0],
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{ 
+                      duration: 4, 
+                      repeat: Infinity, 
+                      ease: "easeInOut",
+                      scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                    }}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgClass} rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity`} />
+                    <div className={`relative bg-gradient-to-br ${stat.iconBg} p-3 rounded-xl backdrop-blur-sm border border-${stat.iconColor.split('-')[1]}-400/20`}>
+                      <stat.icon className={`h-6 w-6 ${stat.iconColor} drop-shadow-lg`} />
+                    </div>
+                  </motion.div>
                 </div>
               </CardContent>
             </Card>
