@@ -102,7 +102,10 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
 // Company API functions
 export const companyApi = {
   // Get all companies
-  getAllCompanies: () => makeRequest('/companies'),
+  getAllCompanies: (params?: URLSearchParams) => {
+    const url = params ? `/companies?${params.toString()}` : '/companies';
+    return makeRequest(url);
+  },
   
   // Get a specific company
   getCompanyById: (id: number) => makeRequest(`/companies/${id}`),
@@ -161,7 +164,10 @@ export const adminApi = {
 // Department API functions
 export const departmentApi = {
   // Get all departments
-  getAllDepartments: () => makeRequest('/departments'),
+  getAllDepartments: (params?: URLSearchParams) => {
+    const url = params ? `/departments?${params.toString()}` : '/departments';
+    return makeRequest(url);
+  },
   
   // Get a specific department
   getDepartmentById: (id: number) => makeRequest(`/departments/${id}`),
@@ -179,7 +185,10 @@ export const departmentApi = {
 // Designation API functions
 export const designationApi = {
   // Get all designations
-  getAllDesignations: () => makeRequest('/designations'),
+  getAllDesignations: (params?: URLSearchParams) => {
+    const url = params ? `/designations?${params.toString()}` : '/designations';
+    return makeRequest(url);
+  },
   
   // Get a specific designation
   getDesignationById: (id: number) => makeRequest(`/designations/${id}`),
@@ -197,7 +206,10 @@ export const designationApi = {
 // Company Department API functions
 export const companyDepartmentApi = {
   // Get all departments for the current company
-  getAllDepartments: () => makeRequest('/departments'),
+  getAllDepartments: (params?: URLSearchParams) => {
+    const url = params ? `/departments?${params.toString()}` : '/departments';
+    return makeRequest(url);
+  },
   
   // Get a specific department
   getDepartmentById: (id: number) => makeRequest(`/departments/${id}`),
@@ -215,7 +227,10 @@ export const companyDepartmentApi = {
 // Company Designation API functions
 export const companyDesignationApi = {
   // Get all designations for the current company
-  getAllDesignations: () => makeRequest('/designations'),
+  getAllDesignations: (params?: URLSearchParams) => {
+    const url = params ? `/designations?${params.toString()}` : '/designations';
+    return makeRequest(url);
+  },
   
   // Get a specific designation
   getDesignationById: (id: number) => makeRequest(`/designations/${id}`),
