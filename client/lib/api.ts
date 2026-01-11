@@ -25,7 +25,8 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
     let token = null;
     
     // If endpoint is for companies, use company token
-    if (endpoint.includes('/companies') || endpoint.includes('/company')) {
+    if (endpoint.includes('/companies') || endpoint.includes('/company') || 
+        endpoint.includes('/departments') || endpoint.includes('/designations')) {
       token = localStorage.getItem('companyAuthToken');
     } 
     // If endpoint is for admins, use admin token

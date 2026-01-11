@@ -103,9 +103,12 @@ class Department extends Model
             $orderDir = 'DESC';
         }
 
-        $sql = "SELECT * FROM {$this->table} {$whereClause} ORDER BY {$orderBy} {$orderDir} LIMIT ? OFFSET ?";
+        $limit = (int)$limit;
+        $offset = (int)$offset;
+        
+        $sql = "SELECT * FROM {$this->table} {$whereClause} ORDER BY {$orderBy} {$orderDir} LIMIT {$limit} OFFSET {$offset}";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array_merge($params, [$limit, $offset]));
+        $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

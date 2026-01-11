@@ -115,9 +115,12 @@ class Designation extends Model
             $orderDir = 'DESC';
         }
 
-        $sql = "SELECT d.*, dept.name as department_name FROM {$this->table} d LEFT JOIN departments dept ON d.department_id = dept.id {$whereClause} ORDER BY {$orderBy} {$orderDir} LIMIT ? OFFSET ?";
+        $limit = (int)$limit;
+        $offset = (int)$offset;
+        
+        $sql = "SELECT d.*, dept.name as department_name FROM {$this->table} d LEFT JOIN departments dept ON d.department_id = dept.id {$whereClause} ORDER BY {$orderBy} {$orderDir} LIMIT {$limit} OFFSET {$offset}";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(array_merge($params, [$limit, $offset]));
+        $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../models/Designation.php';
+require_once __DIR__ . '/../helpers/functions.php';
 
 class DesignationController
 {
@@ -51,8 +52,9 @@ class DesignationController
         return (int)$tokenMatches[1];
     }
 
-    public function index($request)
+    public function index($request = null)
     {
+        $request = $request ?? $_GET;
         // Extract company ID from the authorization token
         $companyId = $this->getCompanyIdFromToken();
         if (!$companyId) {
@@ -61,32 +63,37 @@ class DesignationController
             return;
         }
         
-        $page = isset($request['page']) ? max(1, intval($request['page'])) : 1;
-        $limit = isset($request['limit']) ? min(100, max(1, intval($request['limit']))) : 10;
-        $search = isset($request['search']) ? trim($request['search']) : '';
-        $orderBy = isset($request['orderBy']) ? $request['orderBy'] : 'created_at';
-        $orderDir = isset($request['orderDir']) ? strtoupper($request['orderDir']) : 'DESC';
+        try {
+            $page = isset($request['page']) ? max(1, intval($request['page'])) : 1;
+            $limit = isset($request['limit']) ? min(1000, max(1, intval($request['limit']))) : 10;
+            $search = isset($request['search']) ? trim($request['search']) : '';
+            $orderBy = isset($request['orderBy']) ? $request['orderBy'] : 'created_at';
+            $orderDir = isset($request['orderDir']) ? strtoupper($request['orderDir']) : 'DESC';
 
-        $offset = ($page - 1) * $limit;
-        $designations = $this->designation->findByCompanyId($companyId, $limit, $offset, $search, $orderBy, $orderDir);
-        $totalCount = $this->designation->countByCompanyId($companyId, $search);
+            $offset = ($page - 1) * $limit;
+            $designations = $this->designation->findByCompanyId($companyId, $limit, $offset, $search, $orderBy, $orderDir);
+            $totalCount = $this->designation->countByCompanyId($companyId, $search);
 
-        $response = [
-            'success' => true,
-            'data' => $designations,
-            'pagination' => [
-                'current_page' => $page,
-                'per_page' => $limit,
-                'total' => $totalCount,
-                'pages' => ceil($totalCount / $limit)
-            ]
-        ];
+            $response = [
+                'success' => true,
+                'data' => $designations,
+                'pagination' => [
+                    'current_page' => $page,
+                    'per_page' => $limit,
+                    'total' => $totalCount,
+                    'pages' => ceil($totalCount / $limit)
+                ]
+            ];
 
-        header('Content-Type: application/json');
-        echo json_encode($response);
+            header('Content-Type: application/json');
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error fetching designations: ' . $e->getMessage()]);
+        }
     }
 
-    public function show($request, $id)
+    public function show($id, $request = null)
     {
         $designation = $this->designation->findById($id);
 
@@ -105,7 +112,7 @@ class DesignationController
         echo json_encode($response);
     }
 
-    public function store($request)
+    public function store($request = null)
     {
         // Extract company ID from the authorization token
         $companyId = $this->getCompanyIdFromToken();
@@ -116,6 +123,9 @@ class DesignationController
         }
         
         $input = json_decode(file_get_contents('php://input'), true);
+        if (!$input) {
+            $input = $request ?? [];
+        }
         
         // Add company_id to the input
         $input['company_id'] = $companyId;
@@ -148,8 +158,9 @@ class DesignationController
         }
     }
 
-    public function update($request, $id)
+    public function update($id, $request = null)
     {
+        $request = $request ?? array_merge($_GET, getRequestData() ?: []);
         // Extract company ID from the authorization token
         $companyId = $this->getCompanyIdFromToken();
         if (!$companyId) {
@@ -159,6 +170,9 @@ class DesignationController
         }
         
         $input = json_decode(file_get_contents('php://input'), true);
+        if (!$input) {
+            $input = $request;
+        }
 
         // Check if designation exists
         $existingDesignation = $this->designation->findById($id);
@@ -203,7 +217,7 @@ class DesignationController
         }
     }
 
-    public function destroy($request, $id)
+    public function destroy($id, $request = null)
     {
         // Extract company ID from the authorization token
         $companyId = $this->getCompanyIdFromToken();
@@ -247,8 +261,9 @@ class DesignationController
         }
     }
 
-    public function getDepartments($request)
+    public function getDepartments($request = null)
     {
+        $request = $request ?? $_GET;
         // Extract company ID from the authorization token
         $companyId = $this->getCompanyIdFromToken();
         if (!$companyId) {

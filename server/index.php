@@ -53,60 +53,20 @@ foreach ($routes as $pattern => $actions) {
         // Determine which controller to use based on the route
         if (strpos($path, '/api/admins') !== false || strpos($path, '/api/dashboard') !== false) {
             $controller = new AdminController();
-        } elseif (strpos($path, '/api/departments') !== false || strpos($path, '/api/designations') !== false) {
-            // Check the authorization header to determine if it's an admin or company request
-            $authHeader = null;
-            
-            if (function_exists('getallheaders')) {
-                $headers = getallheaders();
-                foreach ($headers as $name => $value) {
-                    if (strtolower($name) === 'authorization') {
-                        $authHeader = $value;
-                        break;
-                    }
-                }
-            }
-            
-            if (!$authHeader && isset($_SERVER['HTTP_AUTHORIZATION'])) {
-                $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-            }
-            
-            if ($authHeader && preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
-                $token = trim($matches[1]);
-                
-                // Check if token is for admin (starts with 'admin_') or company (starts with 'company_')
-                if (preg_match('/^admin_/', $token)) {
-                    $controller = new AdminController();
-                } else {
-                    // For departments and designations, we'll use the specialized controllers
-                    // which handle both admin and company auth internally
-                    if (strpos($path, '/api/departments') !== false) {
-                        $controller = new DepartmentController();
-                    } elseif (strpos($path, '/api/designations') !== false) {
-                        $controller = new DesignationController();
-                    } else {
-                        $controller = new CompanyController();
-                    }
-                }
-            } else {
-                // Default to CompanyController for departments/designations if no auth header
-                if (strpos($path, '/api/departments') !== false) {
-                    $controller = new DepartmentController();
-                } elseif (strpos($path, '/api/designations') !== false) {
-                    $controller = new DesignationController();
-                } else {
-                    $controller = new CompanyController();
-                }
-            }
+        } elseif (strpos($path, '/api/departments') !== false) {
+            $controller = new DepartmentController();
+        } elseif (strpos($path, '/api/designations') !== false) {
+            $controller = new DesignationController();
         } else {
             $controller = new CompanyController();
         }
         
         if (isset($actions[$method])) {
             $action = $actions[$method];
+            $requestData = array_merge($_GET, (getRequestData() ?: []));
             
             if (in_array($action, ['index', 'store', 'login', 'logout', 'getCurrentProfile', 'getDashboardStats', 'uploadLogo'])) {
-                $controller->$action();
+                $controller->$action($requestData);
             } else {
                 // For show, update, delete - we need the ID from the route
                 $id = $matches[1] ?? null;
@@ -115,7 +75,7 @@ foreach ($routes as $pattern => $actions) {
                     $filename = $matches['filename'] ?? $matches[1] ?? null;
                     $controller->$action($filename);
                 } else {
-                    $controller->$action($id);
+                    $controller->$action($id, $requestData);
                 }
             }
         } else {
