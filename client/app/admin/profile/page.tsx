@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,7 +39,15 @@ export default function ProfilePage() {
     }
   }, [adminProfile]);
 
-  const fetchProfile = async () => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, []);
+
+  const fetchProfile = useCallback(async () => {
     try {
       // Don't set loading if we already have data to show (improves UX)
       if (!adminProfile) setLoading(true);
@@ -91,17 +99,9 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
@@ -133,7 +133,7 @@ export default function ProfilePage() {
       console.error('Error updating profile:', error);
       toast.error(error.message || 'Failed to update profile');
     } 
-  };
+  }, [adminProfile, setAdminProfile]);
 
   if (loading) {
     return (
@@ -233,6 +233,46 @@ export default function ProfilePage() {
 
             
           </form>
+          
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3 pt-6">
+            {!isEditing ? (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+              >
+                Edit Profile
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Reset form data to original values
+                    if (adminProfile) {
+                      setFormData({
+                        name: adminProfile.name || '',
+                        email: adminProfile.email || '',
+                        role: adminProfile.role || '',
+                        status: adminProfile.status || ''
+                      });
+                    }
+                    setIsEditing(false);
+                  }}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  form="profile-form"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                >
+                  Save Changes
+                </button>
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
