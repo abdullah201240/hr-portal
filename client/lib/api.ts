@@ -20,9 +20,12 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
     ...(body && { body: JSON.stringify(body) }),
   };
 
-  // Add auth token if available
+  // Add auth token if available - prioritize admin token, fall back to company token
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('authToken');
+    let token = localStorage.getItem('adminAuthToken');
+    if (!token) {
+      token = localStorage.getItem('companyAuthToken');
+    }
     if (token) {
       (config.headers as Record<string, string>).Authorization = `Bearer ${token}`;
     }
@@ -34,13 +37,29 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
     if (!response.ok) {
       if (response.status === 401 && !endpoint.includes('/login') && !skipRedirect) {
         if (typeof window !== 'undefined') {
-          console.error(`401 Unauthorized for ${endpoint}. Redirecting to admin login.`);
-          localStorage.removeItem('authToken');
+          console.error(`401 Unauthorized for ${endpoint}. Redirecting to appropriate login.`);
+          localStorage.removeItem('adminAuthToken');
+          localStorage.removeItem('companyAuthToken');
           // If it's an admin endpoint, redirect to admin login
-          if (endpoint.includes('/admins')) {
+          if (endpoint.includes('/admins') || endpoint.includes('/admin')) {
+            localStorage.removeItem('adminProfile');
             window.location.href = '/login/admin';
+          } else if (endpoint.includes('/companies') || endpoint.includes('/company')) {
+            localStorage.removeItem('companyProfile');
+            window.location.href = '/login/company';
           } else {
-            window.location.href = '/login';
+            // For other endpoints, check which token was being used and redirect appropriately
+            const adminToken = localStorage.getItem('adminAuthToken');
+            const companyToken = localStorage.getItem('companyAuthToken');
+            if (adminToken) {
+              localStorage.removeItem('adminProfile');
+              window.location.href = '/login/admin';
+            } else if (companyToken) {
+              localStorage.removeItem('companyProfile');
+              window.location.href = '/login/company';
+            } else {
+              window.location.href = '/login';
+            }
           }
         }
       }
@@ -86,6 +105,12 @@ export const companyApi = {
   // Login a company
   loginCompany: (credentials: { email: string; password: string }) => 
     makeRequest('/companies/login', { method: 'POST', body: credentials }),
+  
+  // Logout a company
+  logoutCompany: () => makeRequest('/companies/logout', { method: 'POST', skipRedirect: true }),
+  
+  // Get current company profile - skip redirect so profile page can handle auth errors
+  getCurrentCompanyProfile: () => makeRequest('/companies/me', { skipRedirect: true }),
 };
 
 // Admin API functions

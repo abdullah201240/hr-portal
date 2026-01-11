@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { companyApi } from '@/lib/api';
 import { toast } from 'sonner';
+import { useCompanyAuth } from '@/hooks/useCompanyAuth';
 
 export default function CompanyLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +21,7 @@ export default function CompanyLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { login } = useCompanyAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -34,14 +36,29 @@ export default function CompanyLoginPage() {
     try {
       const result = await companyApi.loginCompany(formData);
       
-      if (result.data) {
-        // Store auth token
-        if (result.data.data && result.data.data.token) {
-          localStorage.setItem('authToken', result.data.data.token);
+      if (result.success || result.data) {
+        let token = '';
+        let profile = null;
+        
+        // Extract token and profile from response
+        if (result.data && result.data.token) {
+          token = result.data.token;
+        } else if (result.token) {
+          token = result.token;
         } else {
-          // For now, use a placeholder; in real app, the backend should return a proper token
-          localStorage.setItem('authToken', 'placeholder_token');
+          // Fallback to placeholder token
+          token = 'placeholder_token';
         }
+        
+        // Extract company profile if available
+        if (result.data && result.data.company) {
+          profile = result.data.company;
+        } else if (result.company) {
+          profile = result.company;
+        }
+        
+        // Use the auth hook to handle login
+        login(token, profile);
         
         // Show success notification
         toast.success('Welcome back! Redirecting to dashboard...');
@@ -113,7 +130,7 @@ export default function CompanyLoginPage() {
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-4 mt-8">
             <Button 
               type="submit" 
               className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-6 text-lg"

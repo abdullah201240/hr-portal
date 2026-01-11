@@ -11,11 +11,13 @@ import { motion } from 'framer-motion';
 import { adminApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 export default function AdminLoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const { login, setAdminProfile } = useAdminAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,18 +39,13 @@ export default function AdminLoginPage() {
             // The API now returns a token in the response
             // Response structure: { success: boolean, message: string, data: adminUserData, token: string }
             
-            // Store the token returned by the API
+            // Use the auth hook to handle login
             if (result.token) {
-                localStorage.setItem('authToken', result.token);
+                login(result.token, result.data);
             } else {
                 // Fallback: create a simple token if server doesn't return one
                 const authToken = `admin_${result.data?.id || Date.now()}`;
-                localStorage.setItem('authToken', authToken);
-            }
-            
-            // Store admin profile data for use in other components
-            if (result.data) {
-                localStorage.setItem('adminProfile', JSON.stringify(result.data));
+                login(authToken, result.data);
             }
             
             // Show success notification

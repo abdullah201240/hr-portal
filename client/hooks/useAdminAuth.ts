@@ -11,8 +11,8 @@ export const useAdminAuth = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is authenticated by checking for token in localStorage
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    // Check if user is authenticated by checking for admin token in localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('adminAuthToken') : null;
     console.log('useAdminAuth - Token check:', token ? 'Token exists' : 'No token found');
     setIsAuthenticated(!!token);
     
@@ -32,8 +32,12 @@ export const useAdminAuth = () => {
     setIsLoading(false);
   }, []);
 
-  const login = (token: string) => {
-    localStorage.setItem('authToken', token);
+  const login = (token: string, profile?: any) => {
+    localStorage.setItem('adminAuthToken', token);
+    if (profile) {
+      localStorage.setItem('adminProfile', JSON.stringify(profile));
+      setAdminProfile(profile);
+    }
     setIsAuthenticated(true);
   };
 
@@ -51,7 +55,7 @@ export const useAdminAuth = () => {
       console.error('Server logout failed:', error);
     } finally {
       // Clear the local token regardless of server response
-      localStorage.removeItem('authToken');
+      localStorage.removeItem('adminAuthToken');
       localStorage.removeItem('adminProfile');
       setAdminProfile(null);
       setIsAuthenticated(false);

@@ -6,27 +6,25 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/useAuth';
+import { useCompanyAuth } from '@/hooks/useCompanyAuth';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 
 export function CompanyHeader({ isMobile = false }: { isMobile?: boolean } = {}) {
   const { theme, setTheme } = useTheme();
-  const { logout } = useAuth();
+  const { logout, companyProfile } = useCompanyAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
       await logout();
-      localStorage.removeItem('authToken');
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Logout failed, redirecting...');
-      setTimeout(() => {
-        localStorage.removeItem('authToken');
-        router.push('/login/company');
-      }, 1000);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('companyProfile');
+      router.push('/login/company');
     }
   };
 
@@ -48,13 +46,21 @@ export function CompanyHeader({ isMobile = false }: { isMobile?: boolean } = {})
   };
 
   const getInitials = (name?: string) => {
-    if (!name) return 'C';
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    if (name) {
+      return name
+        .split(' ')
+        .map(part => part[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    
+    // Fallback to first letter of email if name is not available
+    if (companyProfile?.email) {
+      return companyProfile.email.charAt(0).toUpperCase();
+    }
+    
+    return 'C';
   };
 
   return (
@@ -97,7 +103,7 @@ export function CompanyHeader({ isMobile = false }: { isMobile?: boolean } = {})
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button variant="ghost" className="relative h-10 w-10 p-0 rounded-full border-2 border-emerald-500/20 p-[2px] hover:border-emerald-500/40 transition-all">
                       <div className="w-full h-full rounded-full gradient-emerald flex items-center justify-center text-white text-xs font-bold">
-                        {getInitials('Company')}
+                        {getInitials(companyProfile?.name)}
                       </div>
                       <span className="absolute -bottom-0.5 -right-0.5 block h-2.5 w-2.5 rounded-full ring-2 ring-background bg-emerald-500"></span>
                     </Button>
@@ -108,14 +114,14 @@ export function CompanyHeader({ isMobile = false }: { isMobile?: boolean } = {})
                   <div className="relative p-2 gradient-card">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl gradient-emerald flex items-center justify-center text-white font-bold shadow-lg glow-emerald">
-                        {getInitials('Company')}
+                        {getInitials(companyProfile?.name)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-foreground truncate">
-                          Company Profile
+                          {companyProfile?.name || 'Company Profile'}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">
-                          company@hrportal.com
+                          {companyProfile?.email || 'company@hrportal.com'}
                         </p>
                         <Badge variant="secondary" className="mt-1.5 text-[10px] gradient-emerald-subtle border-emerald-500/20">
                           Company Admin
@@ -215,10 +221,10 @@ export function CompanyHeader({ isMobile = false }: { isMobile?: boolean } = {})
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button variant="ghost" className="relative h-10 rounded-xl glass hover:glass-strong px-3 gap-2">
                       <div className="w-8 h-8 rounded-lg gradient-emerald flex items-center justify-center text-white font-semibold shadow-lg glow-emerald">
-                        {getInitials('Company')}
+                        {getInitials(companyProfile?.name)}
                       </div>
                       <div className="hidden md:flex flex-col items-start">
-                        <span className="text-sm font-medium leading-none">Company</span>
+                        <span className="text-sm font-medium leading-none">{companyProfile?.name || 'Company'}</span>
                         <span className="text-xs text-muted-foreground leading-none mt-1">Company Admin</span>
                       </div>
                       <span className="absolute -bottom-0.5 -right-0.5 block h-3 w-3 rounded-full ring-2 ring-background bg-emerald-500"></span>
@@ -230,14 +236,14 @@ export function CompanyHeader({ isMobile = false }: { isMobile?: boolean } = {})
                   <div className="relative p-2 gradient-card">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl gradient-emerald flex items-center justify-center text-white font-bold shadow-lg glow-emerald">
-                        {getInitials('Company')}
+                        {getInitials(companyProfile?.name)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-foreground truncate">
-                          Company Profile
+                          {companyProfile?.name || 'Company Profile'}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">
-                          company@hrportal.com
+                          {companyProfile?.email || 'company@hrportal.com'}
                         </p>
                         <Badge variant="secondary" className="mt-1.5 text-[10px] gradient-emerald-subtle border-emerald-500/20">
                           Company Admin

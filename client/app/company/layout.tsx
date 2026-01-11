@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { CompanyNav } from './components/company-nav';
 import { CompanyHeader } from './components/company-header';
 import { CompanyFooter } from './components/company-footer';
-import { useAuth } from '@/hooks/useAuth';
+import { useCompanyAuth } from '@/hooks/useCompanyAuth';
 import { useRouter } from 'next/navigation';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ export default function CompanyLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading } = useCompanyAuth();
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
