@@ -1,6 +1,6 @@
 'use client';
 
-import { Moon, Sun, Search, User, Settings, LogOut, Command, Building2 } from 'lucide-react';
+import { Moon, Sun, Search, Settings, LogOut, Command, Building2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -227,7 +227,6 @@ export function CompanyHeader({ isMobile = false }: { isMobile?: boolean } = {})
                         <span className="text-sm font-medium leading-none">{companyProfile?.name || 'Company'}</span>
                         <span className="text-xs text-muted-foreground leading-none mt-1">Company Admin</span>
                       </div>
-                      <span className="absolute -bottom-0.5 -right-0.5 block h-3 w-3 rounded-full ring-2 ring-background bg-emerald-500"></span>
                     </Button>
                   </motion.div>
                 </DropdownMenuTrigger>
