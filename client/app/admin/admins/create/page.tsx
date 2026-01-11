@@ -10,21 +10,24 @@ import { adminApi } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Building2, Eye, EyeOff } from 'lucide-react';
 
 export default function CreateAdmin() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     role: 'admin',
     status: 'active'
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -74,6 +77,12 @@ export default function CreateAdmin() {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -87,7 +96,8 @@ export default function CreateAdmin() {
 
     setLoading(true);
     try {
-      await adminApi.createAdmin(formData);
+      const { confirmPassword, ...adminData } = formData;
+      await adminApi.createAdmin(adminData);
       toast.success('Admin created successfully');
       router.push('/admin/admins');
     } catch (error: any) {
@@ -99,31 +109,18 @@ export default function CreateAdmin() {
   };
 
   return (
-    <div className="bg-background p-4 md:p-8">
+    <div className="bg-background border-none ">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-3xl mx-auto"
+        
       >
-        <div className="flex items-center mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-            className="mr-2"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-            Create New Admin
-          </h1>
-        </div>
 
-        <Card className="glass border-white/10">
-          <CardHeader>
+        <Card className="glass border-none shadow-none rounded-none">
+          <CardHeader className="border-none  shadow-none rounded-none">
             <CardTitle className="text-xl">Admin Information</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="border-none  shadow-none rounded-none">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -155,16 +152,48 @@ export default function CreateAdmin() {
 
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Enter password"
-                    className={`glass border-white/10 ${errors.password ? 'border-red-500' : ''}`}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Enter password"
+                      className={`glass border-white/10 ${errors.password ? 'border-red-500' : ''} pr-10`}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                   {errors.password && <p className="text-red-400 text-sm">{errors.password}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Confirm password"
+                      className={`glass border-white/10 ${errors.confirmPassword ? 'border-red-500' : ''} pr-10`}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <p className="text-red-400 text-sm">{errors.confirmPassword}</p>}
                 </div>
 
                 <div className="space-y-2">

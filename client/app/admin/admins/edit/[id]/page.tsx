@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,53 +8,72 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { adminApi } from '@/lib/api';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
-export default function EditAdmin({ params }: { params: { id: string } }) {
-  const [formData, setFormData] = useState({
+interface FormData {
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+}
+
+export default function EditAdmin(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
-    password: '',
     role: 'admin',
     status: 'active'
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const router = useRouter();
-  const adminId = parseInt(params.id);
+  const adminId = params?.id as string;
 
   useEffect(() => {
-    fetchAdminDetails();
-  }, [adminId]);
+    if (!params?.id) return;
 
-  const fetchAdminDetails = async () => {
-    try {
-      const response = await adminApi.getAdminById(adminId);
-      const admin = response.data;
-      setFormData({
-        name: admin.name || '',
-        email: admin.email || '',
-        password: '', // Don't load existing password for security
-        role: admin.role || 'admin',
-        status: admin.status || 'active'
-      });
-    } catch (error) {
-      console.error('Error fetching admin details:', error);
-      toast.error('Failed to load admin details');
-    } finally {
-      setInitialLoading(false);
-    }
-  };
+    const fetchAdminDetails = async () => {
+      try {
+        setFetchLoading(true);
+        setFetchError(null);
+        const response = await adminApi.getAdminById(Number(adminId));
+        const admin = response.data;
+        setFormData({
+          name: admin.name || '',
+          email: admin.email || '',
+          role: admin.role || 'admin',
+          status: admin.status || 'active'
+        });
+      } catch (error: any) {
+        console.error('Error fetching admin details:', error);
+        const errorMessage = error.message || 'Failed to fetch admin details';
+        setFetchError(errorMessage);
+        toast.error(errorMessage);
+      } finally {
+        setFetchLoading(false);
+      }
+    };
+
+    fetchAdminDetails();
+  }, [params.id]);
+
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'name' || name === 'email') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => {
@@ -66,10 +85,12 @@ export default function EditAdmin({ params }: { params: { id: string } }) {
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'role' || name === 'status') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
     // Clear error when user selects an option
     if (errors[name]) {
       setErrors(prev => {
@@ -93,10 +114,7 @@ export default function EditAdmin({ params }: { params: { id: string } }) {
       newErrors.email = 'Email is invalid';
     }
 
-    // Password validation only if a new password is provided
-    if (formData.password && formData.password.length > 0 && formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
+
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -111,7 +129,8 @@ export default function EditAdmin({ params }: { params: { id: string } }) {
 
     setLoading(true);
     try {
-      await adminApi.updateAdmin(adminId, formData);
+      const adminData = formData;
+      await adminApi.updateAdmin(Number(adminId), adminData);
       toast.success('Admin updated successfully');
       router.push('/admin/admins');
     } catch (error: any) {
@@ -122,45 +141,46 @@ export default function EditAdmin({ params }: { params: { id: string } }) {
     }
   };
 
-  if (initialLoading) {
+  if (fetchLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background pt-16">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-emerald-500"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full animate-pulse"></div>
-          </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-emerald-500" />
+          <p className="text-muted-foreground">Loading admin details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="max-w-2xl mx-auto mt-8">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="ml-2">
+            {fetchError}
+          </AlertDescription>
+        </Alert>
+        <div className="mt-4 flex justify-center">
+          <Button onClick={() => router.push('/admin/admins')} variant="outline">
+            Back to Admins
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-background p-4 md:p-8">
+    <div className="bg-background">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-3xl mx-auto"
       >
-        <div className="flex items-center mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-            className="mr-2"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-            Edit Admin
-          </h1>
-        </div>
-
-        <Card className="glass border-white/10">
-          <CardHeader>
-            <CardTitle className="text-xl">Admin Information</CardTitle>
+        <Card className="glass border-none shadow-none rounded-none">
+          <CardHeader className="border-none shadow-none rounded-none">
+            <CardTitle className="text-xl">Edit Admin</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="border-none shadow-none rounded-none">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -172,6 +192,7 @@ export default function EditAdmin({ params }: { params: { id: string } }) {
                     onChange={handleChange}
                     placeholder="Enter full name"
                     className={`glass border-white/10 ${errors.name ? 'border-red-500' : ''}`}
+                    disabled={loading}
                   />
                   {errors.name && <p className="text-red-400 text-sm">{errors.name}</p>}
                 </div>
@@ -186,27 +207,18 @@ export default function EditAdmin({ params }: { params: { id: string } }) {
                     onChange={handleChange}
                     placeholder="Enter email address"
                     className={`glass border-white/10 ${errors.email ? 'border-red-500' : ''}`}
+                    disabled={loading}
                   />
                   {errors.email && <p className="text-red-400 text-sm">{errors.email}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password (Optional)</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Leave blank to keep current password"
-                    className={`glass border-white/10 ${errors.password ? 'border-red-500' : ''}`}
-                  />
-                  {errors.password && <p className="text-red-400 text-sm">{errors.password}</p>}
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
-                  <Select value={formData.role} onValueChange={(value) => handleSelectChange('role', value)}>
+                  <Select 
+                    value={formData.role} 
+                    onValueChange={(value) => handleSelectChange('role', value)}
+                    disabled={loading}
+                  >
                     <SelectTrigger className="glass border-white/10">
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
@@ -219,7 +231,11 @@ export default function EditAdmin({ params }: { params: { id: string } }) {
 
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
-                  <Select value={formData.status} onValueChange={(value) => handleSelectChange('status', value)}>
+                  <Select 
+                    value={formData.status} 
+                    onValueChange={(value) => handleSelectChange('status', value)}
+                    disabled={loading}
+                  >
                     <SelectTrigger className="glass border-white/10">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
@@ -238,6 +254,7 @@ export default function EditAdmin({ params }: { params: { id: string } }) {
                   variant="outline"
                   onClick={() => router.back()}
                   className="px-6"
+                  disabled={loading}
                 >
                   Cancel
                 </Button>
@@ -246,8 +263,8 @@ export default function EditAdmin({ params }: { params: { id: string } }) {
                   className="px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                   disabled={loading}
                 >
-                  {loading ? 'Saving...' : 'Save Changes'}
-                  <Save className="ml-2 h-4 w-4" />
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {loading ? 'Updating...' : 'Update Admin'}
                 </Button>
               </div>
             </form>
