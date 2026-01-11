@@ -9,7 +9,7 @@ import { useCompanyAuth } from '@/hooks/useCompanyAuth';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { companyApi } from '@/lib/api';
-import { Building2, Mail, Phone, Globe, MapPin, Calendar, Users, Upload } from 'lucide-react';
+import { Building2, Mail, Phone, Globe, MapPin, Calendar, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function CompanyProfilePage() {
@@ -512,10 +512,7 @@ export default function CompanyProfilePage() {
                       <span>{formData.industry}</span>
                     </div>
                     
-                    <div className="flex items-center gap-3">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span>{formData.employee_count}</span>
-                    </div>
+                    
                     
                     <div className="flex items-center gap-3">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
