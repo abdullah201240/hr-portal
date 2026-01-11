@@ -66,7 +66,7 @@ class Admin extends Model
     public function create($data)
     {
         // Hash password if it exists in the data and is not already hashed
-        if (isset($data['password']) && !str_starts_with($data['password'], '$2y$')) {
+        if (isset($data['password']) && substr($data['password'], 0, 4) !== '$2y$') {
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
         }
         
@@ -82,5 +82,21 @@ class Admin extends Model
         } catch (PDOException $e) {
             throw new Exception("Error creating record: " . $e->getMessage());
         }
+    }
+
+    // Count all admins
+    public function countAll()
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM {$this->table}");
+        $stmt->execute();
+        return $stmt->fetchColumn();
+    }
+
+    // Count admins by status
+    public function countByStatus($status)
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM {$this->table} WHERE status = ?");
+        $stmt->execute([$status]);
+        return $stmt->fetchColumn();
     }
 }

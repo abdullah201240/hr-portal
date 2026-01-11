@@ -32,7 +32,8 @@ $routes = [
     '@/api/admins/me/?$@' => ['GET' => 'getCurrentProfile'],
     '@/api/admins/logout/?$@' => ['POST' => 'logout'],
     '@/api/admins/?$@' => ['GET' => 'index', 'POST' => 'store'],
-    '@/api/admins/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy']
+    '@/api/admins/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/dashboard/stats/?$@' => ['GET' => 'getDashboardStats']
 ];
 
 $matched = false;
@@ -40,7 +41,7 @@ $matched = false;
 foreach ($routes as $pattern => $actions) {
     if (preg_match($pattern, $path, $matches)) {
         // Determine which controller to use based on the route
-        if (strpos($path, '/api/admins') !== false) {
+        if (strpos($path, '/api/admins') !== false || strpos($path, '/api/dashboard') !== false) {
             $controller = new AdminController();
         } else {
             $controller = new CompanyController();
@@ -49,7 +50,7 @@ foreach ($routes as $pattern => $actions) {
         if (isset($actions[$method])) {
             $action = $actions[$method];
             
-            if (in_array($action, ['index', 'store', 'login', 'logout', 'getCurrentProfile'])) {
+            if (in_array($action, ['index', 'store', 'login', 'logout', 'getCurrentProfile', 'getDashboardStats'])) {
                 $controller->$action();
             } else {
                 // For show, update, delete - we need the ID from the route

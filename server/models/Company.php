@@ -73,4 +73,29 @@ class Company extends Model
     {
         return password_hash($password, PASSWORD_DEFAULT);
     }
+
+    // Count all companies
+    public function countAll()
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM {$this->table}");
+        $stmt->execute();
+        return $stmt->fetchColumn();
+    }
+
+    // Count companies by status
+    public function countByStatus($status)
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM {$this->table} WHERE status = ?");
+        $stmt->execute([$status]);
+        return $stmt->fetchColumn();
+    }
+
+    // Get latest companies
+    public function getLatest($limit)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} ORDER BY created_at DESC LIMIT ?");
+        $stmt->bindValue(1, (int)$limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
 }

@@ -2,15 +2,18 @@
 // server/controllers/AdminController.php
 
 require_once __DIR__ . '/../models/Admin.php';
+require_once __DIR__ . '/../models/Company.php';
 require_once __DIR__ . '/../helpers/functions.php';
 
 class AdminController
 {
     private $admin;
+    private $company;
 
     public function __construct()
     {
         $this->admin = new Admin();
+        $this->company = new Company();
     }
 
     public function index()
@@ -171,6 +174,56 @@ class AdminController
         ]);
     }
     
+    public function getDashboardStats()
+    {
+        try {
+            // Get company statistics
+            $totalCompanies = $this->company->countAll();
+            $activeCompanies = $this->company->countByStatus('active');
+            $inactiveCompanies = $this->company->countByStatus('inactive');
+            $suspendedCompanies = $this->company->countByStatus('suspended');
+            
+            // Get admin statistics
+            $totalAdmins = $this->admin->countAll();
+            $activeAdmins = $this->admin->countByStatus('active');
+            
+            // Get recent activity (latest 5 companies registered)
+            $recentCompanies = $this->company->getLatest(5);
+            
+            // Format the response
+            $stats = [
+                'companies' => [
+                    'total' => $totalCompanies,
+                    'active' => $activeCompanies,
+                    'inactive' => $inactiveCompanies,
+                    'suspended' => $suspendedCompanies,
+                ],
+                'admins' => [
+                    'total' => $totalAdmins,
+                    'active' => $activeAdmins,
+                ],
+                'recent_activity' => array_map(function($company) {
+                    return [
+                        'id' => $company['id'],
+                        'name' => $company['name'],
+                        'email' => $company['email'],
+                        'status' => $company['status'],
+                        'created_at' => $company['created_at'],
+                        'action' => 'registered'
+                    ];
+                }, $recentCompanies)
+            ];
+
+            jsonResponse([
+                'success' => true,
+                'data' => $stats
+            ]);
+        } catch (Exception $e) {
+            error_log("Error getting dashboard stats: " . $e->getMessage());
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function getCurrentProfile()
     {
         try {

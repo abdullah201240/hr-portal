@@ -114,4 +114,7 @@ export const adminApi = {
   
   // Get current admin profile - skip redirect so profile page can handle auth errors
   getCurrentAdminProfile: () => makeRequest('/admins/me', { skipRedirect: true }),
+  
+  // Get dashboard statistics
+  getDashboardStats: () => makeRequest('/dashboard/stats'),
 };
