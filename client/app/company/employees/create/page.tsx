@@ -3,9 +3,6 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCompanyAuth } from '@/hooks/useCompanyAuth';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
 import EmployeeForm from '../EmployeeForm';
 
 export default function CreateEmployeePage() {
@@ -31,13 +28,10 @@ export default function CreateEmployeePage() {
   return (
     <div className="bg-background">
       <div >
-        
-
-        
-          <div >
-            <EmployeeForm onSuccess={() => router.push('/company/employees')} />
-          </div>
-        
+       
+        <div className="bg-card rounded-xl shadow-lg border border-border p-6 md:p-8">
+          <EmployeeForm onSuccess={() => router.push('/company/employees')} />
+        </div>
       </div>
     </div>
   );

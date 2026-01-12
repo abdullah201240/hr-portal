@@ -10,6 +10,7 @@ import { useCompanyAuth } from '@/hooks/useCompanyAuth';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
 
 export function CompanyHeader({ isMobile = false }: { isMobile?: boolean } = {}) {
   const { theme, setTheme } = useTheme();
@@ -221,7 +222,14 @@ export function CompanyHeader({ isMobile = false }: { isMobile?: boolean } = {})
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button variant="ghost" className="relative h-10 rounded-xl glass hover:glass-strong px-3 gap-2">
                       <div className="w-8 h-8 rounded-lg gradient-emerald flex items-center justify-center text-white font-semibold shadow-lg glow-emerald">
-                        {getInitials(companyProfile?.name)}
+                        <Image
+                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${companyProfile?.logo || '/logo.png'}`}
+                          alt={companyProfile?.name || 'Company'}
+                          width={24}
+                          height={24}
+                          className="w-8 h-8 rounded-lg object-cover"
+                          unoptimized
+                        />
                       </div>
                       <div className="hidden md:flex flex-col items-start">
                         <span className="text-sm font-medium leading-none">{companyProfile?.name || 'Company'}</span>

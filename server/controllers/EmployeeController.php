@@ -52,6 +52,44 @@ class EmployeeController
         return (int)$tokenMatches[1];
     }
 
+    private function handleImageUpload($file)
+    {
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return null; // or throw an exception
+        }
+        
+        // Create upload directory if it doesn't exist
+        $uploadDir = "uploads/employees/";
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Validate file type
+        $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        $fileType = mime_content_type($file['tmp_name']);
+        
+        if (!in_array($fileType, $allowedTypes)) {
+            return null; // Invalid file type
+        }
+        
+        // Check file size (max 5MB)
+        if ($file['size'] > 5 * 1024 * 1024) {
+            return null; // File too large
+        }
+        
+        // Generate unique filename
+        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $filename = uniqid() . '_' . time() . '.' . $extension;
+        $destination = $uploadDir . $filename;
+        
+        // Move uploaded file
+        if (!move_uploaded_file($file['tmp_name'], $destination)) {
+            return null; // Failed to move file
+        }
+        
+        return $destination;
+    }
+
     public function index($request = null)
     {
         $request = $request ?? $_GET;
@@ -130,9 +168,26 @@ class EmployeeController
             return;
         }
         
-        $input = json_decode(file_get_contents('php://input'), true);
-        if (!$input) {
-            $input = $request ?? [];
+        // Handle both JSON and FormData requests
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        
+        if (strpos($contentType, 'application/json') !== false) {
+            // JSON request
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!$input) {
+                $input = $request ?? [];
+            }
+        } else {
+            // FormData request - use $_POST data
+            $input = $_POST;
+            
+            // If image was uploaded, process it
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $uploadedImagePath = $this->handleImageUpload($_FILES['image']);
+                if ($uploadedImagePath) {
+                    $input['image'] = $uploadedImagePath;
+                }
+            }
         }
 
         // Add company_id to the input
@@ -184,9 +239,26 @@ class EmployeeController
             return;
         }
         
-        $input = json_decode(file_get_contents('php://input'), true);
-        if (!$input) {
-            $input = $request;
+        // Handle both JSON and FormData requests
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        
+        if (strpos($contentType, 'application/json') !== false) {
+            // JSON request
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!$input) {
+                $input = $request;
+            }
+        } else {
+            // FormData request - use $_POST data
+            $input = $_POST;
+            
+            // If image was uploaded, process it
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $uploadedImagePath = $this->handleImageUpload($_FILES['image']);
+                if ($uploadedImagePath) {
+                    $input['image'] = $uploadedImagePath;
+                }
+            }
         }
 
         // Check if employee exists

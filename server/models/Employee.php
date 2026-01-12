@@ -74,12 +74,18 @@ class Employee extends Model
             throw new Exception(json_encode($creationErrors));
         }
         
+        // Handle image upload if it's base64 data
+        $image = $data['image'] ?? null;
+        if ($image && strpos($image, 'data:') === 0) {
+            $image = $this->handleFileUpload($image, 'employees');
+        }
+        
         $stmt = $this->db->prepare("INSERT INTO {$this->table} (
             employeeId, name, email, password, phone, dob, gender, bloodGroup, 
             companyId, designation, department, maritalStatus, currentAddress, 
             joinDate, salary, status, employeeType, personalMobile, 
-            emergencyContactNumber, bankName, accountNumber
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            emergencyContactNumber, bankName, accountNumber, image
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         // Hash the password if provided, otherwise set a default/empty value
         $password = $data['password'] ?? '';
@@ -108,7 +114,8 @@ class Employee extends Model
             $data['personalMobile'] ?? null,
             $data['emergencyContactNumber'] ?? null,
             $data['bankName'] ?? null,
-            $data['accountNumber'] ?? null
+            $data['accountNumber'] ?? null,
+            $image
         ]);
 
         if ($result) {
@@ -129,9 +136,13 @@ class Employee extends Model
                     'employeeId', 'name', 'email', 'password', 'phone', 'dob', 'gender', 'bloodGroup',
                     'companyId', 'designation', 'department', 'maritalStatus',
                     'currentAddress', 'joinDate', 'salary', 'status', 'employeeType',
-                    'personalMobile', 'emergencyContactNumber', 'bankName', 'accountNumber'
+                    'personalMobile', 'emergencyContactNumber', 'bankName', 'accountNumber', 'image'
                 ];
                 if (in_array($key, $allowedFields)) {
+                    // Handle image upload if it's base64 data
+                    if ($key === 'image' && $value && strpos($value, 'data:') === 0) {
+                        $value = $this->handleFileUpload($value, 'employees');
+                    }
                     // Hash the password if it's being updated
                     if ($key === 'password' && !empty($value)) {
                         $value = password_hash($value, PASSWORD_DEFAULT);

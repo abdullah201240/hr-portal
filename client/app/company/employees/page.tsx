@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useCompanyAuth } from '@/hooks/useCompanyAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { 
@@ -18,24 +18,17 @@ import {
   Edit, 
   Trash2, 
   Users, 
-  Calendar, 
   Mail, 
   Phone, 
-  MapPin,
-  CheckCircle2,
-  XCircle,
   LayoutGrid,
   Filter,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  X,
   UserCheck,
   UserX
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { employeeApi } from '@/lib/api';
 import { Employee } from '@/types/employee';
+import Image from 'next/image';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,8 +44,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const EmployeesPage = () => {
   const { isAuthenticated, isLoading } = useCompanyAuth();
   const router = useRouter();
-  
-  // Define all state hooks at the top level to maintain consistent order
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -82,21 +73,18 @@ const EmployeesPage = () => {
         toast.error(response.message || 'Failed to fetch employees');
       }
     } catch (error) {
-      console.error('Error fetching employees:', error);
       toast.error('Failed to fetch employees');
     } finally {
       setLoading(false);
     }
   };
 
-  // Effect to fetch employees when currentPage or searchTerm changes
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
       fetchEmployees();
     }
   }, [currentPage, searchTerm, isAuthenticated, isLoading]);
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/login/company');
@@ -158,12 +146,6 @@ const EmployeesPage = () => {
   const activeEmployeesCount = employees.filter((emp: Employee) => emp.status === 'active').length;
   const inactiveEmployeesCount = employees.filter((emp: Employee) => emp.status === 'inactive').length;
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric'
-    });
-  };
 
   return (
     <div className="bg-background space-y-6">
@@ -298,7 +280,14 @@ const EmployeesPage = () => {
                             <div className="flex items-center gap-4">
                               <div className="relative">
                                 <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-emerald-500/20">
-                                  {employee.name.charAt(0)}
+                                 <Image
+                                  src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}/${employee.image || 'uploads/employees/placeholder.avif'}`}
+                                  alt={employee.name}
+                                  width={40}
+                                  height={40}
+                                  className="w-full h-full rounded-full object-cover"
+                                  unoptimized
+                                />
                                 </div>
                                 <div className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-background ${employee.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                               </div>

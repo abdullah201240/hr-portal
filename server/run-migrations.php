@@ -10,6 +10,7 @@ require_once __DIR__ . '/migrations/CreateDesignationsTable.php';
 require_once __DIR__ . '/migrations/CreateEmployeesTable.php';
 require_once __DIR__ . '/migrations/AddCompanyIdToDepartments.php';
 require_once __DIR__ . '/migrations/AddCompanyIdToDesignations.php';
+require_once __DIR__ . '/migrations/AddImageToEmployees.php';
 require_once __DIR__ . '/migrations/MigrationRunner.php';
 
 // First, create the migrations table if it doesn't exist
@@ -30,6 +31,7 @@ if (isset($argv[1]) && $argv[1] === 'rollback') {
         new CreateEmployeesTable(),
         new AddCompanyIdToDepartments(),
         new AddCompanyIdToDesignations(),
+        new AddImageToEmployees(),
     ]);
     
     // Run admin seeds after migrations

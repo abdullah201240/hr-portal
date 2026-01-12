@@ -21,6 +21,7 @@ export interface Employee {
   emergencyContactNumber?: string;
   bankName?: string;
   accountNumber?: string;
+  image?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -47,4 +48,5 @@ export interface EmployeeFormData {
   emergencyContactNumber?: string;
   bankName?: string;
   accountNumber?: string;
+  image?: string;
 }
