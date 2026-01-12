@@ -175,10 +175,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
                 <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-dashed border-border bg-muted flex items-center justify-center">
                   {formData.image ? (
                     <img 
-                      src={formData.image} 
-                      alt="Profile Preview" 
-                      className="w-full h-full object-cover"
-                    />
+                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${formData.image}`} alt="Profile Preview" className="w-full h-full object-cover" />
+                  
                   ) : (
                     <div className="text-gray-400 flex flex-col items-center justify-center">
                       <Camera className="h-8 w-8" />

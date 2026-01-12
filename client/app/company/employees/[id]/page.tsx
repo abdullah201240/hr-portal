@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, User, MapPin, Briefcase, Building, FileText, Users, CreditCard, Shield } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Briefcase, Building, FileText, Users, CreditCard, Shield, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { employeeApi } from '@/lib/api';
 import { Employee } from '@/types/employee';
@@ -108,23 +108,32 @@ const EmployeeDetailsPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex items-start space-x-6">
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full p-4">
-              <User className="h-12 w-12 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                {employee.name}
-              </h1>
-              <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
-                <span className="flex items-center"><Briefcase className="h-4 w-4 mr-1" /> {employee.designation || 'N/A'}</span>
-                <span className="flex items-center"><Building className="h-4 w-4 mr-1" /> {employee.department || 'N/A'}</span>
-                <span className="flex items-center"><Users className="h-4 w-4 mr-1" /> ID: {employee.employeeId}</span>
-                <Badge variant={employee.status === 'active' ? 'default' : 'secondary'}>
-                  {employee.status}
-                </Badge>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start space-x-6">
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full p-4">
+                <User className="h-12 w-12 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                  {employee.name}
+                </h1>
+                <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
+                  <span className="flex items-center"><Briefcase className="h-4 w-4 mr-1" /> {employee.designation || 'N/A'}</span>
+                  <span className="flex items-center"><Building className="h-4 w-4 mr-1" /> {employee.department || 'N/A'}</span>
+                  <span className="flex items-center"><Users className="h-4 w-4 mr-1" /> ID: {employee.employeeId}</span>
+                  <Badge variant={employee.status === 'active' ? 'default' : 'secondary'}>
+                    {employee.status}
+                  </Badge>
+                </div>
               </div>
             </div>
+            <Button 
+              onClick={() => router.push(`/company/employees/${id}/edit`)}
+              className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+            >
+              <Edit className="h-4 w-4" />
+              Edit Employee
+            </Button>
           </div>
         </motion.div>
 

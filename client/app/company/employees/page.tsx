@@ -1,7 +1,5 @@
 'use client';
-
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import  { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCompanyAuth } from '@/hooks/useCompanyAuth';
 import { Button } from '@/components/ui/button';
