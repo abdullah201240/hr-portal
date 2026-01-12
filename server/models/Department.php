@@ -11,14 +11,16 @@ class Department extends Model
         parent::__construct();
     }
 
-    public function validate($data)
+    public function validate($data, $isUpdate = false)
     {
         $errors = [];
 
-        if (empty($data['name'])) {
-            $errors['name'] = 'Name is required';
-        } elseif (strlen($data['name']) > 255) {
-            $errors['name'] = 'Name must be less than 256 characters';
+        if (!$isUpdate || isset($data['name'])) {
+            if (empty($data['name'])) {
+                $errors['name'] = 'Name is required';
+            } elseif (strlen($data['name']) > 255) {
+                $errors['name'] = 'Name must be less than 256 characters';
+            }
         }
 
         if (!empty($data['description']) && strlen($data['description']) > 1000) {
@@ -29,8 +31,10 @@ class Department extends Model
             $errors['status'] = 'Status must be either active or inactive';
         }
 
-        if (empty($data['company_id'])) {
-            $errors['company_id'] = 'Company ID is required';
+        if (!$isUpdate || isset($data['company_id'])) {
+            if (empty($data['company_id'])) {
+                $errors['company_id'] = 'Company ID is required';
+            }
         }
 
         return $errors;

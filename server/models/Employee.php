@@ -11,31 +11,40 @@ class Employee extends Model
         parent::__construct();
     }
 
-    public function validate($data)
+    public function validate($data, $isUpdate = false)
     {
         $errors = [];
 
-        if (empty($data['employeeId'])) {
-            $errors['employeeId'] = 'Employee ID is required';
+        // Only validate required fields for creation, not for updates
+        if (!$isUpdate || isset($data['employeeId'])) {
+            if (empty($data['employeeId'])) {
+                $errors['employeeId'] = 'Employee ID is required';
+            }
         }
 
-        if (empty($data['name'])) {
-            $errors['name'] = 'Name is required';
-        } elseif (strlen($data['name']) > 255) {
-            $errors['name'] = 'Name must be less than 256 characters';
+        if (!$isUpdate || isset($data['name'])) {
+            if (empty($data['name'])) {
+                $errors['name'] = 'Name is required';
+            } elseif (strlen($data['name']) > 255) {
+                $errors['name'] = 'Name must be less than 256 characters';
+            }
         }
 
-        if (empty($data['email'])) {
-            $errors['email'] = 'Email is required';
-        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Invalid email format';
+        if (!$isUpdate || isset($data['email'])) {
+            if (empty($data['email'])) {
+                $errors['email'] = 'Email is required';
+            } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = 'Invalid email format';
+            }
         }
 
-        if (empty($data['companyId'])) {
-            $errors['companyId'] = 'Company ID is required';
+        if (!$isUpdate || isset($data['companyId'])) {
+            if (empty($data['companyId'])) {
+                $errors['companyId'] = 'Company ID is required';
+            }
         }
 
-        if (!empty($data['phone']) && !preg_match('/^\+?[\d\s\-\(\)]+$/', $data['phone'])) {
+        if (!empty($data['phone']) && !preg_match('/^\\+?[\\d\\s\\-\\(\\)]+$/', $data['phone'])) {
             $errors['phone'] = 'Invalid phone number format';
         }
 

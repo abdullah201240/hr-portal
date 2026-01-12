@@ -222,14 +222,27 @@ export function CompanyHeader({ isMobile = false }: { isMobile?: boolean } = {})
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button variant="ghost" className="relative h-10 rounded-xl glass hover:glass-strong px-3 gap-2">
                       <div className="w-8 h-8 rounded-lg gradient-emerald flex items-center justify-center text-white font-semibold shadow-lg glow-emerald">
-                        <Image
-                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${companyProfile?.logo || '/logo.png'}`}
-                          alt={companyProfile?.name || 'Company'}
-                          width={24}
-                          height={24}
-                          className="w-8 h-8 rounded-lg object-cover"
-                          unoptimized
-                        />
+                        {companyProfile?.logo ? (
+                          <div className="relative w-8 h-8 rounded-lg overflow-hidden">
+                            <Image
+                              src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/logos/${encodeURIComponent(companyProfile.logo.split('/').pop() || '')}`}
+                              alt={companyProfile?.name || 'Company'}
+                              width={24}
+                              height={24}
+                              className="w-8 h-8 rounded-lg object-cover"
+                              unoptimized
+                            />
+                            <noscript>
+                              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-xs font-bold">
+                                <Building2 className="h-4 w-4" />
+                              </div>
+                            </noscript>
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-xs font-bold">
+                            <Building2 className="h-4 w-4" />
+                          </div>
+                        )}
                       </div>
                       <div className="hidden md:flex flex-col items-start">
                         <span className="text-sm font-medium leading-none">{companyProfile?.name || 'Company'}</span>

@@ -7,16 +7,20 @@ class Admin extends Model
 {
     protected $table = 'admins';
 
-    public function validate($data)
+    public function validate($data, $isUpdate = false)
     {
         $errors = [];
 
-        if (empty($data['name'])) {
-            $errors['name'] = 'Name is required';
+        if (!$isUpdate || isset($data['name'])) {
+            if (empty($data['name'])) {
+                $errors['name'] = 'Name is required';
+            }
         }
 
-        if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Valid email is required';
+        if (!$isUpdate || isset($data['email'])) {
+            if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = 'Valid email is required';
+            }
         }
 
         if (isset($data['password'])) {

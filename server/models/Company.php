@@ -7,24 +7,30 @@ class Company extends Model
 {
     protected $table = 'companies';
 
-    public function validate($data)
+    public function validate($data, $isUpdate = false)
     {
         $errors = [];
 
-        if (empty($data['name'])) {
-            $errors['name'] = 'Company name is required';
+        if (!$isUpdate || isset($data['name'])) {
+            if (empty($data['name'])) {
+                $errors['name'] = 'Company name is required';
+            }
         }
 
-        if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Valid email is required';
-        } else {
-            // Check if email is already taken
-            $stmt = $this->db->prepare("SELECT id FROM {$this->table} WHERE email = ?");
-            $stmt->execute([$data['email']]);
-            $existing = $stmt->fetch();
-            
-            if ($existing) {
-                $errors['email'] = 'Email is already taken';
+        if (!$isUpdate || isset($data['email'])) {
+            if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = 'Valid email is required';
+            } else {
+                // Check if email is already taken (only for creation)
+                if (!$isUpdate) {
+                    $stmt = $this->db->prepare("SELECT id FROM {$this->table} WHERE email = ?");
+                    $stmt->execute([$data['email']]);
+                    $existing = $stmt->fetch();
+                    
+                    if ($existing) {
+                        $errors['email'] = 'Email is already taken';
+                    }
+                }
             }
         }
 
@@ -34,8 +40,10 @@ class Company extends Model
             }
         }
 
-        if (empty($data['address'])) {
-            $errors['address'] = 'Address is required';
+        if (!$isUpdate || isset($data['address'])) {
+            if (empty($data['address'])) {
+                $errors['address'] = 'Address is required';
+            }
         }
 
         if (isset($data['phone']) && $data['phone'] !== '' && !preg_match('/^\+?[1-9][\d]{1,14}$/', $data['phone'])) {

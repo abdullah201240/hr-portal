@@ -5,7 +5,6 @@ import { useCompanyAuth } from '@/hooks/useCompanyAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -18,10 +17,7 @@ import {
   Users, 
   Mail, 
   Phone, 
-  LayoutGrid,
   Filter,
-  UserCheck,
-  UserX
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { employeeApi } from '@/lib/api';
@@ -76,6 +72,7 @@ const EmployeesPage = () => {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
@@ -140,9 +137,25 @@ const EmployeesPage = () => {
     router.push(`/company/employees/edit/${employee.id}`);
   };
 
-  // Stats
-  const activeEmployeesCount = employees.filter((emp: Employee) => emp.status === 'active').length;
-  const inactiveEmployeesCount = employees.filter((emp: Employee) => emp.status === 'inactive').length;
+  const handleStatusChange = async (employeeId: number, newStatus: 'active' | 'inactive') => {
+    try {
+      const response = await employeeApi.updateEmployee(employeeId, { status: newStatus });
+      if (response.success) {
+        // Update the local state to reflect the change
+        setEmployees(prev => prev.map(emp => 
+          emp.id === employeeId ? { ...emp, status: newStatus } : emp
+        ));
+        toast.success(`Employee status updated to ${newStatus}`);
+      } else {
+        toast.error(response.message || 'Failed to update employee status');
+      }
+    } catch (error) {
+      console.error('Error updating employee status:', error);
+      toast.error('Failed to update employee status');
+    }
+  };
+
+
 
 
   return (
@@ -171,42 +184,7 @@ const EmployeesPage = () => {
         </div>
       </motion.div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { title: 'Total Employees', value: totalEmployees, icon: Users, color: 'emerald' },
-          { title: 'Active Staff', value: activeEmployeesCount, icon: UserCheck, color: 'teal' },
-          { title: 'Inactive Staff', value: inactiveEmployeesCount, icon: UserX, color: 'rose' },
-          { title: 'Departments', value: [...new Set(employees.map(e => e.department).filter(Boolean))].length, icon: LayoutGrid, color: 'blue' }
-        ].map((stat, i) => (
-          <motion.div
-            key={stat.title}
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 0.1 * (i + 1), type: "spring", stiffness: 200 }}
-            whileHover={{ y: -5, transition: { duration: 0.2 } }}
-          >
-            <Card className={`relative glass border-${stat.color}-500/20 overflow-hidden group hover:border-${stat.color}-500/40 transition-all duration-500`}>
-              <div className="absolute inset-0 opacity-20 pointer-events-none">
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-${stat.color}-400 to-${stat.color}-600 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700`} />
-              </div>
-              <CardContent className="relative p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-foreground/70 mb-1">{stat.title}</p>
-                    <h3 className={`text-2xl font-bold bg-gradient-to-r from-${stat.color}-500 to-${stat.color}-700 dark:from-${stat.color}-400 dark:to-${stat.color}-600 bg-clip-text text-transparent`}>
-                      {stat.value}
-                    </h3>
-                  </div>
-                  <div className={`relative bg-${stat.color}-500/10 p-2.5 rounded-xl border border-${stat.color}-500/20`}>
-                    <stat.icon className={`h-5 w-5 text-${stat.color}-600 dark:text-${stat.color}-400`} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+      
 
       {/* Main Content Card */}
       <motion.div
@@ -312,16 +290,17 @@ const EmployeesPage = () => {
                             <div className="text-xs text-muted-foreground">{employee.department || 'N/A'}</div>
                           </td>
                           <td className="py-4 px-6">
-                            <Badge 
-                              className={employee.status === 'active' 
-                                ? 'bg-emerald-500/10 text-emerald-500 border-none' 
-                                : 'bg-rose-500/10 text-rose-500 border-none'}
+                            <select 
+                              value={employee.status || 'inactive'}
+                              onChange={(e) => handleStatusChange(employee.id, e.target.value as 'active' | 'inactive')}
+                              className="bg-background border border-input rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                             >
-                              {(employee.status || 'inactive').charAt(0).toUpperCase() + (employee.status || 'inactive').slice(1)}
-                            </Badge>
+                              <option value="active" className="bg-background">Active</option>
+                              <option value="inactive" className="bg-background">Inactive</option>
+                            </select>
                           </td>
                           <td className="py-4 px-6 text-right">
-                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex justify-end gap-2 group">
                               <Button
                                 size="icon"
                                 variant="ghost"

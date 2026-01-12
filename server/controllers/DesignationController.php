@@ -130,7 +130,7 @@ class DesignationController
         // Add company_id to the input
         $input['company_id'] = $companyId;
 
-        $validationErrors = $this->designation->validate($input);
+        $validationErrors = $this->designation->validate($input, false); // false indicates this is a create operation
         if (!empty($validationErrors)) {
             http_response_code(422);
             echo json_encode(['success' => false, 'errors' => $validationErrors]);
@@ -189,7 +189,7 @@ class DesignationController
             return;
         }
 
-        $validationErrors = $this->designation->validate($input);
+        $validationErrors = $this->designation->validate($input, true); // true indicates this is an update operation
         if (!empty($validationErrors)) {
             http_response_code(422);
             echo json_encode(['success' => false, 'errors' => $validationErrors]);

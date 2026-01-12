@@ -53,7 +53,7 @@ class AdminController
             $data = getRequestData();
             
             // Validate input
-            $errors = $this->admin->validate($data);
+            $errors = $this->admin->validate($data, false); // false indicates this is a create operation
             if (!empty($errors)) {
                 jsonResponse(['success' => false, 'errors' => $errors], 422);
             }
@@ -81,7 +81,7 @@ class AdminController
             $data = getRequestData();
             
             // Validate input
-            $errors = $this->admin->validate($data);
+            $errors = $this->admin->validate($data, true); // true indicates this is an update operation
             if (!empty($errors)) {
                 jsonResponse(['success' => false, 'errors' => $errors], 422);
             }

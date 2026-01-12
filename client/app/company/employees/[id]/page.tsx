@@ -8,10 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, User, MapPin, Briefcase, Building, FileText, Users, CreditCard, Shield, Edit } from 'lucide-react';
+import {  User, MapPin, Briefcase, Building, FileText, Users, CreditCard, Shield, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { employeeApi } from '@/lib/api';
 import { Employee } from '@/types/employee';
+import Image from 'next/image';
 
 const EmployeeDetailsPage = () => {
   const { isAuthenticated, isLoading: authLoading } = useCompanyAuth();
@@ -110,8 +111,9 @@ const EmployeeDetailsPage = () => {
         >
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-6">
-              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full p-4">
-                <User className="h-12 w-12 text-white" />
+              <div className="rounded-full">
+                <Image src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${employee.image || ''}`} alt={employee.name} width={100} height={100} className="rounded-full" unoptimized />
+                
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">

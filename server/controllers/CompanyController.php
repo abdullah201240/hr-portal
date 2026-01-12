@@ -50,7 +50,7 @@ class CompanyController
             $data = getRequestData();
             
             // Validate input
-            $errors = $this->company->validate($data);
+            $errors = $this->company->validate($data, false); // false indicates this is a create operation
             if (!empty($errors)) {
                 jsonResponse(['success' => false, 'errors' => $errors], 422);
             }

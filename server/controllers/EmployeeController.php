@@ -193,7 +193,7 @@ class EmployeeController
         // Add company_id to the input
         $input['companyId'] = $companyId;
 
-        $validationErrors = $this->employee->validate($input);
+        $validationErrors = $this->employee->validate($input, false); // false indicates this is a create operation
         if (!empty($validationErrors)) {
             http_response_code(422);
             echo json_encode(['success' => false, 'errors' => $validationErrors]);
@@ -276,7 +276,7 @@ class EmployeeController
             return;
         }
 
-        $validationErrors = $this->employee->validate($input);
+        $validationErrors = $this->employee->validate($input, true); // true indicates this is an update operation
         if (!empty($validationErrors)) {
             http_response_code(422);
             echo json_encode(['success' => false, 'errors' => $validationErrors]);
