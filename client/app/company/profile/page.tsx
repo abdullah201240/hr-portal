@@ -11,11 +11,13 @@ import { toast } from 'sonner';
 import { companyApi } from '@/lib/api';
 import { Building2, Mail, Phone, Globe, MapPin, Calendar, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { Company } from '@/types/company';
 
 export default function CompanyProfilePage() {
   const { isAuthenticated, isLoading, companyProfile, setCompanyProfile } = useCompanyAuth();
   const router = useRouter();
-  const [companyData, setCompanyData] = useState<any>(null);
+  const [companyData, setCompanyData] = useState<Company | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -117,9 +119,10 @@ export default function CompanyProfilePage() {
             setProfileLoaded(true);
           }
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error fetching company profile:', error);
-        toast.error(error.message || 'Failed to load company profile');
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load company profile';
+        toast.error(errorMessage);
         setProfileLoaded(true);
       } finally {
         setLoading(false);
@@ -220,9 +223,10 @@ export default function CompanyProfilePage() {
       } else {
         toast.error(response.message || 'Failed to update company profile');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating company profile:', error);
-      toast.error(error.message || 'Failed to update company profile');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update company profile';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -256,7 +260,7 @@ export default function CompanyProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold mb-2 bg-linear-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
           Company Profile
         </h1>
         <p className="text-muted-foreground">Manage your company information and settings</p>
@@ -302,16 +306,18 @@ export default function CompanyProfilePage() {
                       <div className="flex flex-col items-start gap-4">
                         <div className="relative">
                           {formData.logo ? (
-                            <img 
-                              src={formData.logo.startsWith('http') ? formData.logo : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'}/uploads/logos/${encodeURIComponent(getFilenameFromPath(formData.logo))}`}
+                            <Image 
+                              src={formData.logo.startsWith('http') ? formData.logo : `${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE || 'http://localhost:8000'}/uploads/logos/${encodeURIComponent(getFilenameFromPath(formData.logo))}`}
                               alt="Current logo" 
+                              width={64}
+                              height={64}
                               className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.onerror = null; // Prevent infinite loop
                                 target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzY0NzU4NyIvPgo8cGF0aCBkPSJNNDggMjRDMzcuMDU4OSAyNCAyOCAzMi45Mjg5IDI4IDQyQzI4IDM0Ljk1ODkgMzcuMDU4OSAyNCA0OCAyNFoiIGZpbGw9IiM4RDk4QUIiLz4KPHBhdGggZD0iTTI0IDI0QzM0Ljk0MTEgMjQgNDQgMzIuOTI4OSA0NCA0MkM0NCAzNC45NTg5IDM0Ljk0MTEgMjQgMjQgMjRaIiBmaWxsPSIjOEQ5OEFCIi8+Cjwvc3ZnPgo=';
                               }}
-                              onLoad={(e) => {
+                              onLoad={() => {
                                 // Image loaded successfully, do nothing
                               }}
                             />
@@ -324,8 +330,10 @@ export default function CompanyProfilePage() {
                         <div className="flex flex-col gap-2 w-full">
                           <div className="relative">
                             <input
-                              type="file"
                               id="logo-upload"
+                              title='Upload Logo'
+                              type="file"
+                              name="logo"
                               className="hidden"
                               accept="image/*"
                               onChange={handleLogoUpload}
@@ -436,6 +444,7 @@ export default function CompanyProfilePage() {
                       value={formData.description}
                       onChange={handleInputChange}
                       rows={4}
+                      placeholder="Enter company description"
                       className="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
@@ -460,16 +469,18 @@ export default function CompanyProfilePage() {
                     <div className="flex items-center gap-4">
                       <div className="relative">
                         {formData.logo ? (
-                          <img 
-                            src={formData.logo.startsWith('http') ? formData.logo : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'}/uploads/logos/${encodeURIComponent(getFilenameFromPath(formData.logo))}`}
+                          <Image 
+                            src={formData.logo.startsWith('http') ? formData.logo : `${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE || 'http://localhost:8000'}/uploads/logos/${encodeURIComponent(getFilenameFromPath(formData.logo))}`}
                             alt={`${formData.name} logo`} 
+                            width={64}
+                            height={64}
                             className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.onerror = null; // Prevent infinite loop
                               target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzY0NzU4NyIvPgo8cGF0aCBkPSJNNDggMjRDMzcuMDU4OSAyNCAyOCAzMi45Mjg5IDI4IDQyQzI4IDM0Ljk1ODkgMzcuMDU4OSAyNCA0OCAyNFoiIGZpbGw9IiM4RDk4QUIiLz4KPHBhdGggZD0iTTI0IDI0QzM0Ljk0MTEgMjQgNDQgMzIuOTI4OSA0NCA0MkM0NCAzNC45NTg5IDM0Ljk0MTEgMjQgMjQgMjRaIiBmaWxsPSIjOEQ5OEFCIi8+Cjwvc3ZnPgo=';
                             }}
-                            onLoad={(e) => {
+                            onLoad={() => {
                               // Image loaded successfully, do nothing
                             }}
                           />

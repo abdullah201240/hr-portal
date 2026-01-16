@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { adminApi } from '@/lib/api';
+import { DashboardStats } from '@/types/admin';
 import {
   Building2,
   Users,
@@ -20,12 +21,13 @@ import {
   FileText,
   UserPlus
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AdminDashboard() {
   const { isAuthenticated, isLoading } = useAdminAuth();
   const router = useRouter();
-  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,9 +46,10 @@ export default function AdminDashboard() {
         } else {
           toast.error(data.message || 'Failed to load dashboard data');
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        toast.error(error.message || 'Failed to load dashboard data');
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load dashboard data';
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -144,7 +147,15 @@ export default function AdminDashboard() {
   ];
 
   // Map recent activities from real data
-  const recentActivities = dashboardData?.recent_activity?.slice(0, 4).map((activity: any, index: number) => ({
+  interface FormattedActivity {
+    company: string;
+    action: string;
+    time: string;
+    icon: LucideIcon;
+    color: string;
+  }
+
+  const recentActivities: FormattedActivity[] = dashboardData?.recent_activity?.slice(0, 4).map((activity, index) => ({
     company: activity.name,
     action: activity.action,
     time: new Date(activity.created_at).toLocaleDateString(),
@@ -178,10 +189,10 @@ export default function AdminDashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold mb-2 bg-linear-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
           Dashboard
         </h1>
-        <p className="text-muted-foreground">Welcome back! Here's what's happening with your platform.</p>
+        <p className="text-muted-foreground">Welcome back! Here&apos;s what&apos;s happening with your platform.</p>
       </motion.div>
 
       {/* Stats Grid - Updated to match companies page style with color variants */}
@@ -197,8 +208,8 @@ export default function AdminDashboard() {
             <Card className={`relative glass ${stat.colorClass} overflow-hidden group hover:shadow-2xl transition-all duration-500`}>
               {/* 3D Background Graphics with color variants */}
               <div className="absolute inset-0 opacity-30">
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.glowColor} ${stat.glowBlur} group-hover:scale-150 transition-transform duration-700`} />
-                <div className={`absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr ${stat.glowColor.replace('to-', 'to-')} rounded-full ${stat.glowBlur.replace('blur-', 'blur-2')} group-hover:scale-125 transition-transform duration-700`} />
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-linear-to-br ${stat.glowColor} ${stat.glowBlur} group-hover:scale-150 transition-transform duration-700`} />
+                <div className={`absolute bottom-0 left-0 w-24 h-24 bg-linear-to-tr ${stat.glowColor.replace('to-', 'to-')} rounded-full ${stat.glowBlur.replace('blur-', 'blur-2')} group-hover:scale-125 transition-transform duration-700`} />
                 <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 ${stat.pulseColor} rounded-full blur-xl animate-pulse`} />
               </div>
 
@@ -207,7 +218,7 @@ export default function AdminDashboard() {
                   <div className="flex-1">
                     <p className="text-xs font-medium text-foreground/70 mb-1.5">{stat.title}</p>
                     <motion.h3
-                      className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent"
+                      className="text-2xl font-bold bg-linear-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent"
                       animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
                       transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                     >
@@ -227,8 +238,8 @@ export default function AdminDashboard() {
                       scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
                     }}
                   >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgClass} rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity`} />
-                    <div className={`relative bg-gradient-to-br ${stat.iconBg} p-3 rounded-xl backdrop-blur-sm border border-${stat.iconColor.split('-')[1]}-400/20`}>
+                    <div className={`absolute inset-0 bg-linear-to-br ${stat.bgClass} rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity`} />
+                    <div className={`relative bg-linear-to-br ${stat.iconBg} p-3 rounded-xl backdrop-blur-sm border border-${stat.iconColor.split('-')[1]}-400/20`}>
                       <stat.icon className={`h-6 w-6 ${stat.iconColor} drop-shadow-lg`} />
                     </div>
                   </motion.div>
@@ -256,7 +267,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentActivities.map((activity: any, index: number) => (
+                {recentActivities.map((activity, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -10 }}
@@ -313,8 +324,8 @@ export default function AdminDashboard() {
                       className="w-full h-auto flex-col items-start p-4 glass border-white/10 hover:glass-strong group relative overflow-hidden"
                       onClick={() => router.push(action.href)}
                     >
-                      <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity`} />
-                      <div className={`p-2 rounded-lg bg-gradient-to-br ${action.gradient} mb-3`}>
+                      <div className={`absolute inset-0 bg-linear-to-br ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                      <div className={`p-2 rounded-lg bg-linear-to-br ${action.gradient} mb-3`}>
                         <action.icon className="h-5 w-5 text-white" />
                       </div>
                       <span className="text-sm font-medium text-left">{action.label}</span>

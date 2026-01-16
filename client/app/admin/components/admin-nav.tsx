@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 const navItems = [
   {
@@ -55,19 +54,10 @@ type AdminNavProps = {
 
 export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNavProps) {
   const pathname = usePathname();
-  const { adminProfile } = useAdminAuth();
 
-  const getInitials = (name?: string) => {
-    if (!name) return 'A';
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
+ 
 
-  const handleClick = (href: string) => {
+  const handleClick = () => {
     if (toggleSidebar) {
       toggleSidebar();
     }
@@ -80,7 +70,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
       isCollapsed ? 'w-16' : 'w-64'
     )}>
       {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-br from-emerald-500/5 via-transparent to-teal-500/5 pointer-events-none" />
 
       {/* Logo Section */}
       <div className={cn(
@@ -101,6 +91,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
             
             <button
               onClick={toggleCollapse}
+              aria-label="Toggle Menu"
               className="p-2 rounded-lg hover:bg-emerald-500/5 text-emerald-500/60 hover:text-emerald-500 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -119,13 +110,14 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
               <div className="gradient-emerald p-2 rounded-xl shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
                 <ShieldCheck className="text-white size-5" />
               </div>
-              <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent tracking-tight">
+              <span className="text-lg font-bold bg-linear-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent tracking-tight">
                 HR Portal
               </span>
             </Link>
 
             <button
               onClick={toggleCollapse}
+              aria-label="Toggle Menu"
               className="p-2 rounded-lg hover:bg-emerald-500/5 text-emerald-500/60 hover:text-emerald-500 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -155,7 +147,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
               >
                 <Link
                   href={item.href}
-                  onClick={() => handleClick(item.href)}
+                  onClick={handleClick}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
                     isCollapsed && 'justify-center px-3',
@@ -218,7 +210,7 @@ export function AdminNav({ toggleSidebar, isCollapsed, toggleCollapse }: AdminNa
               >
                 <Link
                   href={item.href}
-                  onClick={() => handleClick(item.href)}
+                  onClick={handleClick}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative",
                     isCollapsed && 'justify-center px-3',

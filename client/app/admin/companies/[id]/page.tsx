@@ -9,13 +9,15 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowLeft, Building2, Mail, Phone, Globe, MapPin, Calendar, Users, Lock, AlertTriangle } from 'lucide-react';
+import { Company } from '@/types/company';
 
 interface CompanyDetailsPageProps {
   params: Promise<{ id: string }>;
 }
 
 export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) {
-  const [company, setCompany] = useState<any>(null);
+  const [company, setCompany] = useState<Company | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const [companyId, setCompanyId] = useState<number | null>(null);
   const router = useRouter();
@@ -81,7 +83,7 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
         <div className="relative">
           <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-emerald-500"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full animate-pulse"></div>
+            <div className="w-20 h-20 bg-linear-to-br from-emerald-500 to-teal-500 rounded-full animate-pulse"></div>
           </div>
         </div>
       </div>
@@ -96,13 +98,13 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold mb-2 bg-linear-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
             Company Not Found
           </h1>
           <p className="text-sm text-muted-foreground/90">The requested company could not be found.</p>
           <Button
             onClick={() => router.push('/admin/companies')}
-            className="mt-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+            className="mt-4 bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Companies
@@ -132,7 +134,7 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex items-center space-x-3">
-                  <div className="bg-gradient-to-br from-emerald-500 to-teal-500 p-3 rounded-lg">
+                  <div className="bg-linear-to-br from-emerald-500 to-teal-500 p-3 rounded-lg">
                     <Building2 className="h-6 w-6 text-white" />
                   </div>
                   <div>
@@ -143,9 +145,11 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
                           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
                           : company.status === 'inactive' 
                           ? 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/20' 
-                          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                          : company.status === 'suspended'
+                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                          : 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/20'
                       }`}>
-                        {company.status.charAt(0).toUpperCase() + company.status.slice(1)}
+                        {(company.status || 'unknown').charAt(0).toUpperCase() + (company.status || 'unknown').slice(1)}
                       </span>
                       <span className="text-sm text-muted-foreground">ID: {company.id}</span>
                     </div>
@@ -154,7 +158,7 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
               </div>
               <div className="flex space-x-2">
                 <Link href={`/admin/companies/${company.id}/edit`}>
-                  <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600">
+                  <Button className="bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600">
                     Edit Company
                   </Button>
                 </Link>
@@ -172,7 +176,7 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
                       <Mail className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="text-sm font-medium text-foreground break-words">{company.email}</p>
+                        <p className="text-sm font-medium text-foreground wrap-break-word">{company.email}</p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
@@ -186,7 +190,7 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
                       <Globe className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-muted-foreground">Website</p>
-                        <p className="text-sm font-medium text-foreground break-words">
+                        <p className="text-sm font-medium text-foreground wrap-break-word">
                           {company.website ? (
                             <a 
                               href={company.website} 

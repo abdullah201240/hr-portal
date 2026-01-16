@@ -10,7 +10,7 @@ import { companyApi } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ArrowLeft, Building2, Eye, EyeOff } from 'lucide-react';
+import {  Eye, EyeOff } from 'lucide-react';
 
 export default function CreateCompany() {
   const [formData, setFormData] = useState({
@@ -87,6 +87,8 @@ export default function CreateCompany() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
+
+
     if (!formData.address.trim()) {
       newErrors.address = 'Address is required';
     }
@@ -116,9 +118,10 @@ export default function CreateCompany() {
       await companyApi.createCompany(companyData);
       toast.success('Company created successfully');
       router.push('/admin/companies');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating company:', error);
-      toast.error(error.message || 'Failed to create company');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create company';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

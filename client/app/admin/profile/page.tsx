@@ -21,33 +21,7 @@ export default function ProfilePage() {
   });
   const [loading, setLoading] = useState(true);
 
-  // Load admin profile data
-  useEffect(() => {
-        fetchProfile();
-  }, []); // Only run once on mount
-
-  // Update form data when adminProfile from context changes (e.g. after fetchProfile succeeds)
-  useEffect(() => {
-    if (adminProfile) {
-      setFormData({
-        name: adminProfile.name || '',
-        email: adminProfile.email || '',
-        role: adminProfile.role || '',
-        status: adminProfile.status || ''
-      });
-      setLoading(false);
-    }
-  }, [adminProfile]);
-
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  }, []);
-
-  const fetchProfile = useCallback(async () => {
+    const fetchProfile = useCallback(async () => {
     try {
       // Don't set loading if we already have data to show (improves UX)
       if (!adminProfile) setLoading(true);
@@ -67,11 +41,11 @@ export default function ProfilePage() {
           status: profile.data.status || ''
         });
       }
-    } catch (apiError: any) {
+    } catch (apiError: unknown) {
       console.error('API call failed:', apiError);
       
       // Check if this is specifically an authentication error
-      const errorMessage = apiError?.message?.toLowerCase() || '';
+      const errorMessage = (apiError as Error)?.message?.toLowerCase() || '';
       const isAuthError = errorMessage.includes('401') || 
                          errorMessage.includes('authorization') || 
                          errorMessage.includes('token');
@@ -99,7 +73,34 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
+  }, [adminProfile, setAdminProfile]);
+  // Load admin profile data
+  useEffect(() => {
+        fetchProfile();
+  }, [fetchProfile]); // Only run once on mount
+
+  // Update form data when adminProfile from context changes (e.g. after fetchProfile succeeds)
+  useEffect(() => {
+    if (adminProfile) {
+      setFormData({
+        name: adminProfile.name || '',
+        email: adminProfile.email || '',
+        role: adminProfile.role || '',
+        status: adminProfile.status || ''
+      });
+      setLoading(false);
+    }
+  }, [adminProfile]);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   }, []);
+
+
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +116,7 @@ export default function ProfilePage() {
       const adminId = profile.id;
 
       // Prepare update data (excluding password field)
-      const updateData: any = {
+      const updateData: { name: string; email: string } = {
         name: formData.name,
         email: formData.email
       };
@@ -129,11 +130,11 @@ export default function ProfilePage() {
       
       toast.success('Profile updated successfully!');
       setIsEditing(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating profile:', error);
-      toast.error(error.message || 'Failed to update profile');
+      toast.error((error as Error).message || 'Failed to update profile');
     } 
-  }, [adminProfile, setAdminProfile]);
+  }, [formData.email, formData.name, setAdminProfile]);
 
   if (loading) {
     return (

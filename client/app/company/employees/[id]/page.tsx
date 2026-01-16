@@ -71,7 +71,7 @@ const EmployeeDetailsPage = () => {
   // Show loading state for employee data
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
         <div >
           <Skeleton className="h-12 w-1/3 mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -87,7 +87,7 @@ const EmployeeDetailsPage = () => {
   // Show not found if no employee exists
   if (!employee) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
         <div >
           <Card className="p-8 text-center">
             <h2 className="text-2xl font-bold text-destructive">Employee not found</h2>
@@ -112,11 +112,11 @@ const EmployeeDetailsPage = () => {
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-6">
               <div className="rounded-full">
-                <Image src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${employee.image || ''}`} alt={employee.name} width={100} height={100} className="rounded-full" unoptimized />
+                <Image src={employee.image ? (employee.image.startsWith('data:') ? employee.image : `${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${employee.image}`) : '/placeholder-avatar.png'} alt={employee.name} width={100} height={100} className="rounded-full" unoptimized />
                 
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                <h1 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
                   {employee.name}
                 </h1>
                 <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
@@ -131,7 +131,7 @@ const EmployeeDetailsPage = () => {
             </div>
             <Button 
               onClick={() => router.push(`/company/employees/${id}/edit`)}
-              className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+              className="flex items-center gap-2 bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
             >
               <Edit className="h-4 w-4" />
               Edit Employee

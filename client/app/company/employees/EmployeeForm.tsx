@@ -175,9 +175,9 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
               <div className="relative">
                 <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-dashed border-border bg-muted flex items-center justify-center">
                   {formData.image ? (
-                    <Image 
-                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${formData.image}`} alt="Profile Preview" className="w-full h-full object-cover"
-                      unoptimized
+                    <img 
+                      src={formData.image.startsWith('data:') ? formData.image : `${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${formData.image}`} alt="Profile Preview" className="w-full h-full object-cover"
+                      
                        />
                       
                   

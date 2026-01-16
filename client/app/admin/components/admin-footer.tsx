@@ -13,7 +13,7 @@ export function AdminFooter({ className }: { className?: string }) {
         )}>
             <div className="flex items-center justify-center gap-2">
                 <span className="text-sm text-muted-foreground">
-                    © {currentYear} <span className="font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">Eidden</span> All rights reserved.
+                    © {currentYear} <span className="font-bold bg-linear-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">Eidden</span> All rights reserved.
                 </span>
             </div>
         </footer>

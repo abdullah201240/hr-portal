@@ -59,8 +59,8 @@ export default function AdminLayout({
     return (
         <div className="flex min-h-screen flex-col bg-background text-foreground relative overflow-hidden">
             {/* Background Pattern */}
-            <div className="fixed inset-0 bg-gradient-to-br from-emerald-500/5 via-background to-teal-500/5 pointer-events-none" />
-            <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
+            <div className="fixed inset-0 bg-linear-to-br from-emerald-500/5 via-background to-teal-500/5 pointer-events-none" />
+            <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
 
             <div className="flex flex-1 relative z-10">
                 {/* Mobile sidebar overlay */}
@@ -73,7 +73,7 @@ export default function AdminLayout({
 
                 {/* Sidebar */}
                 <aside
-                    className={`fixed inset-y-0 left-0 z-[60] transform transition-all duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:flex md:flex-col ${sidebarCollapsed ? 'w-16' : 'w-64'}`}
+                    className={`fixed inset-y-0 left-0 z-60 transform transition-all duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:flex md:flex-col ${sidebarCollapsed ? 'w-16' : 'w-64'}`}
                 >
                     <AdminNav
                         toggleSidebar={() => setSidebarOpen(false)}

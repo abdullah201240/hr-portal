@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { adminApi } from '@/lib/api';
 import { motion } from 'framer-motion';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -51,9 +51,9 @@ export default function EditAdmin(props: { params: Promise<{ id: string }> }) {
           role: admin.role || 'admin',
           status: admin.status || 'active'
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error fetching admin details:', error);
-        const errorMessage = error.message || 'Failed to fetch admin details';
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch admin details';
         setFetchError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -62,7 +62,7 @@ export default function EditAdmin(props: { params: Promise<{ id: string }> }) {
     };
 
     fetchAdminDetails();
-  }, [params.id]);
+  }, [adminId, params?.id]);
 
 
 
@@ -133,9 +133,9 @@ export default function EditAdmin(props: { params: Promise<{ id: string }> }) {
       await adminApi.updateAdmin(Number(adminId), adminData);
       toast.success('Admin updated successfully');
       router.push('/admin/admins');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating admin:', error);
-      toast.error(error.message || 'Failed to update admin');
+      toast.error(error instanceof Error ? error.message : 'Failed to update admin');
     } finally {
       setLoading(false);
     }
@@ -260,7 +260,7 @@ export default function EditAdmin(props: { params: Promise<{ id: string }> }) {
                 </Button>
                 <Button
                   type="submit"
-                  className="px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                  className="px-6 bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

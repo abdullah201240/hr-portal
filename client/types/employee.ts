@@ -60,6 +60,22 @@ export interface Department {
   updated_at?: string;
 }
 
+export interface Company {
+  id: number;
+  name: string;
+  email: string;
+  address: string;
+  phone?: string;
+  website?: string;
+  description?: string;
+  logo?: string;
+  established_date?: string;
+  status: 'active' | 'inactive' | 'suspended';
+  industry?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Admin {
   id: number;
   name: string;

@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { companyApi } from '@/lib/api';
+import { Company } from '@/types/employee';
 import {
   Search,
   Filter,
@@ -42,8 +43,8 @@ type SortField = 'name' | 'email' | 'status' | 'phone';
 type SortDirection = 'asc' | 'desc';
 
 export default function ManageCompanies() {
-  const [companies, setCompanies] = useState<any[]>([]);
-  const [filteredCompanies, setFilteredCompanies] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState<number | null>(null);
 
@@ -130,12 +131,12 @@ export default function ManageCompanies() {
       });
 
       // Update local state for immediate feedback
-      setCompanies(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
+      setCompanies(prev => prev.map(c => c.id === id ? { ...c, status: newStatus as 'active' | 'inactive' | 'suspended' } : c));
       // fetchCompanies(); // Optional: uncomment if you want to be sure about server state
       toast.success(`Status updated to ${newStatus}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating company status:', error);
-      toast.error(error.message || 'Failed to update status');
+      toast.error((error as Error)?.message || 'Failed to update status');
       // Revert if needed or fetch from server
       fetchCompanies();
     } finally {
@@ -190,9 +191,9 @@ export default function ManageCompanies() {
       // Update local state to remove the company
       setCompanies(prev => prev.filter(c => c.id !== pendingDeleteId));
       toast.success('Company deleted successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting company:', error);
-      toast.error(error.message || 'Failed to delete company');
+      toast.error((error as Error)?.message || 'Failed to delete company');
       // Fetch companies again to revert the optimistic update
       fetchCompanies();
     } finally {
@@ -220,7 +221,7 @@ export default function ManageCompanies() {
         <div className="relative">
           <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-emerald-500"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full animate-pulse"></div>
+            <div className="w-20 h-20 bg-linear-to-br from-emerald-500 to-teal-500 rounded-full animate-pulse"></div>
           </div>
         </div>
       </div>
@@ -235,7 +236,7 @@ export default function ManageCompanies() {
         className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-linear-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
             Manage Companies
           </h1>
           <p className="text-sm sm:base text-muted-foreground/90">View and manage all registered companies in the system.</p>
@@ -243,7 +244,7 @@ export default function ManageCompanies() {
         <div className="flex items-center space-x-2 w-full sm:w-auto">
 
           <Link href="/admin/companies/create" className="w-full sm:w-auto">
-            <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600">
+            <Button className="w-full bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600">
               <Plus className="h-4 w-4 mr-2" />
               Add New
             </Button>
@@ -263,8 +264,8 @@ export default function ManageCompanies() {
           <Card className="relative glass border-emerald-500/20 overflow-hidden group hover:border-emerald-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20">
             {/* 3D Background Graphics */}
             <div className="absolute inset-0 opacity-30">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-teal-400 to-emerald-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-emerald-400 to-teal-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-linear-to-tr from-teal-400 to-emerald-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-emerald-500/20 rounded-full blur-xl animate-pulse" />
             </div>
 
@@ -273,7 +274,7 @@ export default function ManageCompanies() {
                 <div className="flex-1">
                   <p className="text-xs font-medium text-foreground/70 mb-1.5">Total Companies</p>
                   <motion.h3
-                    className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent"
+                    className="text-2xl font-bold bg-linear-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent"
                     animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   >
@@ -285,8 +286,8 @@ export default function ManageCompanies() {
                   animate={{ rotate: [0, 5, 0, -5, 0] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
-                  <div className="relative bg-gradient-to-br from-emerald-500/30 to-teal-500/30 p-3 rounded-xl backdrop-blur-sm border border-emerald-400/20">
+                  <div className="absolute inset-0 bg-linear-to-br from-emerald-500 to-teal-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
+                  <div className="relative bg-linear-to-br from-emerald-500/30 to-teal-500/30 p-3 rounded-xl backdrop-blur-sm border border-emerald-400/20">
                     <Building2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400 drop-shadow-lg" />
                   </div>
                 </motion.div>
@@ -305,8 +306,8 @@ export default function ManageCompanies() {
           <Card className="relative glass border-green-500/20 overflow-hidden group hover:border-green-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-green-500/20">
             {/* 3D Background Graphics */}
             <div className="absolute inset-0 opacity-30">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-400 to-green-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-green-400 to-emerald-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-linear-to-tr from-emerald-400 to-green-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-green-500/20 rounded-full blur-xl animate-pulse" />
             </div>
 
@@ -315,7 +316,7 @@ export default function ManageCompanies() {
                 <div className="flex-1">
                   <p className="text-xs font-medium text-foreground/70 mb-1.5">Active</p>
                   <motion.h3
-                    className="text-2xl font-bold bg-gradient-to-r from-green-400 via-emerald-400 to-green-400 bg-clip-text text-transparent"
+                    className="text-2xl font-bold bg-linear-to-r from-green-400 via-emerald-400 to-green-400 bg-clip-text text-transparent"
                     animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   >
@@ -333,8 +334,8 @@ export default function ManageCompanies() {
                     rotate: { duration: 8, repeat: Infinity, ease: "linear" }
                   }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
-                  <div className="relative bg-gradient-to-br from-green-500/30 to-emerald-500/30 p-3 rounded-xl backdrop-blur-sm border border-green-400/20">
+                  <div className="absolute inset-0 bg-linear-to-br from-green-500 to-emerald-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
+                  <div className="relative bg-linear-to-br from-green-500/30 to-emerald-500/30 p-3 rounded-xl backdrop-blur-sm border border-green-400/20">
                     <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400 drop-shadow-lg" />
                   </div>
                 </motion.div>
@@ -353,8 +354,8 @@ export default function ManageCompanies() {
           <Card className="relative glass border-amber-500/20 overflow-hidden group hover:border-amber-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-amber-500/20">
             {/* 3D Background Graphics */}
             <div className="absolute inset-0 opacity-30">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-orange-400 to-amber-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-amber-400 to-orange-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-linear-to-tr from-orange-400 to-amber-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-amber-500/20 rounded-full blur-xl animate-pulse" />
             </div>
 
@@ -363,7 +364,7 @@ export default function ManageCompanies() {
                 <div className="flex-1">
                   <p className="text-xs font-medium text-foreground/70 mb-1.5">Suspended</p>
                   <motion.h3
-                    className="text-2xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent"
+                    className="text-2xl font-bold bg-linear-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent"
                     animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   >
@@ -375,8 +376,8 @@ export default function ManageCompanies() {
                   animate={{ rotate: [0, 360] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
-                  <div className="relative bg-gradient-to-br from-amber-500/30 to-orange-500/30 p-3 rounded-xl backdrop-blur-sm border border-amber-400/20">
+                  <div className="absolute inset-0 bg-linear-to-br from-amber-500 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
+                  <div className="relative bg-linear-to-br from-amber-500/30 to-orange-500/30 p-3 rounded-xl backdrop-blur-sm border border-amber-400/20">
                     <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400 drop-shadow-lg" />
                   </div>
                 </motion.div>
@@ -395,8 +396,8 @@ export default function ManageCompanies() {
           <Card className="relative glass border-gray-500/20 overflow-hidden group hover:border-gray-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-gray-500/20">
             {/* 3D Background Graphics */}
             <div className="absolute inset-0 opacity-30">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-gray-400 to-slate-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-slate-400 to-gray-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-gray-400 to-slate-500 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-linear-to-tr from-slate-400 to-gray-500 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-gray-500/20 rounded-full blur-xl animate-pulse" />
             </div>
 
@@ -405,7 +406,7 @@ export default function ManageCompanies() {
                 <div className="flex-1">
                   <p className="text-xs font-medium text-foreground/70 mb-1.5">Inactive</p>
                   <motion.h3
-                    className="text-2xl font-bold bg-gradient-to-r from-gray-400 via-slate-400 to-gray-400 bg-clip-text text-transparent"
+                    className="text-2xl font-bold bg-linear-to-r from-gray-400 via-slate-400 to-gray-400 bg-clip-text text-transparent"
                     animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   >
@@ -423,8 +424,8 @@ export default function ManageCompanies() {
                     rotate: { duration: 4, repeat: Infinity, ease: "easeInOut" }
                   }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-gray-500 to-slate-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
-                  <div className="relative bg-gradient-to-br from-gray-500/30 to-slate-500/30 p-3 rounded-xl backdrop-blur-sm border border-gray-400/20">
+                  <div className="absolute inset-0 bg-linear-to-br from-gray-500 to-slate-500 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
+                  <div className="relative bg-linear-to-br from-gray-500/30 to-slate-500/30 p-3 rounded-xl backdrop-blur-sm border border-gray-400/20">
                     <XCircle className="h-6 w-6 text-gray-600 dark:text-gray-400 drop-shadow-lg" />
                   </div>
                 </motion.div>
@@ -491,7 +492,7 @@ export default function ManageCompanies() {
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full min-w-max">
-                <thead className="bg-gradient-to-r from-emerald-500/5 to-teal-500/5 border-b border-white/10">
+                <thead className="bg-linear-to-r from-emerald-500/5 to-teal-500/5 border-b border-white/10">
                   <tr>
                     <th
                       className="py-4 px-4 text-left font-semibold text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors group min-w-[150px]"
@@ -546,7 +547,7 @@ export default function ManageCompanies() {
                       >
                         <td className="py-4 px-4">
                           <div className="flex items-center">
-                            <div className="bg-gradient-to-br from-emerald-500 to-teal-500 w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold mr-3 shadow-lg">
+                            <div className="bg-linear-to-br from-emerald-500 to-teal-500 w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold mr-3 shadow-lg">
                               {company.name.charAt(0).toUpperCase()}
                             </div>
                             <div>
@@ -706,7 +707,7 @@ export default function ManageCompanies() {
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex items-center">
-                        <div className="bg-gradient-to-br from-emerald-500 to-teal-500 w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold mr-4 shadow-lg shrink-0">
+                        <div className="bg-linear-to-br from-emerald-500 to-teal-500 w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold mr-4 shadow-lg shrink-0">
                           {company.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="overflow-hidden">

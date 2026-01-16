@@ -98,7 +98,7 @@ export function AdminHeader({ isMobile = false }: { isMobile?: boolean } = {}) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button variant="ghost" className="relative h-10 w-10 p-0 rounded-full border-2 border-emerald-500/20 p-[2px] hover:border-emerald-500/40 transition-all">
+                    <Button variant="ghost" className="relative h-10 w-10 p-0 rounded-full border-2 border-emerald-500/20 hover:border-emerald-500/40 transition-all">
                       <div className="w-full h-full rounded-full gradient-emerald flex items-center justify-center text-white text-xs font-bold">
                         {getInitials(adminProfile?.name)}
                       </div>

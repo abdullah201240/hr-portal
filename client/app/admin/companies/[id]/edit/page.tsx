@@ -10,7 +10,7 @@ import { companyApi } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface FormData {
@@ -65,9 +65,9 @@ export default function EditCompanyPage() {
           established_date: company.established_date || '',
           status: company.status || 'active'
         });
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error fetching company:', error);
-        const errorMessage = error.message || 'Failed to fetch company details';
+        const errorMessage = (error as Error)?.message || 'Failed to fetch company details';
         setFetchError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -148,9 +148,9 @@ export default function EditCompanyPage() {
       await companyApi.updateCompany(Number(companyId), companyData);
       toast.success('Company updated successfully');
       router.push(`/admin/companies/${companyId}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating company:', error);
-      toast.error(error.message || 'Failed to update company');
+      toast.error((error as Error)?.message || 'Failed to update company');
     } finally {
       setLoading(false);
     }
@@ -329,7 +329,7 @@ export default function EditCompanyPage() {
                 </Button>
                 <Button
                   onClick={handleSubmit}
-                  className="px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                  className="px-6 bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
