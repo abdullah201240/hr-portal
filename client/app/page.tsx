@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, Calendar, TrendingUp, Shield, Zap, Award, ChevronRight, Menu, X, Clock, DollarSign, Target, BarChart3, Globe, Star, Sparkles, ArrowRight, CheckCircle, Building, UserPlus, LogIn, User, Info, ChevronDown } from 'lucide-react';
+import { Users, Calendar, TrendingUp, Shield, Zap, Award, Menu, X, Clock, DollarSign, Target, BarChart3, Globe, Star, Sparkles, ArrowRight, CheckCircle, Building, UserPlus, LogIn, User, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -32,27 +32,13 @@ const fadeIn = {
   visible: { opacity: 1, transition: { duration: 0.8 } }
 };
 
-const slideIn = {
-  hidden: { x: -50, opacity: 0 },
-  visible: { x: 0, opacity: 1, transition: { duration: 0.7, ease: "easeOut" } }
-};
 
-const float = {
-  hidden: { y: 0 },
-  visible: {
-    y: [-10, 10, -10],
-    transition: {
-      duration: 6,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }
-  }
-};
+
+
 
 export default function HRPortalLanding() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState({});
 
   useEffect(() => {
     const handleScroll = () => {
@@ -120,7 +106,7 @@ export default function HRPortalLanding() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-purple-900 via-blue-900 to-indigo-900 text-white overflow-hidden">
       {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -187,11 +173,11 @@ export default function HRPortalLanding() {
                   <ChevronDown className="ml-1" size={16} />
                 </Button>
                 <div className="absolute top-full left-0 mt-1 w-56 bg-black/80 backdrop-blur-lg rounded-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <Link href="/register/company" className="block px-4 py-2 hover:bg-white/10 text-white flex items-center gap-2">
+                  <Link href="/register/company" className="block px-4 py-2 hover:bg-white/10 text-white items-center gap-2">
                     <UserPlus size={16} />
                     Register Company
                   </Link>
-                  <Link href="/login/company" className="block px-4 py-2 hover:bg-white/10 text-white flex items-center gap-2">
+                  <Link href="/login/company" className="block px-4 py-2 hover:bg-white/10 text-white items-center gap-2">
                     <LogIn size={16} />
                     Company Login
                   </Link>
@@ -204,11 +190,11 @@ export default function HRPortalLanding() {
                   <ChevronDown className="ml-1" size={16} />
                 </Button>
                 <div className="absolute top-full right-0 mt-1 w-56 bg-black/80 backdrop-blur-lg rounded-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <Link href="/login/employee" className="block px-4 py-2 hover:bg-white/10 text-white flex items-center gap-2">
+                  <Link href="/login/employee" className="block px-4 py-2 hover:bg-white/10 text-white items-center gap-2">
                     <User size={16} />
                     Employee Login
                   </Link>
-                  <Link href="/register/employee" className="block px-4 py-2 hover:bg-white/10 text-white flex items-center gap-2">
+                  <Link href="/register/employee" className="block px-4 py-2 hover:bg-white/10 text-white items-center gap-2">
                     <UserPlus size={16} />
                     Register Employee
                   </Link>
@@ -221,7 +207,7 @@ export default function HRPortalLanding() {
                   <ChevronDown className="ml-1" size={16} />
                 </Button>
                 <div className="absolute top-full right-0 mt-1 w-56 bg-black/80 backdrop-blur-lg rounded-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <Link href="/login/admin" className="block px-4 py-2 hover:bg-white/10 text-white flex items-center gap-2">
+                  <Link href="/login/admin" className="block px-4 py-2 hover:bg-white/10 text-white items-center gap-2">
                     <LogIn size={16} />
                     Admin Login
                   </Link>
@@ -279,7 +265,7 @@ export default function HRPortalLanding() {
                   </Button>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.02 }}>
-                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white flex items-center gap-2">
+                  <Button className="w-full bg-linear-to-r from-purple-500 to-pink-500 text-white flex items-center gap-2">
                     <UserPlus className="mr-2" size={16} />
                     Get Started
                   </Button>
@@ -287,11 +273,11 @@ export default function HRPortalLanding() {
 
                 <div className="pt-2 border-t border-white/10">
                   <h4 className="font-semibold px-2 py-1 text-sm text-purple-300">Company</h4>
-                  <Link href="/register/company" className="block px-3 py-2 hover:bg-white/10 rounded-md flex items-center gap-2">
+                  <Link href="/register/company" className="block px-3 py-2 hover:bg-white/10 rounded-md items-center gap-2">
                     <UserPlus size={16} />
                     Register Company
                   </Link>
-                  <Link href="/login/company" className="block px-3 py-2 hover:bg-white/10 rounded-md flex items-center gap-2">
+                  <Link href="/login/company" className="block px-3 py-2 hover:bg-white/10 rounded-md items-center gap-2">
                     <LogIn size={16} />
                     Company Login
                   </Link>
@@ -299,11 +285,11 @@ export default function HRPortalLanding() {
 
                 <div className="pt-2 border-t border-white/10">
                   <h4 className="font-semibold px-2 py-1 text-sm text-purple-300">Employee</h4>
-                  <Link href="/login/employee" className="block px-3 py-2 hover:bg-white/10 rounded-md flex items-center gap-2">
+                  <Link href="/login/employee" className="block px-3 py-2 hover:bg-white/10 rounded-md items-center gap-2">
                     <User size={16} />
                     Employee Login
                   </Link>
-                  <Link href="/register/employee" className="block px-3 py-2 hover:bg-white/10 rounded-md flex items-center gap-2">
+                  <Link href="/register/employee" className="block px-3 py-2 hover:bg-white/10 rounded-md items-center gap-2">
                     <UserPlus size={16} />
                     Register Employee
                   </Link>
@@ -311,7 +297,7 @@ export default function HRPortalLanding() {
                 
                 <div className="pt-2 border-t border-white/10">
                   <h4 className="font-semibold px-2 py-1 text-sm text-purple-300">Admin</h4>
-                  <Link href="/login/admin" className="block px-3 py-2 hover:bg-white/10 rounded-md flex items-center gap-2">
+                  <Link href="/login/admin" className="block px-3 py-2 hover:bg-white/10 rounded-md items-center gap-2">
                     <Shield size={16} />
                     Admin Login
                   </Link>
@@ -333,7 +319,7 @@ export default function HRPortalLanding() {
               transition={{ duration: 0.6 }}
               className="inline-block"
             >
-              <span className="px-4 py-2 bg-gradient-to-r from-purple-500/30 to-pink-500/30 backdrop-blur-sm rounded-full text-sm font-semibold border border-white/20 flex items-center gap-2">
+              <span className="px-4 py-2 bg-linear-to-r from-purple-500/30 to-pink-500/30 backdrop-blur-sm rounded-full text-sm font-semibold border border-white/20 flex items-center gap-2">
                 <Sparkles className="size-4" />
                 🚀 New: AI-Powered HR Analytics
               </span>
@@ -345,7 +331,7 @@ export default function HRPortalLanding() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-5xl md:text-7xl font-bold leading-tight tracking-tight max-w-4xl mx-auto"
             >
-              Transform Your <span className="bg-gradient-to-r from-purple-300 via-pink-300 to-blue-300 bg-clip-text text-transparent">HR Operations</span>
+              Transform Your <span className="bg-linear-to-r from-purple-300 via-pink-300 to-blue-300 bg-clip-text text-transparent">HR Operations</span>
               <br />
               <span className="mt-4 block text-3xl md:text-4xl font-normal text-purple-200">
                 with Intelligent Automation & Analytics
@@ -367,7 +353,7 @@ export default function HRPortalLanding() {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <Button size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 px-8 py-6 text-lg group flex items-center gap-2">
+              <Button size="lg" className="bg-linear-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 px-8 py-6 text-lg group flex items-center gap-2">
                 Start Free Trial
                 <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
@@ -429,17 +415,17 @@ export default function HRPortalLanding() {
                 className="h-full"
               >
                 <Card
-                  className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border-white/20 hover:from-white/15 hover:to-white/10 transition-all duration-300 hover:scale-[1.02] group h-full flex flex-col"
+                  className="bg-linear-to-b from-white/10 to-white/5 backdrop-blur-md border-white/20 hover:from-white/15 hover:to-white/10 transition-all duration-300 hover:scale-[1.02] group h-full flex flex-col"
                 >
-                  <CardContent className="p-6 flex-grow flex flex-col">
+                  <CardContent className="p-6 grow flex flex-col">
                     <motion.div
-                      className="w-14 h-14 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
+                      className="w-14 h-14 bg-linear-to-br from-purple-500/30 to-pink-500/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
                       whileHover={{ rotate: 5, scale: 1.1 }}
                     >
                       <feature.icon className="w-7 h-7 text-white" />
                     </motion.div>
                     <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                    <p className="text-purple-200 flex-grow">{feature.description}</p>
+                    <p className="text-purple-200 grow">{feature.description}</p>
                     <motion.div
                       className="mt-4 flex items-center text-sm text-purple-300 font-medium"
                       whileHover={{ x: 5 }}
@@ -464,11 +450,11 @@ export default function HRPortalLanding() {
       >
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
-            className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-lg rounded-3xl p-12 border border-white/20 relative overflow-hidden"
+            className="bg-linear-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-lg rounded-3xl p-12 border border-white/20 relative overflow-hidden"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10"></div>
+            <div className="absolute inset-0 bg-linear-to-br from-purple-600/10 to-pink-600/10"></div>
             <div className="relative z-10">
               <motion.h2
                 className="text-4xl md:text-5xl font-bold mb-6"
@@ -495,7 +481,7 @@ export default function HRPortalLanding() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <Button size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 px-8 py-6 text-lg flex items-center gap-2">
+                <Button size="lg" className="bg-linear-to-br from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 px-8 py-6 text-lg flex items-center gap-2">
                   Start Your Free Trial
                   <ArrowRight />
                 </Button>
@@ -527,10 +513,10 @@ export default function HRPortalLanding() {
               transition={{ duration: 0.8 }}
             >
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                About <span className="bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">HRFlow</span>
+                About <span className="bg-linear-to-br from-purple-300 to-pink-300 bg-clip-text text-transparent">HRFlow</span>
               </h2>
               <p className="text-xl text-purple-200 mb-6">
-                We're on a mission to revolutionize HR operations for businesses of all sizes.
+                We&apos;re on a mission to revolutionize HR operations for businesses of all sizes.
               </p>
               <p className="text-lg text-purple-100 mb-8">
                 Founded in 2020, HRFlow was created to solve the challenges faced by HR professionals who spend countless hours on manual, repetitive tasks instead of focusing on strategic initiatives that drive company growth.
@@ -541,7 +527,7 @@ export default function HRPortalLanding() {
                   className="flex items-start gap-4"
                   whileHover={{ x: 10 }}
                 >
-                  <div className="mt-1 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center flex-shrink-0">
+                  <div className="mt-1 w-8 h-8 rounded-full bg-linear-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center shrink-0">
                     <CheckCircle size={16} />
                   </div>
                   <div>
@@ -554,7 +540,7 @@ export default function HRPortalLanding() {
                   className="flex items-start gap-4"
                   whileHover={{ x: 10 }}
                 >
-                  <div className="mt-1 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center flex-shrink-0">
+                  <div className="mt-1 w-8 h-8 rounded-full bg-linear-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center shrink-0">
                     <Target size={16} />
                   </div>
                   <div>
@@ -567,7 +553,7 @@ export default function HRPortalLanding() {
                   className="flex items-start gap-4"
                   whileHover={{ x: 10 }}
                 >
-                  <div className="mt-1 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center flex-shrink-0">
+                  <div className="mt-1 w-8 h-8 rounded-full bg-linear-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center shrink-0">
                     <Award size={16} />
                   </div>
                   <div>
@@ -585,27 +571,27 @@ export default function HRPortalLanding() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <div className="relative aspect-square bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-3xl overflow-hidden">
+              <div className="relative aspect-square bg-linear-to-br from-purple-500/20 to-pink-500/20 rounded-3xl overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center p-8">
                   <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 mb-6">
+                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-linear-to-br from-purple-600 to-pink-500 mb-6">
                       <Users size={48} className="text-white" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">People First Approach</h3>
                     <p className="text-purple-200 max-w-md">Designed by HR professionals for HR professionals</p>
                   </div>
                 </div>
-                <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-3xl blur-xl opacity-50"></div>
+                <div className="absolute -inset-4 bg-linear-to-br from-purple-600/10 to-pink-600/10 rounded-3xl blur-xl opacity-50"></div>
               </div>
 
               <motion.div
-                className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"
+                className="absolute -bottom-6 -left-6 w-32 h-32 bg-linear-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-xl"
                 animate={{ y: [-10, 10, -10] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               ></motion.div>
 
               <motion.div
-                className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-r from-pink-500/20 to-red-500/20 rounded-full blur-xl"
+                className="absolute -top-6 -right-6 w-24 h-24 bg-linear-to-br from-pink-500/20 to-red-500/20 rounded-full blur-xl"
                 animate={{ y: [10, -10, 10] }}
                 transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
               ></motion.div>
@@ -637,14 +623,14 @@ export default function HRPortalLanding() {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Company Section */}
             <motion.div
-              className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center"
+              className="bg-linear-to-b from-white/10 to-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
               whileHover={{ y: -10, scale: 1.02 }}
             >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 rounded-full bg-linear-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mx-auto mb-6">
                 <Building size={32} className="text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-4">Company Access</h3>
@@ -653,7 +639,7 @@ export default function HRPortalLanding() {
               <div className="space-y-4">
                 <a href="/register/company">
                   <Button
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 py-6 text-lg"
+                    className="w-full bg-linear-to-br from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 py-6 text-lg"
                     size="lg"
                   >
                     <UserPlus className="mr-2" />
@@ -675,14 +661,14 @@ export default function HRPortalLanding() {
 
             {/* Employee/User Section */}
             <motion.div
-              className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center"
+              className="bg-linear-to-b from-white/10 to-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
               whileHover={{ y: -10, scale: 1.02 }}
             >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-indigo-500/30 flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 rounded-full bg-linear-to-br from-blue-500/30 to-indigo-500/30 flex items-center justify-center mx-auto mb-6">
                 <Users size={32} className="text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-4">Employee Access</h3>
@@ -691,7 +677,7 @@ export default function HRPortalLanding() {
               <div className="space-y-4">
                 <a href="/login/employee">
                   <Button
-                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 py-6 text-lg"
+                    className="w-full bg-linear-to-br from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 py-6 text-lg"
                     size="lg"
                   >
                     <User className="mr-2" />
@@ -738,7 +724,7 @@ export default function HRPortalLanding() {
             {[1, 2, 3].map((item) => (
               <motion.div
                 key={item}
-                className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10"
+                className="bg-linear-to-b from-white/10 to-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -746,7 +732,7 @@ export default function HRPortalLanding() {
                 whileHover={{ y: -10 }}
               >
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-linear-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center">
                     <Users size={20} />
                   </div>
                   <div>
@@ -759,7 +745,7 @@ export default function HRPortalLanding() {
                     <Star key={i} className="text-yellow-400 fill-current" size={16} />
                   ))}
                 </div>
-                <p className="text-purple-100">"HRFlow transformed how we manage our workforce. The automation features saved us 15+ hours per week on routine tasks."</p>
+                <p className="text-purple-100">&quot;HRFlow transformed how we manage our workforce. The automation features saved us 15+ hours per week on routine tasks.&quot;</p>
               </motion.div>
             ))}
           </div>
@@ -804,7 +790,7 @@ export default function HRPortalLanding() {
                 <Zap className="text-purple-300" size={16} />
                 Product
               </h4>
-              <ul className="space-y-2 text-purple-200">
+              <ul title='Product' className="space-y-2 text-purple-200">
                 <motion.li whileHover={{ x: 5 }}><a href="#" className="hover:text-white transition-colors flex items-center gap-2"><CheckCircle size={14} /> Features</a></motion.li>
                 <motion.li whileHover={{ x: 5 }}><a href="#" className="hover:text-white transition-colors flex items-center gap-2"><DollarSign size={14} /> Pricing</a></motion.li>
                 <motion.li whileHover={{ x: 5 }}><a href="#" className="hover:text-white transition-colors flex items-center gap-2"><Shield size={14} /> Security</a></motion.li>
@@ -846,7 +832,7 @@ export default function HRPortalLanding() {
             </motion.div>
           </div>
           <div className="text-center text-purple-200 pt-8 border-t border-white/10">
-            <p>© 2024 HRFlow. All rights reserved. • Built with ❤️ for HR professionals</p>
+            <p>© 2026 HRFlow. All rights reserved.</p>
           </div>
         </div>
       </footer>

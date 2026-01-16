@@ -706,7 +706,7 @@ export default function ManageCompanies() {
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex items-center">
-                        <div className="bg-gradient-to-br from-emerald-500 to-teal-500 w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold mr-4 shadow-lg flex-shrink-0">
+                        <div className="bg-gradient-to-br from-emerald-500 to-teal-500 w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold mr-4 shadow-lg shrink-0">
                           {company.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="overflow-hidden">

@@ -169,21 +169,21 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
                   <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
                   <div className="space-y-3">
                     <div className="flex items-start space-x-3">
-                      <Mail className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <Mail className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-muted-foreground">Email</p>
                         <p className="text-sm font-medium text-foreground break-words">{company.email}</p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
-                      <Phone className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <Phone className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-muted-foreground">Phone</p>
                         <p className="text-sm font-medium text-foreground">{company.phone || 'N/A'}</p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
-                      <Globe className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <Globe className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-muted-foreground">Website</p>
                         <p className="text-sm font-medium text-foreground break-words">
@@ -201,7 +201,7 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
-                      <MapPin className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <MapPin className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-muted-foreground">Address</p>
                         <p className="text-sm font-medium text-foreground">{company.address || 'N/A'}</p>
@@ -217,7 +217,7 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
                   <h3 className="text-lg font-semibold text-foreground">Company Details</h3>
                   <div className="space-y-3">
                     <div className="flex items-start space-x-3">
-                      <Calendar className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <Calendar className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-muted-foreground">Established</p>
                         <p className="text-sm font-medium text-foreground">
@@ -232,7 +232,7 @@ export default function CompanyDetailsPage({ params }: CompanyDetailsPageProps) 
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
-                      <Users className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <Users className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-muted-foreground">Description</p>
                         <p className="text-sm font-medium text-foreground">{company.description || 'N/A'}</p>

@@ -50,3 +50,35 @@ export interface EmployeeFormData {
   accountNumber?: string;
   image?: string;
 }
+
+export interface Department {
+  id: number;
+  name: string;
+  description?: string | null;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Admin {
+  id: number;
+  name: string;
+  email: string;
+  password?: string;
+  role: 'admin' | 'super_admin';
+  status: 'active' | 'inactive' | 'suspended';
+  last_login?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Designation {
+  id: number;
+  name: string;
+  department_id?: number | null;
+  department_name?: string | null;
+  description?: string | null;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+}

@@ -10,17 +10,17 @@ import { adminApi } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ArrowLeft, Building2, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function CreateAdmin() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
     role: 'admin',
     status: 'active'
   });
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -29,10 +29,15 @@ export default function CreateAdmin() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    if (name === 'confirmPassword') {
+      setConfirmPassword(value);
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => {
@@ -77,9 +82,9 @@ export default function CreateAdmin() {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
-    if (!formData.confirmPassword) {
+    if (!confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
+    } else if (formData.password !== confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
@@ -96,13 +101,12 @@ export default function CreateAdmin() {
 
     setLoading(true);
     try {
-      const { confirmPassword, ...adminData } = formData;
-      await adminApi.createAdmin(adminData);
+      await adminApi.createAdmin(formData);
       toast.success('Admin created successfully');
       router.push('/admin/admins');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating admin:', error);
-      toast.error(error.message || 'Failed to create admin');
+      toast.error((error as Error).message || 'Failed to create admin');
     } finally {
       setLoading(false);
     }
@@ -180,7 +184,7 @@ export default function CreateAdmin() {
                       id="confirmPassword"
                       name="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      value={formData.confirmPassword}
+                      value={confirmPassword}
                       onChange={handleChange}
                       placeholder="Confirm password"
                       className={`glass border-white/10 ${errors.confirmPassword ? 'border-red-500' : ''} pr-10`}
@@ -235,7 +239,7 @@ export default function CreateAdmin() {
                 </Button>
                 <Button
                   type="submit"
-                  className="px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                  className="px-6 bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                   disabled={loading}
                 >
                   {loading ? 'Creating...' : 'Create Admin'}

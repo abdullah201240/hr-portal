@@ -17,7 +17,8 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { employeeApi, companyDepartmentApi, companyDesignationApi } from '@/lib/api';
-import { Employee, EmployeeFormData } from '@/types/employee';
+import { Employee, EmployeeFormData, Department, Designation } from '@/types/employee';
+import Image from 'next/image';
 
 interface EmployeeFormProps {
   employee?: Employee;
@@ -52,8 +53,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [departments, setDepartments] = useState<any[]>([]);
-  const [designations, setDesignations] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [designations, setDesignations] = useState<Designation[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true); // Loading state for options
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
 
@@ -170,12 +171,15 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
         <div className="space-y-1">
 
           <div className="flex flex-col sm:flex-row gap-6">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="relative">
                 <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-dashed border-border bg-muted flex items-center justify-center">
                   {formData.image ? (
-                    <img 
-                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${formData.image}`} alt="Profile Preview" className="w-full h-full object-cover" />
+                    <Image 
+                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${formData.image}`} alt="Profile Preview" className="w-full h-full object-cover"
+                      unoptimized
+                       />
+                      
                   
                   ) : (
                     <div className="text-gray-400 flex flex-col items-center justify-center">
@@ -206,6 +210,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
               <div className="mt-2 flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <input
+                    title="Upload Photo" aria-label="Upload Photo"
                     id="image"
                     type="file"
                     accept="image/*"
@@ -331,7 +336,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
                 <SelectValue placeholder={loadingOptions ? "Loading designations..." : "Select designation"} />
               </SelectTrigger>
               <SelectContent className="glass border-border max-h-60">
-                {designations.map((desig) => (
+                {designations.map((desig: Designation) => (
                   <SelectItem key={desig.id} value={desig.name || desig.id?.toString()}>
                     {desig.name}
                   </SelectItem>
@@ -346,7 +351,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
                 <SelectValue placeholder={loadingOptions ? "Loading departments..." : "Select department"} />
               </SelectTrigger>
               <SelectContent className="glass border-border max-h-60">
-                {departments.map((dept) => (
+                {departments.map((dept: Department) => (
                   <SelectItem key={dept.id} value={dept.name || dept.id?.toString()}>
                     {dept.name}
                   </SelectItem>
@@ -489,7 +494,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
               name="currentAddress"
               value={formData.currentAddress}
               onChange={handleChange}
-              className="glass border-border focus:ring-emerald-500/50 min-h-[80px]"
+              className="glass border-border focus:ring-emerald-500/50 min-h-20"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -560,7 +565,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
         <Button 
           type="submit" 
           disabled={loading}
-          className="px-10 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-xl shadow-emerald-500/20 h-11 border-none"
+          className="px-10 bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-xl shadow-emerald-500/20 h-11 border-none"
         >
           {loading ? (
             <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
