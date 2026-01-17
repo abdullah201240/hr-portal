@@ -42,9 +42,8 @@ export default function EmployeeLoginPage() {
       // Show success notification
       toast.success('Welcome back! Redirecting to employee dashboard...');
       
-      // Redirect to employee dashboard (currently using admin companies as placeholder)
-      // In a real implementation, this would redirect to employee-specific dashboard
-      router.push('/admin/companies');
+      // Redirect to employee dashboard
+      router.push('/employee');
     } catch (err: any) {
       toast.error(err.message || 'An error occurred during login');
       console.error('Employee login error:', err);

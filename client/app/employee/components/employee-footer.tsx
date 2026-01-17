@@ -1,8 +1,9 @@
 'use client';
 
+import React from 'react';
 import { cn } from '@/lib/utils';
 
-export function AdminFooter({ className }: { className?: string }) {
+export function EmployeeFooter({ className }: { className?: string }) {
     const currentYear = new Date().getFullYear();
 
     return (

@@ -66,7 +66,7 @@ class CompanyController
             // Don't return password in the response
             unset($createdCompany['password']);
             
-            jsonResponse(['success' => true, 'message' => 'Company created successfully', 'data' => $createdCompany], 201);
+            jsonResponse(['success' => true, 'message' => 'Company created successfully', 'data' => $createdCompany, 'token' => 'company_' . $companyId . '_' . time()], 201);
         } catch (Exception $e) {
             jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
