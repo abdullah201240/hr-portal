@@ -6,19 +6,14 @@ import { useCompanyAuth } from '@/hooks/useCompanyAuth';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { companyApi } from '@/lib/api';
 import {
   Building2,
   Users,
-  TrendingUp,
   DollarSign,
   ArrowUpRight,
-  ArrowDownRight,
   Activity,
   Clock,
   CheckCircle2,
-  AlertCircle,
-  BarChart3,
   Settings,
   FileText,
   UserPlus
