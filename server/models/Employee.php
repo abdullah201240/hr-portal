@@ -11,6 +11,13 @@ class Employee extends Model
         parent::__construct();
     }
 
+    public function findByEmail($email)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email = ?");
+        $stmt->execute([$email]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function validate($data, $isUpdate = false)
     {
         $errors = [];
@@ -160,6 +167,10 @@ class Employee extends Model
                     $values[] = $value;
                 }
             }
+        }
+        
+        if (empty($fields)) {
+            return true; // Nothing to update
         }
         
         $values[] = $id;

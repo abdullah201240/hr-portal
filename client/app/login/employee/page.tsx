@@ -9,6 +9,7 @@ import { Eye, EyeOff, Users, Mail, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { employeeApi } from '@/lib/api';
 
 export default function EmployeeLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,20 +31,25 @@ export default function EmployeeLoginPage() {
     setLoading(true);
     
     try {
-      // Simulate employee login since there's no employee API endpoint yet
-      // In a real implementation, this would call an employee login API
+      const response = await employeeApi.login({ email, password });
       
-      // For demo purposes, we'll simulate a successful login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Store a placeholder token for employee
-      localStorage.setItem('authToken', 'employee_placeholder_token');
-      
-      // Show success notification
-      toast.success('Welcome back! Redirecting to employee dashboard...');
-      
-      // Redirect to employee dashboard
-      router.push('/employee');
+      if (response.success) {
+        // Clear other tokens first to avoid conflicts in makeRequest
+        localStorage.removeItem('adminAuthToken');
+        localStorage.removeItem('adminProfile');
+        localStorage.removeItem('companyAuthToken');
+        localStorage.removeItem('companyProfile');
+        
+        // Store token and profile
+        localStorage.setItem('employeeAuthToken', response.data.token);
+        localStorage.setItem('employeeProfile', JSON.stringify(response.data.user));
+        
+        // Show success notification
+        toast.success('Welcome back! Redirecting to employee dashboard...');
+        
+        // Redirect to employee dashboard
+        router.push('/employee');
+      }
     } catch (err: any) {
       toast.error(err.message || 'An error occurred during login');
       console.error('Employee login error:', err);

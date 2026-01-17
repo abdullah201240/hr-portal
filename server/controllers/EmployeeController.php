@@ -12,44 +12,60 @@ class EmployeeController
         $this->employee = new Employee();
     }
     
-    private function getCompanyIdFromToken()
+    public function login($request = null)
     {
-        $authHeader = null;
+        $request = $request ?? json_decode(file_get_contents('php://input'), true);
         
-        // Method 1: Standard getallheaders() function
-        if (function_exists('getallheaders')) {
-            $headers = getallheaders();
-            // Check for both Authorization and authorization (case-insensitive)
-            foreach ($headers as $name => $value) {
-                if (strtolower($name) === 'authorization') {
-                    $authHeader = $value;
-                    break;
-                }
-            }
+        if (empty($request['email']) || empty($request['password'])) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Email and password are required']);
+            return;
         }
-        
-        // Method 2: Check for Authorization header in $_SERVER
-        if (!$authHeader) {
-            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-                $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-            } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-                $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-            }
+
+        $employee = $this->employee->findByEmail($request['email']);
+
+        if ($employee && password_verify($request['password'], $employee['password'])) {
+            // Generate a simple token
+            $token = "employee_" . $employee['id'] . "_" . time();
+            
+            // Remove sensitive data
+            unset($employee['password']);
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Login successful',
+                'data' => [
+                    'token' => $token,
+                    'user' => $employee
+                ]
+            ]);
+        } else {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Invalid email or password']);
         }
-        
-        if (!$authHeader || !preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
-            return null;
+    }
+
+    public function getCurrentProfile($request = null)
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'employee') {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
         }
-        
-        $token = trim($matches[1]);
-        
-        // Validate the token and extract company ID
-        // In our simple token system: company_{id}_{timestamp}
-        if (!preg_match('/^company_(\d+)/', $token, $tokenMatches)) {
-            return null;
+
+        $employeeId = $actor['id'];
+        $employee = $this->employee->findById($employeeId);
+        if ($employee) {
+            unset($employee['password']);
+            echo json_encode([
+                'success' => true,
+                'data' => $employee
+            ]);
+        } else {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Employee not found']);
         }
-        
-        return (int)$tokenMatches[1];
     }
 
     private function handleImageUpload($file)
@@ -94,12 +110,13 @@ class EmployeeController
     {
         $request = $request ?? $_GET;
         // Extract company ID from the authorization token
-        $companyId = $this->getCompanyIdFromToken();
-        if (!$companyId) {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
             http_response_code(401);
             echo json_encode(['success' => false, 'message' => 'Unauthorized - Invalid or missing token']);
             return;
         }
+        $companyId = $actor['id'];
         
         try {
             $page = isset($request['page']) ? max(1, intval($request['page'])) : 1;
@@ -142,8 +159,8 @@ class EmployeeController
         }
         
         // Check if employee belongs to the authenticated company
-        $companyId = $this->getCompanyIdFromToken();
-        if (!$companyId || $employee['companyId'] != $companyId) {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company' || $employee['companyId'] != $actor['id']) {
             http_response_code(403);
             echo json_encode(['success' => false, 'message' => 'Forbidden - You can only access your own employees']);
             return;
@@ -161,12 +178,13 @@ class EmployeeController
     public function store($request = null)
     {
         // Extract company ID from the authorization token
-        $companyId = $this->getCompanyIdFromToken();
-        if (!$companyId) {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
             http_response_code(401);
             echo json_encode(['success' => false, 'message' => 'Unauthorized - Invalid or missing token']);
             return;
         }
+        $companyId = $actor['id'];
         
         // Handle both JSON and FormData requests
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
@@ -232,12 +250,13 @@ class EmployeeController
     {
         $request = $request ?? array_merge($_GET, getRequestData() ?: []);
         // Extract company ID from the authorization token
-        $companyId = $this->getCompanyIdFromToken();
-        if (!$companyId) {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
             http_response_code(401);
             echo json_encode(['success' => false, 'message' => 'Unauthorized - Invalid or missing token']);
             return;
         }
+        $companyId = $actor['id'];
         
         // Handle both JSON and FormData requests
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
@@ -307,12 +326,13 @@ class EmployeeController
     public function destroy($id, $request = null)
     {
         // Extract company ID from the authorization token
-        $companyId = $this->getCompanyIdFromToken();
-        if (!$companyId) {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
             http_response_code(401);
             echo json_encode(['success' => false, 'message' => 'Unauthorized - Invalid or missing token']);
             return;
         }
+        $companyId = $actor['id'];
         
         // Check if employee exists
         $existingEmployee = $this->employee->findById($id);

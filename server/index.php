@@ -10,6 +10,7 @@ require_once __DIR__ . '/controllers/EmployeeController.php';
 require_once __DIR__ . '/controllers/AttendancePolicyController.php';
 require_once __DIR__ . '/controllers/HolidayController.php';
 require_once __DIR__ . '/controllers/LeavePolicyController.php';
+require_once __DIR__ . '/controllers/AttendanceController.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -37,18 +38,24 @@ $routes = [
     '@/api/companies/upload-logo/?$@' => ['POST' => 'uploadLogo'],
     '@/api/uploads/logos/(?P<filename>[^/]+)/?$@' => ['GET' => 'serveImage'],
     '@/api/companies/?$@' => ['GET' => 'index', 'POST' => 'store'],
-    '@/api/companies/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/companies/(\d+)/?$@' => ['GET' => 'show', 'POST' => 'update', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/admins/login/?$@' => ['POST' => 'login'],
     '@/api/admins/me/?$@' => ['GET' => 'getCurrentProfile'],
     '@/api/admins/logout/?$@' => ['POST' => 'logout'],
     '@/api/admins/?$@' => ['GET' => 'index', 'POST' => 'store'],
-    '@/api/admins/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/admins/(\d+)/?$@' => ['GET' => 'show', 'POST' => 'update', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/departments/?$@' => ['GET' => 'index', 'POST' => 'store'],
-    '@/api/departments/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/departments/(\d+)/?$@' => ['GET' => 'show', 'POST' => 'update', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/designations/?$@' => ['GET' => 'index', 'POST' => 'store'],
-    '@/api/designations/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/designations/(\d+)/?$@' => ['GET' => 'show', 'POST' => 'update', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/employees/?$@' => ['GET' => 'index', 'POST' => 'store'],
-    '@/api/employees/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/employees/(\d+)/?$@' => ['GET' => 'show', 'POST' => 'update', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/employees/login/?$@' => ['POST' => 'login'],
+    '@/api/employees/me/?$@' => ['GET' => 'getCurrentProfile'],
+    '@/api/attendance/status/?$@' => ['GET' => 'getStatus'],
+    '@/api/attendance/clock-in/?$@' => ['POST' => 'clockIn'],
+    '@/api/attendance/clock-out/?$@' => ['POST' => 'clockOut'],
+    '@/api/attendance/history/?$@' => ['GET' => 'history'],
     '@/api/attendance-policy/?$@' => ['GET' => 'show', 'POST' => 'store'],
     '@/api/holidays/?$@' => ['GET' => 'index', 'POST' => 'store'],
     '@/api/holidays/(\d+)/?$@' => ['DELETE' => 'destroy'],
@@ -71,6 +78,8 @@ foreach ($routes as $pattern => $actions) {
             $controller = new EmployeeController();
         } elseif (strpos($path, '/api/attendance-policy') !== false) {
             $controller = new AttendancePolicyController();
+        } elseif (strpos($path, '/api/attendance') !== false) {
+            $controller = new AttendanceController();
         } elseif (strpos($path, '/api/holidays') !== false) {
             $controller = new HolidayController();
         } elseif (strpos($path, '/api/leave-policy') !== false) {

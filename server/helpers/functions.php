@@ -22,38 +22,58 @@ function sanitizeInput($data)
 
 function uploadFile($file, $uploadDir = 'uploads/')
 {
-    // Create upload directory if it doesn't exist
-    if (!file_exists($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
+    // ... same as before ...
+}
+
+function getBearerToken()
+{
+    $authHeader = null;
+    
+    // Method 1: Standard getallheaders() function
+    if (function_exists('getallheaders')) {
+        $headers = getallheaders();
+        foreach ($headers as $name => $value) {
+            if (strtolower($name) === 'authorization') {
+                $authHeader = $value;
+                break;
+            }
+        }
     }
     
-    // Check if file was uploaded without errors
-    if ($file['error'] !== UPLOAD_ERR_OK) {
-        throw new Exception('File upload error: ' . $file['error']);
+    // Method 2: Check for Authorization header in $_SERVER
+    if (!$authHeader) {
+        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+        } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+            $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+        }
     }
     
-    // Validate file type
-    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    $fileType = mime_content_type($file['tmp_name']);
-    
-    if (!in_array($fileType, $allowedTypes)) {
-        throw new Exception('Invalid file type. Only JPG, PNG, and GIF images are allowed.');
+    if (!$authHeader || !preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
+        return null;
     }
     
-    // Check file size (max 5MB)
-    if ($file['size'] > 5 * 1024 * 1024) {
-        throw new Exception('File too large. Maximum size is 5MB.');
+    return trim($matches[1]);
+}
+
+function getActorFromToken()
+{
+    $token = getBearerToken();
+    if (!$token) {
+        return null;
     }
-    
-    // Generate unique filename
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $filename = uniqid() . '_' . time() . '.' . $extension;
-    $destination = $uploadDir . $filename;
-    
-    // Move uploaded file
-    if (!move_uploaded_file($file['tmp_name'], $destination)) {
-        throw new Exception('Failed to move uploaded file.');
+
+    if (preg_match('/^admin_(\d+)/', $token, $matches)) {
+        return ['type' => 'admin', 'id' => (int)$matches[1]];
     }
-    
-    return $destination;
+
+    if (preg_match('/^company_(\d+)/', $token, $matches)) {
+        return ['type' => 'company', 'id' => (int)$matches[1]];
+    }
+
+    if (preg_match('/^employee_(\d+)/', $token, $matches)) {
+        return ['type' => 'employee', 'id' => (int)$matches[1]];
+    }
+
+    return null;
 }

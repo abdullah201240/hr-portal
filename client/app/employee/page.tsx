@@ -20,39 +20,159 @@ import {
 } from 'lucide-react';
 import { useEmployeeAuth } from '@/hooks/useEmployeeAuth';
 import { motion } from 'framer-motion';
+import { attendanceApi } from '@/lib/api';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 export default function EmployeeDashboard() {
   const { employeeProfile } = useEmployeeAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [attendance, setAttendance] = useState<any>(null);
+  const [loadingAttendance, setLoadingAttendance] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    fetchAttendanceStatus();
+    fetchHistory();
     return () => clearInterval(timer);
   }, []);
 
+  const fetchAttendanceStatus = async () => {
+    try {
+      setLoadingAttendance(true);
+      const response = await attendanceApi.getStatus();
+      if (response.success) {
+        setAttendance(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+    } finally {
+      setLoadingAttendance(false);
+    }
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const response = await attendanceApi.getHistory(4);
+      if (response.success) {
+        setHistory(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching history:', error);
+    }
+  };
+
+  const handleClockIn = async () => {
+    try {
+      setActionLoading(true);
+      const response = await attendanceApi.clockIn();
+      if (response.success) {
+        setAttendance(response.data);
+        fetchHistory();
+        toast.success('Successfully clocked in!');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to clock in');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleClockOut = async () => {
+    try {
+      setActionLoading(true);
+      const response = await attendanceApi.clockOut();
+      if (response.success) {
+        setAttendance(response.data);
+        fetchHistory();
+        toast.success('Successfully clocked out!');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to clock out');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const stats = [
-    { title: 'Present Days', value: '18', icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { title: 'Leave Taken', value: '2', icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { title: 'Pending Tasks', value: '5', icon: AlertCircle, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-    { title: 'Performance', value: '94%', icon: TrendingUp, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+    { 
+      title: 'Present Days', 
+      value: '18', 
+      icon: CheckCircle2, 
+      gradient: 'from-emerald-500 to-teal-500',
+      bgGradient: 'from-emerald-500/10 to-teal-500/10',
+      colorClass: 'border-emerald-500/20 hover:border-emerald-500/40',
+      bgClass: 'from-emerald-400 to-teal-500',
+      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      iconBg: 'from-emerald-500/30 to-teal-500/30',
+      glowColor: 'from-emerald-400 to-teal-500',
+      glowBlur: 'blur-3xl',
+      pulseColor: 'bg-emerald-500/20'
+    },
+    { 
+      title: 'Leave Taken', 
+      value: '2', 
+      icon: Calendar, 
+      gradient: 'from-blue-500 to-cyan-500',
+      bgGradient: 'from-blue-500/10 to-cyan-500/10',
+      colorClass: 'border-blue-500/20 hover:border-blue-500/40',
+      bgClass: 'from-blue-500 to-cyan-500',
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      iconBg: 'from-blue-500/30 to-cyan-500/30',
+      glowColor: 'from-blue-400 to-cyan-500',
+      glowBlur: 'blur-3xl',
+      pulseColor: 'bg-blue-500/20'
+    },
+    { 
+      title: 'Pending Tasks', 
+      value: '5', 
+      icon: AlertCircle, 
+      gradient: 'from-amber-500 to-orange-500',
+      bgGradient: 'from-amber-500/10 to-orange-500/10',
+      colorClass: 'border-amber-500/20 hover:border-amber-500/40',
+      bgClass: 'from-amber-500 to-orange-500',
+      iconColor: 'text-amber-600 dark:text-amber-400',
+      iconBg: 'from-amber-500/30 to-orange-500/30',
+      glowColor: 'from-amber-400 to-orange-500',
+      glowBlur: 'blur-3xl',
+      pulseColor: 'bg-amber-500/20'
+    },
+    { 
+      title: 'Performance', 
+      value: '94%', 
+      icon: TrendingUp, 
+      gradient: 'from-indigo-500 to-purple-500',
+      bgGradient: 'from-indigo-500/10 to-purple-500/10',
+      colorClass: 'border-indigo-500/20 hover:border-indigo-500/40',
+      bgClass: 'from-indigo-500 to-purple-500',
+      iconColor: 'text-indigo-600 dark:text-indigo-400',
+      iconBg: 'from-indigo-500/30 to-purple-500/30',
+      glowColor: 'from-indigo-400 to-purple-500',
+      glowBlur: 'blur-3xl',
+      pulseColor: 'bg-indigo-500/20'
+    },
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Welcome Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {employeeProfile?.name || 'Employee'}!</h1>
-          <p className="text-muted-foreground">Here's what's happening with your profile today.</p>
+          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+            Welcome back, {employeeProfile?.name || 'Employee'}!
+          </h1>
+          <p className="text-xs text-muted-foreground font-medium">Here's what's happening with your profile today.</p>
         </div>
-        <div className="flex items-center gap-3 bg-indigo-500/5 px-4 py-2 rounded-2xl border border-indigo-500/10">
-          <Clock className="h-5 w-5 text-indigo-500" />
+        <div className="flex items-center gap-3 bg-indigo-500/5 px-3 py-1.5 rounded-xl border border-indigo-500/10 backdrop-blur-sm">
+          <Clock className="h-4 w-4 text-indigo-500" />
           <div className="text-right">
-            <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+            <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
               {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </p>
-            <p className="text-[10px] text-muted-foreground font-medium">
-              {currentTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+            <p className="text-[9px] text-muted-foreground font-medium">
+              {currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
             </p>
           </div>
         </div>
@@ -63,21 +183,49 @@ export default function EmployeeDashboard() {
         {stats.map((stat, index) => (
           <motion.div
             key={stat.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: index * 0.1, type: "spring", stiffness: 200 }}
+            whileHover={{ y: -5, transition: { duration: 0.2 } }}
           >
-            <Card className="border-none shadow-sm bg-card hover:shadow-md transition-all group overflow-hidden">
-              <CardContent className="p-6 relative">
-                <div className={stat.bg + " absolute -right-4 -top-4 w-20 h-20 rounded-full transition-transform group-hover:scale-110 opacity-50"} />
-                <div className="flex items-center gap-4 relative z-10">
-                  <div className={stat.bg + " p-3 rounded-xl"}>
-                    <stat.icon className={"h-6 w-6 " + stat.color} />
+            <Card className={`relative glass ${stat.colorClass} overflow-hidden group hover:shadow-xl transition-all duration-500`}>
+              {/* 3D Background Graphics */}
+              <div className="absolute inset-0 opacity-20">
+                <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.glowColor} ${stat.glowBlur} group-hover:scale-150 transition-transform duration-700`} />
+                <div className={`absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr ${stat.glowColor} rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700`} />
+                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 ${stat.pulseColor} rounded-full blur-xl animate-pulse`} />
+              </div>
+
+              <CardContent className="relative p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">{stat.title}</p>
+                    <motion.h3
+                      className={`text-2xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}
+                      animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    >
+                      {stat.value}
+                    </motion.h3>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <h3 className="text-2xl font-bold">{stat.value}</h3>
-                  </div>
+                  <motion.div
+                    className="relative"
+                    animate={{ 
+                      rotate: [0, 5, 0, -5, 0],
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{ 
+                      duration: 4, 
+                      repeat: Infinity, 
+                      ease: "easeInOut",
+                      scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                    }}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgClass} rounded-xl blur-md opacity-40 group-hover:opacity-60 transition-opacity`} />
+                    <div className={`relative bg-gradient-to-br ${stat.iconBg} p-2.5 rounded-xl backdrop-blur-sm border border-white/10`}>
+                      <stat.icon className={`h-5 w-5 ${stat.iconColor} drop-shadow-lg`} />
+                    </div>
+                  </motion.div>
                 </div>
               </CardContent>
             </Card>
@@ -85,51 +233,79 @@ export default function EmployeeDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Attendance Action Card */}
-        <Card className="lg:col-span-1 border-indigo-500/10 shadow-lg shadow-indigo-500/5 overflow-hidden">
-          <CardHeader className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white pb-8">
-            <CardTitle className="flex items-center gap-2">
-              <Timer className="h-5 w-5" />
+        <Card className="lg:col-span-1 border-indigo-500/10 shadow-lg shadow-indigo-500/5 overflow-hidden glass">
+          <CardHeader className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white pb-6 pt-4 px-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Timer className="h-4 w-4" />
               Attendance
             </CardTitle>
-            <CardDescription className="text-indigo-100">Quick clock-in/out for today</CardDescription>
+            <CardDescription className="text-indigo-100 text-[10px]">Quick clock-in/out for today</CardDescription>
           </CardHeader>
-          <CardContent className="p-6 -mt-6">
-            <div className="bg-card rounded-2xl shadow-xl p-6 border space-y-6">
-              <div className="text-center space-y-2">
-                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-3 py-1">
-                  Status: Not Clocked In
+          <CardContent className="p-4 -mt-4">
+            <div className="bg-card/50 backdrop-blur-md rounded-xl shadow-lg p-4 border border-indigo-500/10 space-y-4">
+              <div className="text-center space-y-1">
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "px-2 py-0 text-[10px]",
+                    attendance?.clock_in && !attendance?.clock_out 
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                      : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                  )}
+                >
+                  Status: {attendance?.clock_in 
+                    ? (attendance?.clock_out ? 'Clocked Out' : 'Clocked In') 
+                    : 'Not Clocked In'}
                 </Badge>
-                <div className="flex justify-center items-center gap-2 py-4">
-                  <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-sm font-medium">System ready</span>
+                <div className="flex justify-center items-center gap-1.5 py-2">
+                  <div className={cn(
+                    "h-1.5 w-1.5 rounded-full animate-pulse",
+                    attendance?.clock_in && !attendance?.clock_out ? "bg-emerald-500" : "bg-red-500"
+                  )} />
+                  <span className="text-[10px] font-medium text-muted-foreground">
+                    {attendance?.clock_in && !attendance?.clock_out ? 'Working' : 'System ready'}
+                  </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Button className="w-full h-24 flex flex-col gap-2 rounded-2xl bg-emerald-500 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 group">
-                  <div className="p-2 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
-                    <Coffee className="h-6 w-6 text-white" />
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  onClick={handleClockIn}
+                  disabled={!!attendance?.clock_in || actionLoading}
+                  className="w-full h-20 flex flex-col gap-1 rounded-xl bg-emerald-500 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 group disabled:opacity-50"
+                >
+                  <div className="p-1.5 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
+                    <Coffee className="h-4 w-4 text-white" />
                   </div>
-                  <span className="font-bold">Clock In</span>
+                  <span className="text-xs font-bold">{attendance?.clock_in ? 'Clocked In' : 'Clock In'}</span>
+                  {attendance?.clock_in && <span className="text-[8px] opacity-80">{attendance.clock_in.substring(0, 5)}</span>}
                 </Button>
-                <Button variant="outline" disabled className="w-full h-24 flex flex-col gap-2 rounded-2xl transition-all opacity-50 cursor-not-allowed">
-                  <div className="p-2 bg-muted rounded-lg">
-                    <LogOut className="h-6 w-6 text-muted-foreground" />
+                <Button 
+                  variant="outline" 
+                  onClick={handleClockOut}
+                  disabled={!attendance?.clock_in || !!attendance?.clock_out || actionLoading}
+                  className="w-full h-20 flex flex-col gap-1 rounded-xl transition-all group border-indigo-500/20 hover:bg-indigo-500/5 disabled:opacity-50"
+                >
+                  <div className="p-1.5 bg-muted rounded-lg group-hover:scale-110 transition-transform">
+                    <LogOut className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <span className="font-bold text-muted-foreground">Clock Out</span>
+                  <span className="text-xs font-bold text-muted-foreground">
+                    {attendance?.clock_out ? 'Clocked Out' : 'Clock Out'}
+                  </span>
+                  {attendance?.clock_out && <span className="text-[8px] text-muted-foreground opacity-80">{attendance.clock_out.substring(0, 5)}</span>}
                 </Button>
               </div>
 
-              <div className="pt-4 border-t border-dashed space-y-3">
-                <div className="flex justify-between text-sm">
+              <div className="pt-3 border-t border-dashed space-y-2">
+                <div className="flex justify-between text-[11px]">
                   <span className="text-muted-foreground">Shift Starts:</span>
-                  <span className="font-semibold">09:00 AM</span>
+                  <span className="font-bold">09:00 AM</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-[11px]">
                   <span className="text-muted-foreground">Shift Ends:</span>
-                  <span className="font-semibold">06:00 PM</span>
+                  <span className="font-bold">06:00 PM</span>
                 </div>
               </div>
             </div>
@@ -137,95 +313,105 @@ export default function EmployeeDashboard() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="lg:col-span-2 border-none shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div className="space-y-1">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <History className="h-5 w-5 text-indigo-500" />
+        <Card className="lg:col-span-2 border-none shadow-sm glass">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4">
+            <div className="space-y-0.5">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <History className="h-4 w-4 text-indigo-500" />
                 Recent Activity
               </CardTitle>
-              <CardDescription>Your latest log actions and updates</CardDescription>
+              <CardDescription className="text-[10px]">Your latest log actions and updates</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" className="text-indigo-500 hover:text-indigo-600 hover:bg-indigo-500/10">
+            <Button variant="ghost" size="sm" className="h-7 text-[10px] text-indigo-500 hover:text-indigo-600 hover:bg-indigo-500/10">
               View All
             </Button>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y border-t mt-4">
-              {[
-                { type: 'Clock In', time: 'Yesterday, 09:02 AM', status: 'On Time', icon: Timer, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                { type: 'Clock Out', time: 'Yesterday, 06:15 PM', status: 'Overtime', icon: LogOut, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                { type: 'Task Completed', time: '2 days ago', status: 'HR-204', icon: CheckCircle2, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-                { type: 'Clock In', time: '2 days ago, 08:55 AM', status: 'Early', icon: Timer, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-              ].map((activity, i) => (
-                <div key={i} className="flex items-center justify-between p-4 hover:bg-indigo-500/5 transition-colors group">
-                  <div className="flex items-center gap-4">
-                    <div className={activity.bg + " p-2 rounded-lg transition-transform group-hover:scale-110"}>
-                      <activity.icon className={"h-5 w-5 " + activity.color} />
+            <div className="divide-y border-t mt-2">
+              {history.length > 0 ? history.map((activity, i) => (
+                <div key={i} className="flex items-center justify-between p-3 hover:bg-indigo-500/5 transition-colors group">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "p-1.5 rounded-lg transition-transform group-hover:scale-110",
+                      activity.status === 'present' ? 'bg-emerald-500/10' : 'bg-amber-500/10'
+                    )}>
+                      <Timer className={cn(
+                        "h-4 w-4",
+                        activity.status === 'present' ? 'text-emerald-500' : 'text-amber-500'
+                      )} />
                     </div>
                     <div>
-                      <p className="text-sm font-bold leading-none">{activity.type}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
+                      <p className="text-[12px] font-bold leading-none">
+                        {activity.clock_out ? 'Full Shift' : 'Clock In'}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {new Date(activity.date).toLocaleDateString([], { month: 'short', day: 'numeric' })}, {activity.clock_in.substring(0, 5)}
+                        {activity.clock_out && ` - ${activity.clock_out.substring(0, 5)}`}
+                      </p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-[10px] font-bold px-2 py-0">
+                  <Badge variant="outline" className="text-[9px] font-bold px-1.5 py-0 h-4 uppercase">
                     {activity.status}
                   </Badge>
                 </div>
-              ))}
+              )) : (
+                <div className="p-8 text-center text-muted-foreground text-xs">
+                  No recent attendance activity
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Profile Summary & Quick Links */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card className="border-none shadow-sm overflow-hidden">
-          <CardHeader className="flex flex-row items-center gap-4 pb-4">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border-none shadow-sm overflow-hidden glass">
+          <CardHeader className="flex flex-row items-center gap-3 pb-3 pt-4 px-4">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg font-bold shadow-lg">
               {employeeProfile?.name?.charAt(0) || 'E'}
             </div>
             <div>
-              <CardTitle>{employeeProfile?.name || 'Employee'}</CardTitle>
-              <CardDescription>{employeeProfile?.designation || 'Staff Member'}</CardDescription>
+              <CardTitle className="text-base">{employeeProfile?.name || 'Employee'}</CardTitle>
+              <CardDescription className="text-[10px]">{employeeProfile?.designation || 'Staff Member'}</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
-                <p className="text-[10px] text-muted-foreground uppercase font-bold">Employee ID</p>
-                <p className="text-sm font-bold">EMP-2024-001</p>
+          <CardContent className="space-y-3 px-4 pb-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-2 bg-indigo-500/5 rounded-lg border border-indigo-500/10 backdrop-blur-sm">
+                <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-wider">Employee ID</p>
+                <p className="text-xs font-bold">EMP-2024-001</p>
               </div>
-              <div className="p-3 bg-purple-500/5 rounded-xl border border-purple-500/10">
-                <p className="text-[10px] text-muted-foreground uppercase font-bold">Department</p>
-                <p className="text-sm font-bold">{employeeProfile?.department || 'Operations'}</p>
+              <div className="p-2 bg-purple-500/5 rounded-lg border border-purple-500/10 backdrop-blur-sm">
+                <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-wider">Department</p>
+                <p className="text-xs font-bold">{employeeProfile?.department || 'Operations'}</p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary" className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">Full Time</Badge>
-              <Badge variant="secondary" className="bg-purple-500/10 text-purple-600 dark:text-purple-400">Regular</Badge>
-              <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 dark:text-amber-400">Level 2</Badge>
+            <div className="flex flex-wrap gap-1.5">
+              <Badge variant="secondary" className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[9px] px-1.5 py-0">Full Time</Badge>
+              <Badge variant="secondary" className="bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[9px] px-1.5 py-0">Regular</Badge>
+              <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[9px] px-1.5 py-0">Level 2</Badge>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-indigo-500" />
+        <Card className="border-none shadow-sm glass">
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Briefcase className="h-4 w-4 text-indigo-500" />
               Quick Links
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3">
+          <CardContent className="grid grid-cols-2 gap-2 px-4 pb-4">
             {[
               { name: 'Apply Leave', icon: Calendar, color: 'text-amber-500' },
               { name: 'Payslip', icon: FileText, color: 'text-emerald-500' },
               { name: 'My Team', icon: User, color: 'text-blue-500' },
               { name: 'Company Policy', icon: Briefcase, color: 'text-purple-500' },
             ].map((link, i) => (
-              <Button key={i} variant="outline" className="h-auto py-4 flex flex-col gap-2 rounded-2xl hover:bg-indigo-500/5 border-indigo-500/10 transition-all hover:border-indigo-500/30 group">
-                <link.icon className={"h-6 w-6 " + link.color + " group-hover:scale-110 transition-transform"} />
-                <span className="text-xs font-bold">{link.name}</span>
+              <Button key={i} variant="outline" className="h-auto py-2.5 flex flex-col gap-1 rounded-xl hover:bg-indigo-500/5 border-indigo-500/10 transition-all hover:border-indigo-500/30 group glass">
+                <link.icon className={"h-4 w-4 " + link.color + " group-hover:scale-110 transition-transform"} />
+                <span className="text-[10px] font-bold">{link.name}</span>
               </Button>
             ))}
           </CardContent>

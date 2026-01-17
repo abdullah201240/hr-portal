@@ -26,12 +26,19 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
   if (typeof window !== 'undefined') {
     let token = null;
     
-    // If endpoint is for companies, use company token
+    // If endpoint is for companies or employees or attendance, determine the best token
     if (endpoint.includes('/companies') || endpoint.includes('/company') || 
         endpoint.includes('/departments') || endpoint.includes('/designations') ||
         endpoint.includes('/employees') || endpoint.includes('/attendance-policy') ||
-        endpoint.includes('/holidays') || endpoint.includes('/leave-policy')) {
-      token = localStorage.getItem('companyAuthToken');
+        endpoint.includes('/holidays') || endpoint.includes('/leave-policy') ||
+        endpoint.includes('/attendance')) {
+      
+      // For attendance or employee-specific endpoints, prefer employee token if available
+      if (endpoint.includes('/attendance') || endpoint.includes('/employees/me')) {
+        token = localStorage.getItem('employeeAuthToken') || localStorage.getItem('companyAuthToken');
+      } else {
+        token = localStorage.getItem('companyAuthToken') || localStorage.getItem('employeeAuthToken');
+      }
     } 
     // If endpoint is for admins, use admin token
     else if (endpoint.includes('/admins') || endpoint.includes('/admin')) {
@@ -57,30 +64,37 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
       if (response.status === 401 && !endpoint.includes('/login') && !skipRedirect) {
         if (typeof window !== 'undefined') {
           console.error(`401 Unauthorized for ${endpoint}. Redirecting to appropriate login.`);
-          localStorage.removeItem('adminAuthToken');
-          localStorage.removeItem('companyAuthToken');
+          
+          const isAdmin = !!localStorage.getItem('adminAuthToken');
+          const isCompany = !!localStorage.getItem('companyAuthToken');
+          const isEmployee = !!localStorage.getItem('employeeAuthToken');
+
           // If it's an admin endpoint, redirect to admin login
           if (endpoint.includes('/admins') || endpoint.includes('/admin')) {
+            localStorage.removeItem('adminAuthToken');
             localStorage.removeItem('adminProfile');
             window.location.href = '/login/admin';
-          } else if (endpoint.includes('/companies') || endpoint.includes('/company') ||
-            endpoint.includes('/employees') || endpoint.includes('/departments') || endpoint.includes('/designations') ||
-            endpoint.includes('/attendance-policy') || endpoint.includes('/holidays') || endpoint.includes('/leave-policy')) {
+          } 
+          // If it's an employee or attendance endpoint, redirect to employee login
+          else if (endpoint.includes('/attendance') || endpoint.includes('/employees/me') || (isEmployee && !isCompany)) {
+            localStorage.removeItem('employeeAuthToken');
+            localStorage.removeItem('employeeProfile');
+            window.location.href = '/login/employee';
+          }
+          // If it's a company endpoint or we have a company token
+          else if (endpoint.includes('/companies') || endpoint.includes('/company') || 
+                   endpoint.includes('/employees') || endpoint.includes('/departments') || 
+                   endpoint.includes('/designations') || isCompany) {
+            localStorage.removeItem('companyAuthToken');
             localStorage.removeItem('companyProfile');
             window.location.href = '/login/company';
-          } else {
-            // For other endpoints, check which token was being used and redirect appropriately
-            const adminToken = localStorage.getItem('adminAuthToken');
-            const companyToken = localStorage.getItem('companyAuthToken');
-            if (adminToken) {
-              localStorage.removeItem('adminProfile');
-              window.location.href = '/login/admin';
-            } else if (companyToken) {
-              localStorage.removeItem('companyProfile');
-              window.location.href = '/login/company';
-            } else {
-              window.location.href = '/login';
-            }
+          }
+          // Default fallback
+          else {
+            localStorage.removeItem('adminAuthToken');
+            localStorage.removeItem('companyAuthToken');
+            localStorage.removeItem('employeeAuthToken');
+            window.location.href = '/login';
           }
         }
       }
@@ -211,6 +225,13 @@ export const designationApi = {
 };
 
 // Policy API functions
+export const attendanceApi = {
+  getStatus: () => makeRequest('/attendance/status'),
+  clockIn: () => makeRequest('/attendance/clock-in', { method: 'POST' }),
+  clockOut: () => makeRequest('/attendance/clock-out', { method: 'POST' }),
+  getHistory: (limit = 30) => makeRequest(`/attendance/history?limit=${limit}`),
+};
+
 export const policyApi = {
   getAttendancePolicy: () => makeRequest('/attendance-policy'),
   saveAttendancePolicy: (data: any) => makeRequest('/attendance-policy', { method: 'POST', body: data }),
@@ -234,6 +255,8 @@ export const leavePolicyApi = {
 
 // Employee API functions
 export const employeeApi = {
+  login: (credentials: any) => makeRequest('/employees/login', { method: 'POST', body: credentials }),
+  getProfile: () => makeRequest('/employees/me'),
   // Get all employees
   getAllEmployees: (params?: { page?: number; limit?: number; search?: string; orderBy?: string; orderDir?: string }) => {
     const searchParams = new URLSearchParams();
@@ -300,7 +323,7 @@ export const employeeApi = {
         formData.append('image', blob, 'employee_image.jpg');
       }
       
-      return makeRequestWithFormData(`/employees/${id}`, { method: 'PUT', body: formData });
+      return makeRequestWithFormData(`/employees/${id}`, { method: 'POST', body: formData });
     } else {
       return makeRequest(`/employees/${id}`, { method: 'PUT', body: data });
     }
@@ -338,12 +361,19 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
   if (typeof window !== 'undefined') {
     let token = null;
     
-    // If endpoint is for companies, use company token
+    // If endpoint is for companies or employees or attendance, determine the best token
     if (endpoint.includes('/companies') || endpoint.includes('/company') || 
         endpoint.includes('/departments') || endpoint.includes('/designations') ||
         endpoint.includes('/employees') || endpoint.includes('/attendance-policy') ||
-        endpoint.includes('/holidays') || endpoint.includes('/leave-policy')) {
-      token = localStorage.getItem('companyAuthToken');
+        endpoint.includes('/holidays') || endpoint.includes('/leave-policy') ||
+        endpoint.includes('/attendance')) {
+      
+      // For attendance or employee-specific endpoints, prefer employee token if available
+      if (endpoint.includes('/attendance') || endpoint.includes('/employees/me')) {
+        token = localStorage.getItem('employeeAuthToken') || localStorage.getItem('companyAuthToken');
+      } else {
+        token = localStorage.getItem('companyAuthToken') || localStorage.getItem('employeeAuthToken');
+      }
     } 
     // If endpoint is for admins, use admin token
     else if (endpoint.includes('/admins') || endpoint.includes('/admin')) {
@@ -369,30 +399,37 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
       if (response.status === 401 && !endpoint.includes('/login') && !options.skipRedirect) {
         if (typeof window !== 'undefined') {
           console.error(`401 Unauthorized for ${endpoint}. Redirecting to appropriate login.`);
-          localStorage.removeItem('adminAuthToken');
-          localStorage.removeItem('companyAuthToken');
+          
+          const isAdmin = !!localStorage.getItem('adminAuthToken');
+          const isCompany = !!localStorage.getItem('companyAuthToken');
+          const isEmployee = !!localStorage.getItem('employeeAuthToken');
+
           // If it's an admin endpoint, redirect to admin login
           if (endpoint.includes('/admins') || endpoint.includes('/admin')) {
+            localStorage.removeItem('adminAuthToken');
             localStorage.removeItem('adminProfile');
             window.location.href = '/login/admin';
-          } else if (endpoint.includes('/companies') || endpoint.includes('/company') ||
-            endpoint.includes('/employees') || endpoint.includes('/departments') || endpoint.includes('/designations') ||
-            endpoint.includes('/attendance-policy') || endpoint.includes('/holidays') || endpoint.includes('/leave-policy')) {
+          } 
+          // If it's an employee or attendance endpoint, redirect to employee login
+          else if (endpoint.includes('/attendance') || endpoint.includes('/employees/me') || (isEmployee && !isCompany)) {
+            localStorage.removeItem('employeeAuthToken');
+            localStorage.removeItem('employeeProfile');
+            window.location.href = '/login/employee';
+          }
+          // If it's a company endpoint or we have a company token
+          else if (endpoint.includes('/companies') || endpoint.includes('/company') || 
+                   endpoint.includes('/employees') || endpoint.includes('/departments') || 
+                   endpoint.includes('/designations') || isCompany) {
+            localStorage.removeItem('companyAuthToken');
             localStorage.removeItem('companyProfile');
             window.location.href = '/login/company';
-          } else {
-            // For other endpoints, check which token was being used and redirect appropriately
-            const adminToken = localStorage.getItem('adminAuthToken');
-            const companyToken = localStorage.getItem('companyAuthToken');
-            if (adminToken) {
-              localStorage.removeItem('adminProfile');
-              window.location.href = '/login/admin';
-            } else if (companyToken) {
-              localStorage.removeItem('companyProfile');
-              window.location.href = '/login/company';
-            } else {
-              window.location.href = '/login';
-            }
+          }
+          // Default fallback
+          else {
+            localStorage.removeItem('adminAuthToken');
+            localStorage.removeItem('companyAuthToken');
+            localStorage.removeItem('employeeAuthToken');
+            window.location.href = '/login';
           }
         }
       }
