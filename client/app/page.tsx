@@ -137,7 +137,6 @@ export default function HRPortalLanding() {
               transition={{ delay: 0.2 }}
             >
               <div className="text-2xl font-bold tracking-tight flex items-center">
-                <Sparkles className="mr-2" size={24} />
                 HRFlow
               </div>
             </motion.div>
@@ -200,19 +199,7 @@ export default function HRPortalLanding() {
                   </Link>
                 </div>
               </motion.div>
-              <motion.div className="relative group">
-                <Button variant="outline" className="bg-white/10 border-white/20 hover:bg-white/20 text-white flex items-center gap-2">
-                  <Shield size={16} />
-                  Admin
-                  <ChevronDown className="ml-1" size={16} />
-                </Button>
-                <div className="absolute top-full right-0 mt-1 w-56 bg-black/80 backdrop-blur-lg rounded-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <Link href="/login/admin" className="block px-4 py-2 hover:bg-white/10 text-white items-center gap-2">
-                    <LogIn size={16} />
-                    Admin Login
-                  </Link>
-                </div>
-              </motion.div>
+            
             </div>
 
             <motion.button
@@ -295,13 +282,7 @@ export default function HRPortalLanding() {
                   </Link>
                 </div>
                 
-                <div className="pt-2 border-t border-white/10">
-                  <h4 className="font-semibold px-2 py-1 text-sm text-purple-300">Admin</h4>
-                  <Link href="/login/admin" className="block px-3 py-2 hover:bg-white/10 rounded-md items-center gap-2">
-                    <Shield size={16} />
-                    Admin Login
-                  </Link>
-                </div>
+               
               </div>
             </div>
           </motion.div>
@@ -313,17 +294,7 @@ export default function HRPortalLanding() {
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="inline-block"
-            >
-              <span className="px-4 py-2 bg-linear-to-r from-purple-500/30 to-pink-500/30 backdrop-blur-sm rounded-full text-sm font-semibold border border-white/20 flex items-center gap-2">
-                <Sparkles className="size-4" />
-                🚀 New: AI-Powered HR Analytics
-              </span>
-            </motion.div>
+            
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
