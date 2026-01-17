@@ -2,6 +2,7 @@
 // server/controllers/LeavePolicyController.php
 
 require_once __DIR__ . '/../models/LeavePolicy.php';
+require_once __DIR__ . '/../models/Employee.php';
 require_once __DIR__ . '/../helpers/functions.php';
 
 class LeavePolicyController
@@ -15,37 +16,23 @@ class LeavePolicyController
 
     private function getCompanyIdFromToken()
     {
-        $authHeader = null;
-        
-        if (function_exists('getallheaders')) {
-            $headers = getallheaders();
-            foreach ($headers as $name => $value) {
-                if (strtolower($name) === 'authorization') {
-                    $authHeader = $value;
-                    break;
-                }
-            }
-        }
-        
-        if (!$authHeader) {
-            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-                $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-            } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-                $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-            }
-        }
-        
-        if (!$authHeader || !preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
+        $actor = getActorFromToken();
+        if (!$actor) {
             return null;
         }
-        
-        $token = trim($matches[1]);
-        
-        if (!preg_match('/^company_(\d+)/', $token, $tokenMatches)) {
-            return null;
+
+        if ($actor['type'] === 'company') {
+            return $actor['id'];
         }
-        
-        return (int)$tokenMatches[1];
+
+        if ($actor['type'] === 'employee') {
+            // Fetch employee to get companyId
+            $employeeModel = new Employee();
+            $employee = $employeeModel->find($actor['id']);
+            return $employee ? (int)$employee['companyId'] : null;
+        }
+
+        return null;
     }
 
     public function index()

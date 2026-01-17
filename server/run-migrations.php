@@ -16,6 +16,8 @@ require_once __DIR__ . '/migrations/CreateHolidaysTable.php';
 require_once __DIR__ . '/migrations/CreateLeavePoliciesTable.php';
 require_once __DIR__ . '/migrations/CreateAttendancesTable.php';
 require_once __DIR__ . '/migrations/AddLineManagerToEmployees.php';
+require_once __DIR__ . '/migrations/CreateLeavesTable.php';
+require_once __DIR__ . '/migrations/CreateSalaryHistoryTable.php';
 require_once __DIR__ . '/migrations/MigrationRunner.php';
 
 // First, create the migrations table if it doesn't exist
@@ -42,6 +44,8 @@ if (isset($argv[1]) && $argv[1] === 'rollback') {
         new CreateLeavePoliciesTable(),
         new CreateAttendancesTable(),
         new AddLineManagerToEmployees(),
+        new CreateLeavesTable(),
+        new CreateSalaryHistoryTable(),
     ]);
     
     // Run admin seeds after migrations

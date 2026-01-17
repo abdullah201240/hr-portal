@@ -20,42 +20,90 @@ import {
 } from 'lucide-react';
 import { useEmployeeAuth } from '@/hooks/useEmployeeAuth';
 import { motion } from 'framer-motion';
-import { attendanceApi } from '@/lib/api';
+import { attendanceApi, policyApi, leaveApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 export default function EmployeeDashboard() {
+  const router = useRouter();
   const { employeeProfile } = useEmployeeAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [attendance, setAttendance] = useState<any>(null);
-  const [loadingAttendance, setLoadingAttendance] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
+  const [policy, setPolicy] = useState<any>(null);
+  const [dashboardStats, setDashboardStats] = useState({
+    presentDays: 0,
+    leaveTaken: 0,
+    pendingApprovals: 0,
+    performance: 0
+  });
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    fetchAttendanceStatus();
-    fetchHistory();
+    fetchDashboardData();
     return () => clearInterval(timer);
   }, []);
 
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [statusRes, historyRes, policyRes, leavesRes, pendingRes] = await Promise.all([
+        attendanceApi.getStatus(),
+        attendanceApi.getHistory({ limit: 30 }), // Get last 30 days for stats
+        policyApi.getAttendancePolicy(),
+        leaveApi.getMyLeaves(),
+        leaveApi.getPendingApprovals()
+      ]);
+
+      if (statusRes.success) setAttendance(statusRes.data);
+      if (historyRes.success) {
+        setHistory(historyRes.data.slice(0, 4)); // Only show last 4 in recent activity
+        
+        // Calculate Present Days
+        const presentDays = historyRes.data.filter((r: any) => 
+          r.status?.toLowerCase() === 'present' || r.status?.toLowerCase() === 'late'
+        ).length;
+        
+        // Calculate Performance (On-time percentage)
+        const totalLogs = historyRes.data.length;
+        const onTimeLogs = historyRes.data.filter((r: any) => r.status?.toLowerCase() === 'present').length;
+        const performance = totalLogs > 0 ? Math.round((onTimeLogs / totalLogs) * 100) : 0;
+
+        setDashboardStats(prev => ({ ...prev, presentDays, performance }));
+      }
+      if (policyRes.success) setPolicy(policyRes.data);
+      if (leavesRes.success) {
+        const approvedLeaves = leavesRes.data.filter((l: any) => l.status === 'approved').length;
+        setDashboardStats(prev => ({ ...prev, leaveTaken: approvedLeaves }));
+      }
+      if (pendingRes.success) {
+        setDashboardStats(prev => ({ ...prev, pendingApprovals: pendingRes.data.length }));
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchAttendanceStatus = async () => {
     try {
-      setLoadingAttendance(true);
       const response = await attendanceApi.getStatus();
       if (response.success) {
         setAttendance(response.data);
       }
     } catch (error) {
       console.error('Error fetching attendance:', error);
-    } finally {
-      setLoadingAttendance(false);
     }
   };
 
   const fetchHistory = async () => {
     try {
-      const response = await attendanceApi.getHistory(4);
+      const response = await attendanceApi.getHistory({ limit: 4 });
       if (response.success) {
         setHistory(response.data);
       }
@@ -70,7 +118,7 @@ export default function EmployeeDashboard() {
       const response = await attendanceApi.clockIn();
       if (response.success) {
         setAttendance(response.data);
-        fetchHistory();
+        await fetchDashboardData(); // Refresh all data
         toast.success('Successfully clocked in!');
       }
     } catch (error: any) {
@@ -86,7 +134,7 @@ export default function EmployeeDashboard() {
       const response = await attendanceApi.clockOut();
       if (response.success) {
         setAttendance(response.data);
-        fetchHistory();
+        await fetchDashboardData(); // Refresh all data
         toast.success('Successfully clocked out!');
       }
     } catch (error: any) {
@@ -96,10 +144,19 @@ export default function EmployeeDashboard() {
     }
   };
 
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return '--:--';
+    const [hours, minutes] = timeStr.split(':');
+    const h = parseInt(hours);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return `${h12}:${minutes} ${ampm}`;
+  };
+
   const stats = [
     { 
       title: 'Present Days', 
-      value: '18', 
+      value: dashboardStats.presentDays.toString(), 
       icon: CheckCircle2, 
       gradient: 'from-emerald-500 to-teal-500',
       bgGradient: 'from-emerald-500/10 to-teal-500/10',
@@ -113,7 +170,7 @@ export default function EmployeeDashboard() {
     },
     { 
       title: 'Leave Taken', 
-      value: '2', 
+      value: dashboardStats.leaveTaken.toString(), 
       icon: Calendar, 
       gradient: 'from-blue-500 to-cyan-500',
       bgGradient: 'from-blue-500/10 to-cyan-500/10',
@@ -126,8 +183,8 @@ export default function EmployeeDashboard() {
       pulseColor: 'bg-blue-500/20'
     },
     { 
-      title: 'Pending Tasks', 
-      value: '5', 
+      title: 'Pending Approvals', 
+      value: dashboardStats.pendingApprovals.toString(), 
       icon: AlertCircle, 
       gradient: 'from-amber-500 to-orange-500',
       bgGradient: 'from-amber-500/10 to-orange-500/10',
@@ -141,7 +198,7 @@ export default function EmployeeDashboard() {
     },
     { 
       title: 'Performance', 
-      value: '94%', 
+      value: `${dashboardStats.performance}%`, 
       icon: TrendingUp, 
       gradient: 'from-indigo-500 to-purple-500',
       bgGradient: 'from-indigo-500/10 to-purple-500/10',
@@ -154,6 +211,14 @@ export default function EmployeeDashboard() {
       pulseColor: 'bg-indigo-500/20'
     },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -301,11 +366,11 @@ export default function EmployeeDashboard() {
               <div className="pt-3 border-t border-dashed space-y-2">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-muted-foreground">Shift Starts:</span>
-                  <span className="font-bold">09:00 AM</span>
+                  <span className="font-bold">{policy ? formatTime(policy.office_start_time) : '09:00 AM'}</span>
                 </div>
                 <div className="flex justify-between text-[11px]">
                   <span className="text-muted-foreground">Shift Ends:</span>
-                  <span className="font-bold">06:00 PM</span>
+                  <span className="font-bold">{policy ? formatTime(policy.office_end_time) : '06:00 PM'}</span>
                 </div>
               </div>
             </div>
@@ -380,11 +445,11 @@ export default function EmployeeDashboard() {
             <div className="grid grid-cols-2 gap-3">
               <div className="p-2 bg-indigo-500/5 rounded-lg border border-indigo-500/10 backdrop-blur-sm">
                 <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-wider">Employee ID</p>
-                <p className="text-xs font-bold">EMP-2024-001</p>
+                <p className="text-xs font-bold">{employeeProfile?.employeeId || '---'}</p>
               </div>
               <div className="p-2 bg-purple-500/5 rounded-lg border border-purple-500/10 backdrop-blur-sm">
                 <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-wider">Department</p>
-                <p className="text-xs font-bold">{employeeProfile?.department || 'Operations'}</p>
+                <p className="text-xs font-bold">{employeeProfile?.department || '---'}</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -404,12 +469,17 @@ export default function EmployeeDashboard() {
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-2 px-4 pb-4">
             {[
-              { name: 'Apply Leave', icon: Calendar, color: 'text-amber-500' },
-              { name: 'Payslip', icon: FileText, color: 'text-emerald-500' },
-              { name: 'My Team', icon: User, color: 'text-blue-500' },
-              { name: 'Company Policy', icon: Briefcase, color: 'text-purple-500' },
+              { name: 'Apply Leave', icon: Calendar, color: 'text-amber-500', href: '/employee/leave' },
+              { name: 'My Attendance', icon: History, color: 'text-emerald-500', href: '/employee/attendance' },
+              { name: 'Leave Approvals', icon: User, color: 'text-blue-500', href: '/employee/leave/approvals' },
+              { name: 'Settings', icon: Briefcase, color: 'text-purple-500', href: '/employee/settings' },
             ].map((link, i) => (
-              <Button key={i} variant="outline" className="h-auto py-2.5 flex flex-col gap-1 rounded-xl hover:bg-indigo-500/5 border-indigo-500/10 transition-all hover:border-indigo-500/30 group glass">
+              <Button 
+                key={i} 
+                variant="outline" 
+                className="h-auto py-2.5 flex flex-col gap-1 rounded-xl hover:bg-indigo-500/5 border-indigo-500/10 transition-all hover:border-indigo-500/30 group glass"
+                onClick={() => link.href !== '#' && router.push(link.href)}
+              >
                 <link.icon className={"h-4 w-4 " + link.color + " group-hover:scale-110 transition-transform"} />
                 <span className="text-[10px] font-bold">{link.name}</span>
               </Button>

@@ -29,6 +29,13 @@ class Holiday extends Model
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function findOnDate($companyId, $date)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE company_id = ? AND holiday_date = ?");
+        $stmt->execute([$companyId, $date]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function validate($data)
     {
         $errors = [];

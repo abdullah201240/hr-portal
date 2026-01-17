@@ -29,7 +29,10 @@ class Attendance extends Model
         $existing = $this->findByEmployeeAndDate($data['employee_id'], $data['date']);
         
         if ($existing) {
-            // Already clocked in or record exists
+            // If already clocked in, don't overwrite the clock_in time unless it's null
+            if ($existing['clock_in']) {
+                return true; 
+            }
             return $this->update($existing['id'], [
                 'clock_in' => $data['clock_in'],
                 'status' => $data['status'] ?? 'present',
@@ -66,6 +69,40 @@ class Attendance extends Model
         $stmt->bindValue(1, $employeeId, PDO::PARAM_INT);
         $stmt->bindValue(2, $limit, PDO::PARAM_INT);
         $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getMonthlyHistory($employeeId, $month, $year)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE employee_id = ? AND MONTH(date) = ? AND YEAR(date) = ? ORDER BY date ASC");
+        $stmt->execute([$employeeId, $month, $year]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findByCompanyAndDate($companyId, $date)
+    {
+        $sql = "SELECT e.id as emp_id, e.name as employee_name, e.employeeId, e.department, e.designation,
+                       a.*
+                FROM employees e
+                LEFT JOIN {$this->table} a ON e.id = a.employee_id AND a.date = ?
+                WHERE e.companyId = ? AND e.status = 'active' AND (e.joinDate IS NULL OR e.joinDate <= ?)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$date, $companyId, $date]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findByCompanyAndMonth($companyId, $month, $year)
+    {
+        $sql = "SELECT e.id as employee_id, e.name as employee_name, e.employeeId, e.department, e.designation,
+                       a.id as attendance_id, a.date, a.clock_in, a.clock_out, a.status, a.late_minutes, a.overtime_minutes
+                FROM employees e
+                LEFT JOIN {$this->table} a ON e.id = a.employee_id AND MONTH(a.date) = ? AND YEAR(a.date) = ?
+                WHERE e.companyId = ? AND e.status = 'active' 
+                AND (e.joinDate IS NULL OR e.joinDate <= ?)
+                ORDER BY e.name, a.date ASC";
+        $stmt = $this->db->prepare($sql);
+        $firstDayOfMonth = sprintf('%04d-%02d-01', $year, $month);
+        $stmt->execute([$month, $year, $companyId, $firstDayOfMonth]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

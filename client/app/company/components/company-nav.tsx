@@ -10,6 +10,7 @@ import {
   Users,
   BarChart3,
   ShieldCheck,
+  Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,6 +51,21 @@ const navItems = [
     title: 'Policy',
     href: '/company/policy',
     icon: ShieldCheck,
+  },
+  {
+    title: 'Leave Management',
+    href: '/company/leaves',
+    icon: Calendar,
+  },
+  {
+    title: 'Attendance',
+    href: '/company/attendance',
+    icon: Calendar,
+  },
+  {
+    title: 'Salary',
+    href: '/company/salary',
+    icon: Calendar,
   },
   {
     title: 'Analytics',

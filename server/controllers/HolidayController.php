@@ -13,44 +13,11 @@ class HolidayController
         $this->holiday = new Holiday();
     }
 
-    private function getCompanyIdFromToken()
-    {
-        $authHeader = null;
-        
-        if (function_exists('getallheaders')) {
-            $headers = getallheaders();
-            foreach ($headers as $name => $value) {
-                if (strtolower($name) === 'authorization') {
-                    $authHeader = $value;
-                    break;
-                }
-            }
-        }
-        
-        if (!$authHeader) {
-            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-                $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-            } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-                $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-            }
-        }
-        
-        if (!$authHeader || !preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
-            return null;
-        }
-        
-        $token = trim($matches[1]);
-        
-        if (!preg_match('/^company_(\d+)/', $token, $tokenMatches)) {
-            return null;
-        }
-        
-        return (int)$tokenMatches[1];
-    }
-
     public function index($request = null)
     {
-        $companyId = $this->getCompanyIdFromToken();
+        $actor = getActorFromToken();
+        $companyId = getCompanyIdForActor($actor);
+        
         if (!$companyId) {
             jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
         }
@@ -72,10 +39,11 @@ class HolidayController
 
     public function store()
     {
-        $companyId = $this->getCompanyIdFromToken();
-        if (!$companyId) {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
             jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
         }
+        $companyId = $actor['id'];
 
         try {
             $data = getRequestData();
@@ -103,10 +71,11 @@ class HolidayController
 
     public function destroy($id)
     {
-        $companyId = $this->getCompanyIdFromToken();
-        if (!$companyId) {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
             jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
         }
+        $companyId = $actor['id'];
 
         try {
             $holiday = $this->holiday->find($id);

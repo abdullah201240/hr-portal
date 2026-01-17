@@ -367,4 +367,58 @@ class EmployeeController
             echo json_encode(['success' => false, 'message' => 'Error deleting employee: ' . $e->getMessage()]);
         }
     }
+
+    public function verifyPassword($request = null)
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'employee') {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        $request = $request ?? json_decode(file_get_contents('php://input'), true);
+        if (empty($request['password'])) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Current password is required']);
+            return;
+        }
+
+        $employeeId = $actor['id'];
+        $employee = $this->employee->findById($employeeId);
+
+        if ($employee && password_verify($request['password'], $employee['password'])) {
+            echo json_encode(['success' => true, 'message' => 'Password verified']);
+        } else {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Incorrect current password']);
+        }
+    }
+
+    public function changePassword($request = null)
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'employee') {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        $request = $request ?? json_decode(file_get_contents('php://input'), true);
+        if (empty($request['new_password'])) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'New password is required']);
+            return;
+        }
+
+        $employeeId = $actor['id'];
+        $result = $this->employee->update($employeeId, ['password' => $request['new_password']]);
+
+        if ($result) {
+            echo json_encode(['success' => true, 'message' => 'Password changed successfully']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Failed to change password']);
+        }
+    }
 }

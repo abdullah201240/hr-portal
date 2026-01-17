@@ -1,6 +1,9 @@
 <?php
 // server/index.php
 
+// Set the default timezone
+date_default_timezone_set('Asia/Dhaka');
+
 require_once __DIR__ . '/helpers/functions.php';
 require_once __DIR__ . '/controllers/CompanyController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
@@ -11,6 +14,8 @@ require_once __DIR__ . '/controllers/AttendancePolicyController.php';
 require_once __DIR__ . '/controllers/HolidayController.php';
 require_once __DIR__ . '/controllers/LeavePolicyController.php';
 require_once __DIR__ . '/controllers/AttendanceController.php';
+require_once __DIR__ . '/controllers/LeaveController.php';
+require_once __DIR__ . '/controllers/SalaryController.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -52,6 +57,8 @@ $routes = [
     '@/api/employees/(\d+)/?$@' => ['GET' => 'show', 'POST' => 'update', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/employees/login/?$@' => ['POST' => 'login'],
     '@/api/employees/me/?$@' => ['GET' => 'getCurrentProfile'],
+    '@/api/employees/verify-password/?$@' => ['POST' => 'verifyPassword'],
+    '@/api/employees/change-password/?$@' => ['POST' => 'changePassword'],
     '@/api/attendance/status/?$@' => ['GET' => 'getStatus'],
     '@/api/attendance/clock-in/?$@' => ['POST' => 'clockIn'],
     '@/api/attendance/clock-out/?$@' => ['POST' => 'clockOut'],
@@ -60,6 +67,15 @@ $routes = [
     '@/api/holidays/?$@' => ['GET' => 'index', 'POST' => 'store'],
     '@/api/holidays/(\d+)/?$@' => ['DELETE' => 'destroy'],
     '@/api/leave-policy/?$@' => ['GET' => 'index', 'POST' => 'sync'],
+    '@/api/leaves/apply/?$@' => ['POST' => 'apply'],
+    '@/api/leaves/my/?$@' => ['GET' => 'myLeaves'],
+    '@/api/leaves/pending/?$@' => ['GET' => 'pendingApprovals'],
+    '@/api/leaves/(\d+)/status/?$@' => ['POST' => 'updateStatus'],
+    '@/api/leaves/company/?$@' => ['GET' => 'getCompanyLeaves'],
+    '@/api/attendance/company/?$@' => ['GET' => 'getCompanyAttendance'],
+    '@/api/attendance/company/monthly/?$@' => ['GET' => 'getCompanyMonthlyAttendance'],
+    '@/api/salary/increment/?$@' => ['POST' => 'addIncrement'],
+    '@/api/salary/history/(\d+)/?$@' => ['GET' => 'getHistory'],
     '@/api/dashboard/stats/?$@' => ['GET' => 'getDashboardStats']
 ];
 
@@ -84,6 +100,10 @@ foreach ($routes as $pattern => $actions) {
             $controller = new HolidayController();
         } elseif (strpos($path, '/api/leave-policy') !== false) {
             $controller = new LeavePolicyController();
+        } elseif (strpos($path, '/api/leaves') !== false) {
+            $controller = new LeaveController();
+        } elseif (strpos($path, '/api/salary') !== false) {
+            $controller = new SalaryController();
         } else {
             $controller = new CompanyController();
         }
@@ -92,7 +112,7 @@ foreach ($routes as $pattern => $actions) {
             $action = $actions[$method];
             $requestData = array_merge($_GET, (getRequestData() ?: []));
             
-            if (in_array($action, ['index', 'store', 'login', 'logout', 'getCurrentProfile', 'getDashboardStats', 'uploadLogo'])) {
+            if (in_array($action, ['index', 'store', 'login', 'logout', 'getCurrentProfile', 'getDashboardStats', 'uploadLogo', 'verifyPassword', 'changePassword'])) {
                 $controller->$action($requestData);
             } else {
                 // For show, update, delete - we need the ID from the route

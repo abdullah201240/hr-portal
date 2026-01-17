@@ -116,7 +116,13 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
 
     try {
       // Prepare form data for submission
-      const submitData = { ...formData };
+      let submitData = { ...formData };
+      
+      // For edit mode, remove password field if it's empty to prevent overwriting
+      if (isEdit && !submitData.password) {
+        const { password, ...dataWithoutPassword } = submitData;
+        submitData = dataWithoutPassword;
+      }
       
       let response;
       if (isEdit) {

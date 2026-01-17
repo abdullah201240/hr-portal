@@ -12,7 +12,7 @@ interface ApiRequestOptions {
 
 const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) => {
   const { method = 'GET', body, headers = {}, skipRedirect = false } = options;
-  
+
   const config: RequestInit = {
     method,
     headers: {
@@ -25,21 +25,23 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
   // Add auth token if available - choose token based on the endpoint type
   if (typeof window !== 'undefined') {
     let token = null;
-    
+
     // If endpoint is for companies or employees or attendance, determine the best token
-    if (endpoint.includes('/companies') || endpoint.includes('/company') || 
-        endpoint.includes('/departments') || endpoint.includes('/designations') ||
-        endpoint.includes('/employees') || endpoint.includes('/attendance-policy') ||
-        endpoint.includes('/holidays') || endpoint.includes('/leave-policy') ||
-        endpoint.includes('/attendance')) {
-      
+    if (endpoint.includes('/companies') || endpoint.includes('/company') ||
+      endpoint.includes('/departments') || endpoint.includes('/designations') ||
+      endpoint.includes('/employees') || endpoint.includes('/attendance-policy') ||
+      endpoint.includes('/holidays') || endpoint.includes('/leave-policy') ||
+      endpoint.includes('/leaves') || endpoint.includes('/attendance')) {
+
       // For attendance or employee-specific endpoints, prefer employee token if available
-      if (endpoint.includes('/attendance') || endpoint.includes('/employees/me')) {
+      // BUT if it's a company-specific attendance/leave route, prefer company token
+      if ((endpoint.includes('/attendance') || endpoint.includes('/employees/me') || endpoint.includes('/leaves')) &&
+        !endpoint.includes('/company')) {
         token = localStorage.getItem('employeeAuthToken') || localStorage.getItem('companyAuthToken');
       } else {
         token = localStorage.getItem('companyAuthToken') || localStorage.getItem('employeeAuthToken');
       }
-    } 
+    }
     // If endpoint is for admins, use admin token
     else if (endpoint.includes('/admins') || endpoint.includes('/admin')) {
       token = localStorage.getItem('adminAuthToken');
@@ -51,7 +53,7 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
         token = localStorage.getItem('companyAuthToken');
       }
     }
-    
+
     if (token) {
       (config.headers as Record<string, string>).Authorization = `Bearer ${token}`;
     }
@@ -59,12 +61,12 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    
+
     if (!response.ok) {
       if (response.status === 401 && !endpoint.includes('/login') && !skipRedirect) {
         if (typeof window !== 'undefined') {
           console.error(`401 Unauthorized for ${endpoint}. Redirecting to appropriate login.`);
-          
+
           const isAdmin = !!localStorage.getItem('adminAuthToken');
           const isCompany = !!localStorage.getItem('companyAuthToken');
           const isEmployee = !!localStorage.getItem('employeeAuthToken');
@@ -74,17 +76,18 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
             localStorage.removeItem('adminAuthToken');
             localStorage.removeItem('adminProfile');
             window.location.href = '/login/admin';
-          } 
+          }
           // If it's an employee or attendance endpoint, redirect to employee login
-          else if (endpoint.includes('/attendance') || endpoint.includes('/employees/me') || (isEmployee && !isCompany)) {
+          else if (endpoint.includes('/attendance') || endpoint.includes('/employees/me') ||
+            endpoint.includes('/leaves') || endpoint.includes('/leave-policy') || (isEmployee && !isCompany)) {
             localStorage.removeItem('employeeAuthToken');
             localStorage.removeItem('employeeProfile');
             window.location.href = '/login/employee';
           }
           // If it's a company endpoint or we have a company token
-          else if (endpoint.includes('/companies') || endpoint.includes('/company') || 
-                   endpoint.includes('/employees') || endpoint.includes('/departments') || 
-                   endpoint.includes('/designations') || isCompany) {
+          else if (endpoint.includes('/companies') || endpoint.includes('/company') ||
+            endpoint.includes('/employees') || endpoint.includes('/departments') ||
+            endpoint.includes('/designations') || isCompany) {
             localStorage.removeItem('companyAuthToken');
             localStorage.removeItem('companyProfile');
             window.location.href = '/login/company';
@@ -98,9 +101,9 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
           }
         }
       }
-      
+
       const errorData = await response.json().catch(() => ({}));
-      
+
       // Handle validation errors specifically
       if (response.status === 422 && errorData.errors) {
         // Format validation errors
@@ -109,10 +112,10 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
           .join('; ');
         throw new Error(`Validation error: ${validationErrors}`);
       }
-      
+
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`API request failed: ${endpoint}`, error);
@@ -127,26 +130,26 @@ export const companyApi = {
     const url = params ? `/companies?${params.toString()}` : '/companies';
     return makeRequest(url);
   },
-  
+
   // Get a specific company
   getCompanyById: (id: number) => makeRequest(`/companies/${id}`),
-  
+
   // Create a new company
   createCompany: (data: any) => makeRequest('/companies', { method: 'POST', body: data }),
-  
+
   // Update a company
   updateCompany: (id: number, data: any) => makeRequest(`/companies/${id}`, { method: 'PUT', body: data }),
-  
+
   // Delete a company
   deleteCompany: (id: number) => makeRequest(`/companies/${id}`, { method: 'DELETE' }),
-  
+
   // Login a company
-  loginCompany: (credentials: { email: string; password: string }) => 
+  loginCompany: (credentials: { email: string; password: string }) =>
     makeRequest('/companies/login', { method: 'POST', body: credentials }),
-  
+
   // Logout a company
   logoutCompany: () => makeRequest('/companies/logout', { method: 'POST', skipRedirect: true }),
-  
+
   // Get current company profile - skip redirect so profile page can handle auth errors
   getCurrentCompanyProfile: () => makeRequest('/companies/me', { skipRedirect: true }),
 };
@@ -155,29 +158,29 @@ export const companyApi = {
 export const adminApi = {
   // Get all admins
   getAllAdmins: () => makeRequest('/admins'),
-  
+
   // Get a specific admin
   getAdminById: (id: number) => makeRequest(`/admins/${id}`),
-  
+
   // Create a new admin
   createAdmin: (data: any) => makeRequest('/admins', { method: 'POST', body: data }),
-  
+
   // Update an admin
   updateAdmin: (id: number, data: any) => makeRequest(`/admins/${id}`, { method: 'PUT', body: data }),
-  
+
   // Delete an admin
   deleteAdmin: (id: number) => makeRequest(`/admins/${id}`, { method: 'DELETE' }),
-  
+
   // Login an admin
-  loginAdmin: (credentials: { email: string; password: string }) => 
+  loginAdmin: (credentials: { email: string; password: string }) =>
     makeRequest('/admins/login', { method: 'POST', body: credentials }),
-  
+
   // Logout an admin
   logoutAdmin: () => makeRequest('/admins/logout', { method: 'POST', skipRedirect: true }),
-  
+
   // Get current admin profile - skip redirect so profile page can handle auth errors
   getCurrentAdminProfile: () => makeRequest('/admins/me', { skipRedirect: true }),
-  
+
   // Get dashboard statistics
   getDashboardStats: () => makeRequest('/dashboard/stats'),
 };
@@ -189,16 +192,16 @@ export const departmentApi = {
     const url = params ? `/departments?${params.toString()}` : '/departments';
     return makeRequest(url);
   },
-  
+
   // Get a specific department
   getDepartmentById: (id: number) => makeRequest(`/departments/${id}`),
-  
+
   // Create a new department
   createDepartment: (data: any) => makeRequest('/departments', { method: 'POST', body: data }),
-  
+
   // Update a department
   updateDepartment: (id: number, data: any) => makeRequest(`/departments/${id}`, { method: 'PUT', body: data }),
-  
+
   // Delete a department
   deleteDepartment: (id: number) => makeRequest(`/departments/${id}`, { method: 'DELETE' }),
 };
@@ -210,16 +213,16 @@ export const designationApi = {
     const url = params ? `/designations?${params.toString()}` : '/designations';
     return makeRequest(url);
   },
-  
+
   // Get a specific designation
   getDesignationById: (id: number) => makeRequest(`/designations/${id}`),
-  
+
   // Create a new designation
   createDesignation: (data: any) => makeRequest('/designations', { method: 'POST', body: data }),
-  
+
   // Update a designation
   updateDesignation: (id: number, data: any) => makeRequest(`/designations/${id}`, { method: 'PUT', body: data }),
-  
+
   // Delete a designation
   deleteDesignation: (id: number) => makeRequest(`/designations/${id}`, { method: 'DELETE' }),
 };
@@ -229,7 +232,28 @@ export const attendanceApi = {
   getStatus: () => makeRequest('/attendance/status'),
   clockIn: () => makeRequest('/attendance/clock-in', { method: 'POST' }),
   clockOut: () => makeRequest('/attendance/clock-out', { method: 'POST' }),
-  getHistory: (limit = 30) => makeRequest(`/attendance/history?limit=${limit}`),
+
+  getHistory: (params?: { limit?: number; month?: number; year?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    if (params?.month) searchParams.append('month', params.month.toString());
+    if (params?.year) searchParams.append('year', params.year.toString());
+    
+    const url = searchParams.toString() ? `/attendance/history?${searchParams.toString()}` : '/attendance/history';
+    return makeRequest(url);
+  },
+  getCompanyAttendance: (date?: string) => {
+    const url = date ? `/attendance/company?date=${date}` : '/attendance/company';
+    return makeRequest(url);
+  },
+  getCompanyMonthlyAttendance: (params?: { month?: number; year?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.month) searchParams.append('month', params.month.toString());
+    if (params?.year) searchParams.append('year', params.year.toString());
+    
+    const url = searchParams.toString() ? `/attendance/company/monthly?${searchParams.toString()}` : '/attendance/company/monthly';
+    return makeRequest(url);
+  },
 };
 
 export const policyApi = {
@@ -253,10 +277,33 @@ export const leavePolicyApi = {
   syncLeavePolicies: (data: any[]) => makeRequest('/leave-policy', { method: 'POST', body: data }),
 };
 
+// Leave API functions
+export const leaveApi = {
+  applyLeave: (data: any) => makeRequest('/leaves/apply', { method: 'POST', body: data }),
+  getMyLeaves: () => makeRequest('/leaves/my'),
+  getPendingApprovals: () => makeRequest('/leaves/pending'),
+  getCompanyLeaves: () => makeRequest('/leaves/company'),
+  updateLeaveStatus: (id: number, status: 'approved' | 'rejected', managerNote?: string) =>
+    makeRequest(`/leaves/${id}/status`, { method: 'POST', body: { status, manager_note: managerNote } }),
+};
+
+// Salary API functions
+export const salaryApi = {
+  getHistory: (employeeId: number) => makeRequest(`/salary/history/${employeeId}`),
+  addIncrement: (data: {
+    employee_id: number;
+    increment_date: string;
+    new_salary?: number;
+    increment_amount?: number;
+    increment_percentage?: number;
+    reason?: string;
+  }) => makeRequest('/salary/increment', { method: 'POST', body: data }),
+};
+
 // Employee API functions
 export const employeeApi = {
   login: (credentials: any) => makeRequest('/employees/login', { method: 'POST', body: credentials }),
-  getProfile: () => makeRequest('/employees/me'),
+  getProfile: () => makeRequest('/employees/me', { skipRedirect: true }),
   // Get all employees
   getAllEmployees: (params?: { page?: number; limit?: number; search?: string; orderBy?: string; orderDir?: string }) => {
     const searchParams = new URLSearchParams();
@@ -265,21 +312,21 @@ export const employeeApi = {
     if (params?.search) searchParams.append('search', params.search);
     if (params?.orderBy) searchParams.append('orderBy', params.orderBy);
     if (params?.orderDir) searchParams.append('orderDir', params.orderDir);
-    
+
     const url = searchParams.toString() ? `/employees?${searchParams.toString()}` : '/employees';
     return makeRequest(url);
   },
-  
+
   // Get a specific employee
   getEmployeeById: (id: number) => makeRequest(`/employees/${id}`),
-  
+
   // Create a new employee
   createEmployee: (data: EmployeeFormData) => {
     // If image is present and is a data URL, we need to handle it differently
     if (data.image && typeof data.image === 'string' && data.image.startsWith('data:')) {
       // Create FormData for file upload
       const formData = new FormData();
-      
+
       // Append all other fields
       Object.keys(data).forEach(key => {
         const value = (data as any)[key];
@@ -287,27 +334,27 @@ export const employeeApi = {
           formData.append(key, value);
         }
       });
-      
+
       // Handle image separately
       if (data.image) {
         // Convert data URL to Blob
         const blob = dataURLToBlob(data.image);
         formData.append('image', blob, 'employee_image.jpg');
       }
-      
+
       return makeRequestWithFormData('/employees', { method: 'POST', body: formData });
     } else {
       return makeRequest('/employees', { method: 'POST', body: data });
     }
   },
-  
+
   // Update an employee
   updateEmployee: (id: number, data: Partial<EmployeeFormData>) => {
     // If image is present and is a data URL, we need to handle it differently
     if (data.image && typeof data.image === 'string' && data.image.startsWith('data:')) {
       // Create FormData for file upload
       const formData = new FormData();
-      
+
       // Append all other fields
       Object.keys(data).forEach(key => {
         const value = (data as any)[key];
@@ -315,20 +362,26 @@ export const employeeApi = {
           formData.append(key, value);
         }
       });
-      
+
       // Handle image separately
       if (data.image) {
         // Convert data URL to Blob
         const blob = dataURLToBlob(data.image);
         formData.append('image', blob, 'employee_image.jpg');
       }
-      
+
       return makeRequestWithFormData(`/employees/${id}`, { method: 'POST', body: formData });
     } else {
       return makeRequest(`/employees/${id}`, { method: 'PUT', body: data });
     }
   },
-  
+
+  verifyPassword: (password: string) =>
+    makeRequest('/employees/verify-password', { method: 'POST', body: { password } }),
+
+  changePassword: (newPassword: string) =>
+    makeRequest('/employees/change-password', { method: 'POST', body: { new_password: newPassword } }),
+
   // Delete an employee
   deleteEmployee: (id: number) => makeRequest(`/employees/${id}`, { method: 'DELETE' }),
 };
@@ -350,7 +403,7 @@ function dataURLToBlob(dataUrl: string): Blob {
 // Function to make request with FormData (for file uploads)
 const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiRequestOptions, 'headers'> = {}) => {
   const { method = 'GET', body } = options;
-  
+
   const config: RequestInit = {
     method,
     body: body as BodyInit,
@@ -360,21 +413,21 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
   // Add auth token if available - choose token based on the endpoint type
   if (typeof window !== 'undefined') {
     let token = null;
-    
+
     // If endpoint is for companies or employees or attendance, determine the best token
-    if (endpoint.includes('/companies') || endpoint.includes('/company') || 
-        endpoint.includes('/departments') || endpoint.includes('/designations') ||
-        endpoint.includes('/employees') || endpoint.includes('/attendance-policy') ||
-        endpoint.includes('/holidays') || endpoint.includes('/leave-policy') ||
-        endpoint.includes('/attendance')) {
-      
+    if (endpoint.includes('/companies') || endpoint.includes('/company') ||
+      endpoint.includes('/departments') || endpoint.includes('/designations') ||
+      endpoint.includes('/employees') || endpoint.includes('/attendance-policy') ||
+      endpoint.includes('/holidays') || endpoint.includes('/leave-policy') ||
+      endpoint.includes('/leaves') || endpoint.includes('/attendance')) {
+
       // For attendance or employee-specific endpoints, prefer employee token if available
-      if (endpoint.includes('/attendance') || endpoint.includes('/employees/me')) {
+      if (endpoint.includes('/attendance') || endpoint.includes('/employees/me') || endpoint.includes('/leaves')) {
         token = localStorage.getItem('employeeAuthToken') || localStorage.getItem('companyAuthToken');
       } else {
         token = localStorage.getItem('companyAuthToken') || localStorage.getItem('employeeAuthToken');
       }
-    } 
+    }
     // If endpoint is for admins, use admin token
     else if (endpoint.includes('/admins') || endpoint.includes('/admin')) {
       token = localStorage.getItem('adminAuthToken');
@@ -386,7 +439,7 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
         token = localStorage.getItem('companyAuthToken');
       }
     }
-    
+
     if (token) {
       (config.headers as Record<string, string>) = { Authorization: `Bearer ${token}` };
     }
@@ -394,12 +447,12 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    
+
     if (!response.ok) {
       if (response.status === 401 && !endpoint.includes('/login') && !options.skipRedirect) {
         if (typeof window !== 'undefined') {
           console.error(`401 Unauthorized for ${endpoint}. Redirecting to appropriate login.`);
-          
+
           const isAdmin = !!localStorage.getItem('adminAuthToken');
           const isCompany = !!localStorage.getItem('companyAuthToken');
           const isEmployee = !!localStorage.getItem('employeeAuthToken');
@@ -409,17 +462,18 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
             localStorage.removeItem('adminAuthToken');
             localStorage.removeItem('adminProfile');
             window.location.href = '/login/admin';
-          } 
+          }
           // If it's an employee or attendance endpoint, redirect to employee login
-          else if (endpoint.includes('/attendance') || endpoint.includes('/employees/me') || (isEmployee && !isCompany)) {
+          else if (endpoint.includes('/attendance') || endpoint.includes('/employees/me') ||
+            endpoint.includes('/leaves') || endpoint.includes('/leave-policy') || (isEmployee && !isCompany)) {
             localStorage.removeItem('employeeAuthToken');
             localStorage.removeItem('employeeProfile');
             window.location.href = '/login/employee';
           }
           // If it's a company endpoint or we have a company token
-          else if (endpoint.includes('/companies') || endpoint.includes('/company') || 
-                   endpoint.includes('/employees') || endpoint.includes('/departments') || 
-                   endpoint.includes('/designations') || isCompany) {
+          else if (endpoint.includes('/companies') || endpoint.includes('/company') ||
+            endpoint.includes('/employees') || endpoint.includes('/departments') ||
+            endpoint.includes('/designations') || isCompany) {
             localStorage.removeItem('companyAuthToken');
             localStorage.removeItem('companyProfile');
             window.location.href = '/login/company';
@@ -433,9 +487,9 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
           }
         }
       }
-      
+
       const errorData = await response.json().catch(() => ({}));
-      
+
       // Handle validation errors specifically
       if (response.status === 422 && errorData.errors) {
         // Format validation errors
@@ -444,10 +498,10 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
           .join('; ');
         throw new Error(`Validation error: ${validationErrors}`);
       }
-      
+
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`API request failed: ${endpoint}`, error);
@@ -462,16 +516,16 @@ export const companyDepartmentApi = {
     const url = params ? `/departments?${params.toString()}` : '/departments';
     return makeRequest(url);
   },
-  
+
   // Get a specific department
   getDepartmentById: (id: number) => makeRequest(`/departments/${id}`),
-  
+
   // Create a new department
   createDepartment: (data: any) => makeRequest('/departments', { method: 'POST', body: data }),
-  
+
   // Update a department
   updateDepartment: (id: number, data: any) => makeRequest(`/departments/${id}`, { method: 'PUT', body: data }),
-  
+
   // Delete a department
   deleteDepartment: (id: number) => makeRequest(`/departments/${id}`, { method: 'DELETE' }),
 };
@@ -483,16 +537,16 @@ export const companyDesignationApi = {
     const url = params ? `/designations?${params.toString()}` : '/designations';
     return makeRequest(url);
   },
-  
+
   // Get a specific designation
   getDesignationById: (id: number) => makeRequest(`/designations/${id}`),
-  
+
   // Create a new designation
   createDesignation: (data: any) => makeRequest('/designations', { method: 'POST', body: data }),
-  
+
   // Update a designation
   updateDesignation: (id: number, data: any) => makeRequest(`/designations/${id}`, { method: 'PUT', body: data }),
-  
+
   // Delete a designation
   deleteDesignation: (id: number) => makeRequest(`/designations/${id}`, { method: 'DELETE' }),
 };

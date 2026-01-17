@@ -160,8 +160,11 @@ class Employee extends Model
                     if ($key === 'image' && $value && strpos($value, 'data:') === 0) {
                         $value = $this->handleFileUpload($value, 'employees');
                     }
-                    // Hash the password if it's being updated
-                    if ($key === 'password' && !empty($value)) {
+                    // Only hash and include password if it's explicitly provided and not empty
+                    if ($key === 'password') {
+                        if (empty($value)) {
+                            continue; // Skip password field if empty/not provided
+                        }
                         $value = password_hash($value, PASSWORD_DEFAULT);
                     }
                     $fields[] = "$key = ?";

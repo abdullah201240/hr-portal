@@ -77,3 +77,21 @@ function getActorFromToken()
 
     return null;
 }
+
+function getCompanyIdForActor($actor)
+{
+    if (!$actor) return null;
+    
+    if ($actor['type'] === 'company') {
+        return $actor['id'];
+    }
+    
+    if ($actor['type'] === 'employee') {
+        require_once __DIR__ . '/../models/Employee.php';
+        $employeeModel = new Employee();
+        $employee = $employeeModel->findById($actor['id']);
+        return $employee ? (int)$employee['companyId'] : null;
+    }
+    
+    return null;
+}

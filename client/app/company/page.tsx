@@ -16,7 +16,9 @@ import {
   CheckCircle2,
   Settings,
   FileText,
-  UserPlus
+  UserPlus,
+  Calendar,
+  Coins
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -169,26 +171,29 @@ export default function CompanyDashboard() {
     name: activity.name,
     action: activity.action,
     time: new Date(activity.created_at).toLocaleDateString(),
-    icon: index % 4 === 0 ? UserPlus : 
-           index % 4 === 1 ? FileText : 
-           index % 4 === 2 ? Activity : 
-           CheckCircle2,
-    color: index % 4 === 0 ? 'text-emerald-400' : 
-           index % 4 === 1 ? 'text-blue-400' : 
-           index % 4 === 2 ? 'text-purple-400' : 
-           'text-amber-400'
+    icon: index % 4 === 0 ? UserPlus :
+      index % 4 === 1 ? FileText :
+        index % 4 === 2 ? Activity :
+          CheckCircle2,
+    color: index % 4 === 0 ? 'text-emerald-400' :
+      index % 4 === 1 ? 'text-blue-400' :
+        index % 4 === 2 ? 'text-purple-400' :
+          'text-amber-400'
   })) || [
-    { name: 'John Doe', action: 'applied for position', time: '2 hours ago', icon: UserPlus, color: 'text-emerald-400' },
-    { name: 'Jane Smith', action: 'updated profile', time: '4 hours ago', icon: FileText, color: 'text-blue-400' },
-    { name: 'Mike Johnson', action: 'interview scheduled', time: '6 hours ago', icon: Activity, color: 'text-purple-400' },
-    { name: 'Sarah Williams', action: 'hired', time: '8 hours ago', icon: CheckCircle2, color: 'text-amber-400' },
-  ];
+      { name: 'John Doe', action: 'applied for position', time: '2 hours ago', icon: UserPlus, color: 'text-emerald-400' },
+      { name: 'Jane Smith', action: 'updated profile', time: '4 hours ago', icon: FileText, color: 'text-blue-400' },
+      { name: 'Mike Johnson', action: 'interview scheduled', time: '6 hours ago', icon: Activity, color: 'text-purple-400' },
+      { name: 'Sarah Williams', action: 'hired', time: '8 hours ago', icon: CheckCircle2, color: 'text-amber-400' },
+    ];
 
   const quickActions = [
     { label: 'Manage Employees', icon: Users, href: '/company/employees', gradient: 'from-emerald-500 to-teal-500' },
     { label: 'Post New Job', icon: Building2, href: '/company/jobs', gradient: 'from-blue-500 to-cyan-500' },
     { label: 'View Applications', icon: FileText, href: '/company/applications', gradient: 'from-purple-500 to-pink-500' },
-    { label: 'Company Settings', icon: Settings, href: '/company/settings', gradient: 'from-amber-500 to-orange-500' },
+    { label: 'Attendance Report', icon: Clock, href: '/company/attendance', gradient: 'from-indigo-500 to-violet-500' },
+    { label: 'Leave Requests', icon: Calendar, href: '/company/leaves', gradient: 'from-rose-500 to-red-500' },
+    { label: 'Salary Management', icon: Coins, href: '/company/salary', gradient: 'from-amber-500 to-orange-500' },
+    { label: 'Company Settings', icon: Settings, href: '/company/settings', gradient: 'from-slate-500 to-zinc-500' },
   ];
 
   return (
@@ -237,13 +242,13 @@ export default function CompanyDashboard() {
                   </div>
                   <motion.div
                     className="relative"
-                    animate={{ 
+                    animate={{
                       rotate: [0, 5, 0, -5, 0],
                       scale: [1, 1.1, 1]
                     }}
-                    transition={{ 
-                      duration: 4, 
-                      repeat: Infinity, 
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
                       ease: "easeInOut",
                       scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
                     }}
