@@ -112,7 +112,7 @@ const EmployeeDetailsPage = () => {
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-6">
               <div className="rounded-full">
-                <Image src={employee.image ? (employee.image.startsWith('data:') ? employee.image : `${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${employee.image}`) : '/placeholder-avatar.png'} alt={employee.name} width={100} height={100} className="rounded-full" unoptimized />
+                <Image src={employee.image ? (employee.image.startsWith('data:') ? employee.image : `${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${employee.image.replace(/^\/+/, '')}`) : '/placeholder-avatar.png'} alt={employee.name} width={100} height={100} className="rounded-full" unoptimized />
                 
               </div>
               <div>

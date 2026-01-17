@@ -306,11 +306,10 @@ export default function CompanyProfilePage() {
                       <div className="flex flex-col items-start gap-4">
                         <div className="relative">
                           {formData.logo ? (
-                            <Image 
-                              src={formData.logo.startsWith('http') ? formData.logo : `${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE || 'http://localhost:8000'}/uploads/logos/${encodeURIComponent(getFilenameFromPath(formData.logo))}`}
+                            <img 
+                              src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${formData.logo}`}
                               alt="Current logo" 
-                              width={64}
-                              height={64}
+                             
                               className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
@@ -469,11 +468,10 @@ export default function CompanyProfilePage() {
                     <div className="flex items-center gap-4">
                       <div className="relative">
                         {formData.logo ? (
-                          <Image 
-                            src={formData.logo.startsWith('http') ? formData.logo : `${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE || 'http://localhost:8000'}/uploads/logos/${encodeURIComponent(getFilenameFromPath(formData.logo))}`}
+                          <img 
+                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}${formData.logo}`}
                             alt={`${formData.name} logo`} 
-                            width={64}
-                            height={64}
+                           
                             className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;

@@ -257,7 +257,7 @@ const EmployeesPage = () => {
                               <div className="relative">
                                 <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-emerald-500/20">
                                  <Image
-                                  src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}/${employee.image || 'uploads/employees/placeholder.avif'}`}
+                                  src={`${process.env.NEXT_PUBLIC_API_BASE_URL_IMAGE}/${(employee.image || 'uploads/employees/placeholder.avif').replace(/^\/+/, '')}`}
                                   alt={employee.name}
                                   width={40}
                                   height={40}
