@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Calendar as CalendarIcon, Plus, Trash2, Save, ChevronLeft, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Calendar as CalendarIcon, Trash2, Save, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { holidayApi, policyApi } from '@/lib/api';
 import { toast } from 'sonner';
@@ -37,7 +37,6 @@ export function HolidayCalendar() {
       ]);
 
       if (holidayRes.success) {
-        console.log('Fetched Holidays:', holidayRes.data);
         setHolidays(holidayRes.data);
       }
       
@@ -226,7 +225,7 @@ export function HolidayCalendar() {
                 key={day}
                 onClick={() => handleDateClick(day)}
                 className={cn(
-                  "aspect-square p-0.5 rounded-md border transition-all duration-200 flex flex-col items-center justify-center relative group overflow-hidden",
+                  "aspect-square p-1 rounded-md border transition-all duration-200 flex flex-col items-center justify-center relative group overflow-hidden",
                   holiday 
                     ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400 shadow-[inset_0_0_10px_rgba(16,185,129,0.1)]" 
                     : weekend
