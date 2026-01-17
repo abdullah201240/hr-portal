@@ -33,6 +33,11 @@ const navItems = [
     icon: Calendar,
   },
   {
+    title: 'My Salary',
+    href: '/employee/salary',
+    icon: ShieldCheck,
+  },
+  {
     title: 'Documents',
     href: '/employee/documents',
     icon: FileText,

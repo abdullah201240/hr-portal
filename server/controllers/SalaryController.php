@@ -3,17 +3,20 @@
 
 require_once __DIR__ . '/../models/Employee.php';
 require_once __DIR__ . '/../models/SalaryHistory.php';
+require_once __DIR__ . '/../models/MonthlyPayout.php';
 require_once __DIR__ . '/../helpers/functions.php';
 
 class SalaryController
 {
     private $employee;
     private $salaryHistory;
+    private $monthlyPayout;
 
     public function __construct()
     {
         $this->employee = new Employee();
         $this->salaryHistory = new SalaryHistory();
+        $this->monthlyPayout = new MonthlyPayout();
     }
 
     // Get salary history for a specific employee
@@ -169,6 +172,131 @@ class SalaryController
                     'totalIncrements' => $totalIncrements
                 ]
             ]);
+        } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // Process/Generate monthly payroll for all active employees
+    public function generatePayroll()
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
+            jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $data = getRequestData();
+        $month = isset($data['month']) ? (int)$data['month'] : (int)date('m');
+        $year = isset($data['year']) ? (int)$data['year'] : (int)date('Y');
+
+        try {
+            $companyId = $actor['id'];
+            $employees = $this->employee->findByCompanyId($companyId, 1000, 0, '', 'name', 'ASC');
+            
+            $generatedCount = 0;
+            $skippedCount = 0;
+
+            foreach ($employees as $emp) {
+                if ($emp['status'] !== 'active') continue;
+
+                // Check if already exists
+                if ($this->monthlyPayout->checkExists($emp['id'], $month, $year)) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                $basicSalary = (float)($emp['salary'] ?? 0);
+                // Simple logic: net = basic + allowances - deductions
+                // In a real system, these would come from other tables
+                $allowances = 0; 
+                $deductions = 0;
+                $netSalary = $basicSalary + $allowances - $deductions;
+
+                $this->monthlyPayout->create([
+                    'employee_id' => $emp['id'],
+                    'company_id' => $companyId,
+                    'month' => $month,
+                    'year' => $year,
+                    'basic_salary' => $basicSalary,
+                    'allowances' => $allowances,
+                    'deductions' => $deductions,
+                    'net_salary' => $netSalary,
+                    'status' => 'pending'
+                ]);
+                $generatedCount++;
+            }
+
+            jsonResponse([
+                'success' => true, 
+                'message' => "Payroll generated: $generatedCount processed, $skippedCount already existed.",
+                'data' => ['generated' => $generatedCount, 'skipped' => $skippedCount]
+            ]);
+        } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // Get payroll list for company
+    public function getPayrollList()
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
+            jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $data = getRequestData();
+        $month = isset($data['month']) ? (int)$data['month'] : null;
+        $year = isset($data['year']) ? (int)$data['year'] : null;
+
+        try {
+            $list = $this->monthlyPayout->findByCompany($actor['id'], $month, $year);
+            jsonResponse(['success' => true, 'data' => $list]);
+        } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // Bulk/Single mark as paid
+    public function updatePayoutStatus()
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
+            jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $data = getRequestData();
+        if (empty($data['ids']) || !is_array($data['ids'])) {
+            jsonResponse(['success' => false, 'message' => 'Payout IDs required'], 400);
+        }
+
+        $status = $data['status'] ?? 'paid';
+        $paymentDate = $data['payment_date'] ?? date('Y-m-d');
+        $method = $data['method'] ?? 'Bank Transfer';
+
+        try {
+            $updated = 0;
+            foreach ($data['ids'] as $id) {
+                if ($this->monthlyPayout->updateStatus($id, $status, $paymentDate, $method)) {
+                    $updated++;
+                }
+            }
+            jsonResponse(['success' => true, 'message' => "$updated records updated to $status"]);
+        } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // For Employee: Get my payouts
+    public function getMyPayouts()
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'employee') {
+            jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        try {
+            $list = $this->monthlyPayout->findByEmployee($actor['id']);
+            jsonResponse(['success' => true, 'data' => $list]);
         } catch (Exception $e) {
             jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }

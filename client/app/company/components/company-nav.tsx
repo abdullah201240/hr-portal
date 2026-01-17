@@ -68,6 +68,11 @@ const navItems = [
     icon: Calendar,
   },
   {
+    title: 'Payroll',
+    href: '/company/payroll',
+    icon: ShieldCheck,
+  },
+  {
     title: 'Analytics',
     href: '/company/analytics',
     icon: BarChart3,

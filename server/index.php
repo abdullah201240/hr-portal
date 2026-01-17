@@ -78,6 +78,10 @@ $routes = [
     '@/api/salary/history/(\d+)/?$@' => ['GET' => 'getHistory'],
     '@/api/salary/all/?$@' => ['GET' => 'getAllHistory'],
     '@/api/salary/stats/?$@' => ['GET' => 'getCompanyStats'],
+    '@/api/salary/payroll/generate/?$@' => ['POST' => 'generatePayroll'],
+    '@/api/salary/payroll/list/?$@' => ['GET' => 'getPayrollList'],
+    '@/api/salary/payroll/status/?$@' => ['POST' => 'updatePayoutStatus'],
+    '@/api/salary/payroll/my/?$@' => ['GET' => 'getMyPayouts'],
     '@/api/dashboard/stats/?$@' => ['GET' => 'getDashboardStats']
 ];
 

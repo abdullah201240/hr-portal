@@ -31,12 +31,12 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
       endpoint.includes('/departments') || endpoint.includes('/designations') ||
       endpoint.includes('/employees') || endpoint.includes('/attendance-policy') ||
       endpoint.includes('/holidays') || endpoint.includes('/leave-policy') ||
-      endpoint.includes('/leaves') || endpoint.includes('/attendance')) {
+      endpoint.includes('/leaves') || endpoint.includes('/attendance') || endpoint.includes('/salary')) {
 
       // For attendance or employee-specific endpoints, prefer employee token if available
-      // BUT if it's a company-specific attendance/leave route, prefer company token
-      if ((endpoint.includes('/attendance') || endpoint.includes('/employees/me') || endpoint.includes('/leaves')) &&
-        !endpoint.includes('/company')) {
+      // BUT if it's a company-specific attendance/leave/salary route, prefer company token
+      if ((endpoint.includes('/attendance') || endpoint.includes('/employees/me') || endpoint.includes('/leaves') || endpoint.includes('/salary/payroll/my')) &&
+        !endpoint.includes('/company') && !endpoint.includes('/salary/payroll/list') && !endpoint.includes('/salary/stats')) {
         token = localStorage.getItem('employeeAuthToken') || localStorage.getItem('companyAuthToken');
       } else {
         token = localStorage.getItem('companyAuthToken') || localStorage.getItem('employeeAuthToken');
@@ -77,9 +77,10 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
             localStorage.removeItem('adminProfile');
             window.location.href = '/login/admin';
           }
-          // If it's an employee or attendance endpoint, redirect to employee login
+          // If it's an employee or attendance or personal salary endpoint, redirect to employee login
           else if (endpoint.includes('/attendance') || endpoint.includes('/employees/me') ||
-            endpoint.includes('/leaves') || endpoint.includes('/leave-policy') || (isEmployee && !isCompany)) {
+            endpoint.includes('/leaves') || endpoint.includes('/leave-policy') || 
+            endpoint.includes('/salary/payroll/my') || (isEmployee && !isCompany)) {
             localStorage.removeItem('employeeAuthToken');
             localStorage.removeItem('employeeProfile');
             window.location.href = '/login/employee';
@@ -87,7 +88,7 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
           // If it's a company endpoint or we have a company token
           else if (endpoint.includes('/companies') || endpoint.includes('/company') ||
             endpoint.includes('/employees') || endpoint.includes('/departments') ||
-            endpoint.includes('/designations') || isCompany) {
+            endpoint.includes('/designations') || endpoint.includes('/salary') || isCompany) {
             localStorage.removeItem('companyAuthToken');
             localStorage.removeItem('companyProfile');
             window.location.href = '/login/company';
@@ -292,6 +293,18 @@ export const salaryApi = {
   getHistory: (employeeId: number) => makeRequest(`/salary/history/${employeeId}`),
   getAllHistory: () => makeRequest('/salary/all'),
   getStats: () => makeRequest('/salary/stats'),
+  generatePayroll: (data: { month: number; year: number }) => 
+    makeRequest('/salary/payroll/generate', { method: 'POST', body: data }),
+  getPayrollList: (params?: { month?: number; year?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.month) searchParams.append('month', params.month.toString());
+    if (params?.year) searchParams.append('year', params.year.toString());
+    const url = searchParams.toString() ? `/salary/payroll/list?${searchParams.toString()}` : '/salary/payroll/list';
+    return makeRequest(url);
+  },
+  updatePayoutStatus: (data: { ids: number[]; status: 'paid' | 'pending'; payment_date?: string; method?: string }) =>
+    makeRequest('/salary/payroll/status', { method: 'POST', body: data }),
+  getMyPayouts: () => makeRequest('/salary/payroll/my'),
   addIncrement: (data: {
     employee_id: number;
     increment_date: string;
@@ -465,9 +478,10 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
             localStorage.removeItem('adminProfile');
             window.location.href = '/login/admin';
           }
-          // If it's an employee or attendance endpoint, redirect to employee login
+          // If it's an employee or attendance or personal salary endpoint, redirect to employee login
           else if (endpoint.includes('/attendance') || endpoint.includes('/employees/me') ||
-            endpoint.includes('/leaves') || endpoint.includes('/leave-policy') || (isEmployee && !isCompany)) {
+            endpoint.includes('/leaves') || endpoint.includes('/leave-policy') || 
+            endpoint.includes('/salary/payroll/my') || (isEmployee && !isCompany)) {
             localStorage.removeItem('employeeAuthToken');
             localStorage.removeItem('employeeProfile');
             window.location.href = '/login/employee';
@@ -475,7 +489,7 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
           // If it's a company endpoint or we have a company token
           else if (endpoint.includes('/companies') || endpoint.includes('/company') ||
             endpoint.includes('/employees') || endpoint.includes('/departments') ||
-            endpoint.includes('/designations') || isCompany) {
+            endpoint.includes('/designations') || endpoint.includes('/salary') || isCompany) {
             localStorage.removeItem('companyAuthToken');
             localStorage.removeItem('companyProfile');
             window.location.href = '/login/company';
