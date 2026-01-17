@@ -29,7 +29,8 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
     // If endpoint is for companies, use company token
     if (endpoint.includes('/companies') || endpoint.includes('/company') || 
         endpoint.includes('/departments') || endpoint.includes('/designations') ||
-        endpoint.includes('/employees')) {
+        endpoint.includes('/employees') || endpoint.includes('/attendance-policy') ||
+        endpoint.includes('/holidays') || endpoint.includes('/leave-policy')) {
       token = localStorage.getItem('companyAuthToken');
     } 
     // If endpoint is for admins, use admin token
@@ -63,7 +64,8 @@ const makeRequest = async (endpoint: string, options: ApiRequestOptions = {}) =>
             localStorage.removeItem('adminProfile');
             window.location.href = '/login/admin';
           } else if (endpoint.includes('/companies') || endpoint.includes('/company') ||
-            endpoint.includes('/employees') || endpoint.includes('/departments') || endpoint.includes('/designations')) {
+            endpoint.includes('/employees') || endpoint.includes('/departments') || endpoint.includes('/designations') ||
+            endpoint.includes('/attendance-policy') || endpoint.includes('/holidays') || endpoint.includes('/leave-policy')) {
             localStorage.removeItem('companyProfile');
             window.location.href = '/login/company';
           } else {
@@ -208,6 +210,28 @@ export const designationApi = {
   deleteDesignation: (id: number) => makeRequest(`/designations/${id}`, { method: 'DELETE' }),
 };
 
+// Policy API functions
+export const policyApi = {
+  getAttendancePolicy: () => makeRequest('/attendance-policy'),
+  saveAttendancePolicy: (data: any) => makeRequest('/attendance-policy', { method: 'POST', body: data }),
+};
+
+// Holiday API functions
+export const holidayApi = {
+  getHolidays: (year?: number) => {
+    const url = year ? `/holidays?year=${year}` : '/holidays';
+    return makeRequest(url);
+  },
+  saveHoliday: (data: { name: string; date: string }) => makeRequest('/holidays', { method: 'POST', body: data }),
+  deleteHoliday: (id: number) => makeRequest(`/holidays/${id}`, { method: 'DELETE' }),
+};
+
+// Leave Policy API functions
+export const leavePolicyApi = {
+  getLeavePolicies: () => makeRequest('/leave-policy'),
+  syncLeavePolicies: (data: any[]) => makeRequest('/leave-policy', { method: 'POST', body: data }),
+};
+
 // Employee API functions
 export const employeeApi = {
   // Get all employees
@@ -317,7 +341,8 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
     // If endpoint is for companies, use company token
     if (endpoint.includes('/companies') || endpoint.includes('/company') || 
         endpoint.includes('/departments') || endpoint.includes('/designations') ||
-        endpoint.includes('/employees')) {
+        endpoint.includes('/employees') || endpoint.includes('/attendance-policy') ||
+        endpoint.includes('/holidays') || endpoint.includes('/leave-policy')) {
       token = localStorage.getItem('companyAuthToken');
     } 
     // If endpoint is for admins, use admin token
@@ -351,7 +376,8 @@ const makeRequestWithFormData = async (endpoint: string, options: Omit<ApiReques
             localStorage.removeItem('adminProfile');
             window.location.href = '/login/admin';
           } else if (endpoint.includes('/companies') || endpoint.includes('/company') ||
-            endpoint.includes('/employees') || endpoint.includes('/departments') || endpoint.includes('/designations')) {
+            endpoint.includes('/employees') || endpoint.includes('/departments') || endpoint.includes('/designations') ||
+            endpoint.includes('/attendance-policy') || endpoint.includes('/holidays') || endpoint.includes('/leave-policy')) {
             localStorage.removeItem('companyProfile');
             window.location.href = '/login/company';
           } else {

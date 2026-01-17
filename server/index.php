@@ -7,6 +7,9 @@ require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/DepartmentController.php';
 require_once __DIR__ . '/controllers/DesignationController.php';
 require_once __DIR__ . '/controllers/EmployeeController.php';
+require_once __DIR__ . '/controllers/AttendancePolicyController.php';
+require_once __DIR__ . '/controllers/HolidayController.php';
+require_once __DIR__ . '/controllers/LeavePolicyController.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -46,6 +49,10 @@ $routes = [
     '@/api/designations/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
     '@/api/employees/?$@' => ['GET' => 'index', 'POST' => 'store'],
     '@/api/employees/(\d+)/?$@' => ['GET' => 'show', 'PUT' => 'update', 'DELETE' => 'destroy'],
+    '@/api/attendance-policy/?$@' => ['GET' => 'show', 'POST' => 'store'],
+    '@/api/holidays/?$@' => ['GET' => 'index', 'POST' => 'store'],
+    '@/api/holidays/(\d+)/?$@' => ['DELETE' => 'destroy'],
+    '@/api/leave-policy/?$@' => ['GET' => 'index', 'POST' => 'sync'],
     '@/api/dashboard/stats/?$@' => ['GET' => 'getDashboardStats']
 ];
 
@@ -62,6 +69,12 @@ foreach ($routes as $pattern => $actions) {
             $controller = new DesignationController();
         } elseif (strpos($path, '/api/employees') !== false) {
             $controller = new EmployeeController();
+        } elseif (strpos($path, '/api/attendance-policy') !== false) {
+            $controller = new AttendancePolicyController();
+        } elseif (strpos($path, '/api/holidays') !== false) {
+            $controller = new HolidayController();
+        } elseif (strpos($path, '/api/leave-policy') !== false) {
+            $controller = new LeavePolicyController();
         } else {
             $controller = new CompanyController();
         }

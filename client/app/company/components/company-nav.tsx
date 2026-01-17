@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Users,
   BarChart3,
+  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -39,6 +40,11 @@ const navItems = [
     title: 'Employees',
     href: '/company/employees',
     icon: Users,
+  },
+  {
+    title: 'Policy',
+    href: '/company/policy',
+    icon: ShieldCheck,
   },
   {
     title: 'Analytics',

@@ -21,7 +21,7 @@ import {
 import { motion } from 'framer-motion';
 
 export default function CompanyDashboard() {
-  const { isAuthenticated, isLoading, logout } = useCompanyAuth();
+  const { isAuthenticated, isLoading } = useCompanyAuth();
   const router = useRouter();
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
