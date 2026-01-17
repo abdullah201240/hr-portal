@@ -216,9 +216,14 @@ export default function MySalaryPage() {
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="py-4 px-6 text-right">
-                                                    <Button variant="ghost" size="sm" className="text-emerald-500 hover:bg-emerald-500/10">
-                                                        <Download className="h-4 w-4 mr-2" />
-                                                        PDF
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        className="text-emerald-500 hover:bg-emerald-500/10"
+                                                        onClick={() => router.push(`/employee/salary/${payout.id}`)}
+                                                    >
+                                                        <FileText className="h-4 w-4 mr-2" />
+                                                        View Statement
                                                     </Button>
                                                 </TableCell>
                                             </TableRow>

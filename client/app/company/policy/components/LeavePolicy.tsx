@@ -19,7 +19,8 @@ export function LeavePolicy() {
   const [isOpen, setIsOpen] = useState(false);
   const [newLeaveType, setNewLeaveType] = useState({
     name: '',
-    days: 0
+    days: 0,
+    is_paid: true
   });
 
   useEffect(() => {
@@ -48,9 +49,10 @@ export function LeavePolicy() {
         id: `new_${tempId}`, 
         name: newLeaveType.name, 
         days: newLeaveType.days,
+        is_paid: newLeaveType.is_paid,
         enabled: true
       }]);
-      setNewLeaveType({ name: '', days: 0 });
+      setNewLeaveType({ name: '', days: 0, is_paid: true });
       setIsOpen(false);
     }
   };
@@ -68,6 +70,12 @@ export function LeavePolicy() {
   const handleUpdateDays = (id: any, days: number) => {
     setLeaveTypes(leaveTypes.map(type => 
       type.id === id ? { ...type, days } : type
+    ));
+  };
+
+  const togglePaid = (id: any) => {
+    setLeaveTypes(leaveTypes.map(type => 
+      type.id === id ? { ...type, is_paid: !type.is_paid } : type
     ));
   };
 
@@ -126,6 +134,18 @@ export function LeavePolicy() {
                   value={newLeaveType.days || ''}
                   onChange={(e) => setNewLeaveType({...newLeaveType, days: parseInt(e.target.value) || 0})}
                   className="h-8 text-sm glass border-white/10"
+                />
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+                <div className="space-y-0.5">
+                  <Label className="text-xs">Paid Leave</Label>
+                  <p className="text-[10px] text-muted-foreground">Is this a paid leave type?</p>
+                </div>
+                <input 
+                  type="checkbox"
+                  checked={newLeaveType.is_paid}
+                  onChange={(e) => setNewLeaveType({...newLeaveType, is_paid: e.target.checked})}
+                  className="size-4 accent-emerald-500 cursor-pointer"
                 />
               </div>
             </div>
@@ -187,6 +207,20 @@ export function LeavePolicy() {
                         />
                         <span className="text-[10px] text-muted-foreground font-medium uppercase">Days/Year</span>
                       </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        "text-[10px] font-bold uppercase",
+                        type.is_paid ? "text-emerald-500" : "text-rose-500"
+                      )}>
+                        {type.is_paid ? 'Paid' : 'Unpaid'}
+                      </span>
+                      <input 
+                        type="checkbox"
+                        checked={type.is_paid}
+                        onChange={() => togglePaid(type.id)}
+                        className="size-3 accent-emerald-500 cursor-pointer"
+                      />
                     </div>
                   </div>
                 </div>

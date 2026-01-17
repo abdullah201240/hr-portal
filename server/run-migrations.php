@@ -21,6 +21,8 @@ require_once __DIR__ . '/migrations/CreateSalaryHistoryTable.php';
 require_once __DIR__ . '/migrations/UpdateSalaryHistoryPrecision.php';
 require_once __DIR__ . '/migrations/UpdateSalaryAndAmountPrecision.php';
 require_once __DIR__ . '/migrations/CreateMonthlyPayoutsTable.php';
+require_once __DIR__ . '/migrations/AddDeductionRulesToPolicies.php';
+require_once __DIR__ . '/migrations/AddBreakdownToMonthlyPayouts.php';
 require_once __DIR__ . '/migrations/MigrationRunner.php';
 
 // First, create the migrations table if it doesn't exist
@@ -52,6 +54,8 @@ if (isset($argv[1]) && $argv[1] === 'rollback') {
         new UpdateSalaryHistoryPrecision(),
         new UpdateSalaryAndAmountPrecision(),
         new CreateMonthlyPayoutsTable(),
+        new AddDeductionRulesToPolicies(),
+        new AddBreakdownToMonthlyPayouts(),
     ]);
     
     // Run admin seeds after migrations

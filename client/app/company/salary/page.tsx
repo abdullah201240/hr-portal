@@ -43,6 +43,8 @@ import {
     User,
     ArrowUpRight,
     Download,
+    Plus,
+    ShieldCheck,
     Loader2,
     Calendar,
     CheckCircle2
@@ -70,6 +72,12 @@ export default function SalaryPage() {
     // All History
     const [allHistory, setAllHistory] = useState<any[]>([]);
     const [loadingAllHistory, setLoadingAllHistory] = useState(false);
+
+    // State for Bulk Setup
+    const [showBulkModal, setShowBulkModal] = useState(false);
+    const [bulkSalaries, setBulkSalaries] = useState<Record<number, string>>({});
+    const [bulkReason, setBulkReason] = useState('Initial Salary Setup');
+    const [submittingBulk, setSubmittingBulk] = useState(false);
 
     // State for Increment Modal
     const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
@@ -160,6 +168,43 @@ export default function SalaryPage() {
         setIncrementReason('Annual Increment');
         setIncrementType('fixed');
         setShowIncrementModal(true);
+    };
+
+    const handleOpenBulk = () => {
+        const initialSalaries: Record<number, string> = {};
+        employees.forEach(emp => {
+            initialSalaries[emp.id] = emp.salary || '0';
+        });
+        setBulkSalaries(initialSalaries);
+        setShowBulkModal(true);
+    };
+
+    const handleBulkSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            setSubmittingBulk(true);
+            const updates = Object.entries(bulkSalaries).map(([id, salary]) => ({
+                employee_id: parseInt(id),
+                salary: parseFloat(salary)
+            }));
+
+            const response = await salaryApi.bulkUpdateSalaries({
+                updates,
+                reason: bulkReason
+            });
+
+            if (response.success) {
+                toast.success(response.message);
+                setShowBulkModal(false);
+                fetchEmployees();
+                fetchStats();
+                fetchAllHistory();
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to update salaries');
+        } finally {
+            setSubmittingBulk(false);
+        }
     };
 
     const handleOpenHistory = (employee: any) => {
@@ -259,6 +304,20 @@ export default function SalaryPage() {
                     <p className="text-muted-foreground">Manage employee salaries, increments, and view history.</p>
                 </div>
                 <div className="flex gap-2">
+                    <Button 
+                        onClick={handleOpenBulk}
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 h-11"
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Bulk Salary Setup
+                    </Button>
+                    <Button 
+                        onClick={() => router.push('/company/payroll')}
+                        className="bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/20 h-11"
+                    >
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        Generate Payroll
+                    </Button>
                     <Button variant="outline" className="glass border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/10 h-11">
                         <Download className="mr-2 h-4 w-4" />
                         Export Report
@@ -566,6 +625,164 @@ export default function SalaryPage() {
                     )}
                 </div>
             </motion.div>
+
+            {/* Bulk Increment Modal - Reused existing UI patterns */}
+            <Dialog open={showBulkModal} onOpenChange={setShowBulkModal}>
+                <DialogContent className="max-w-2xl glass border-emerald-500/20 max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                            Bulk Salary Setup
+                        </DialogTitle>
+                        <DialogDescription className="text-emerald-400/60">
+                            Update the base salary for multiple employees at once.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleBulkSubmit} className="space-y-6 pt-4">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 font-semibold text-sm text-emerald-400 pb-2 border-b border-emerald-500/10">
+                                <div>Employee</div>
+                                <div>Monthly Salary (৳)</div>
+                            </div>
+                            
+                            <div className="max-h-[40vh] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                                {employees.map((emp) => (
+                                    <div key={emp.id} className="grid grid-cols-2 gap-4 items-center group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-xs font-bold text-emerald-400">
+                                                {emp.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium">{emp.name}</p>
+                                                <p className="text-[10px] text-muted-foreground">{emp.designation}</p>
+                                            </div>
+                                        </div>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">৳</span>
+                                            <Input
+                                                type="number"
+                                                value={bulkSalaries[emp.id] || ''}
+                                                onChange={(e) => setBulkSalaries({ ...bulkSalaries, [emp.id]: e.target.value })}
+                                                className="pl-7 bg-emerald-950/20 border-emerald-500/20 focus:border-emerald-500 transition-all"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Update Reason</Label>
+                            <Input
+                                value={bulkReason}
+                                onChange={(e) => setBulkReason(e.target.value)}
+                                className="bg-emerald-950/20 border-emerald-500/20"
+                                placeholder="e.g. Annual Adjustment, Promotion, Initial Setup"
+                            />
+                        </div>
+
+                        <div className="flex gap-3 justify-end pt-4">
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => setShowBulkModal(false)}
+                                className="glass border-emerald-500/20"
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                                type="submit" 
+                                disabled={submittingBulk}
+                                className="bg-emerald-500 hover:bg-emerald-600 text-white min-w-[120px]"
+                            >
+                                {submittingBulk ? (
+                                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : 'Update All'}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Increment Modal */}
+            <Dialog open={showBulkModal} onOpenChange={setShowBulkModal}>
+                <DialogContent className="max-w-2xl glass border-emerald-500/20 max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                            Bulk Salary Setup
+                        </DialogTitle>
+                        <DialogDescription className="text-emerald-400/60">
+                            Update the base salary for multiple employees at once.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleBulkSubmit} className="space-y-6 pt-4">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 font-semibold text-sm text-emerald-400 pb-2 border-b border-emerald-500/10">
+                                <div>Employee</div>
+                                <div>Monthly Salary (৳)</div>
+                            </div>
+                            
+                            <div className="max-h-[40vh] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                                {employees.map((emp) => (
+                                    <div key={emp.id} className="grid grid-cols-2 gap-4 items-center group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-xs font-bold text-emerald-400">
+                                                {emp.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium">{emp.name}</p>
+                                                <p className="text-[10px] text-muted-foreground">{emp.designation}</p>
+                                            </div>
+                                        </div>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">৳</span>
+                                            <Input
+                                                type="number"
+                                                value={bulkSalaries[emp.id] || ''}
+                                                onChange={(e) => setBulkSalaries({ ...bulkSalaries, [emp.id]: e.target.value })}
+                                                className="pl-7 bg-emerald-950/20 border-emerald-500/20 focus:border-emerald-500 transition-all text-white"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Update Reason</Label>
+                            <Input
+                                value={bulkReason}
+                                onChange={(e) => setBulkReason(e.target.value)}
+                                className="bg-emerald-950/20 border-emerald-500/20 text-white"
+                                placeholder="e.g. Annual Adjustment, Promotion, Initial Setup"
+                            />
+                        </div>
+
+                        <DialogFooter>
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => setShowBulkModal(false)}
+                                className="glass border-emerald-500/20"
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                                type="submit" 
+                                disabled={submittingBulk}
+                                className="bg-emerald-500 hover:bg-emerald-600 text-white min-w-[120px]"
+                            >
+                                {submittingBulk ? (
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : 'Update All'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
 
             {/* Increment Modal */}
             <Dialog open={showIncrementModal} onOpenChange={setShowIncrementModal}>

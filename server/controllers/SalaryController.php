@@ -4,6 +4,11 @@
 require_once __DIR__ . '/../models/Employee.php';
 require_once __DIR__ . '/../models/SalaryHistory.php';
 require_once __DIR__ . '/../models/MonthlyPayout.php';
+require_once __DIR__ . '/../models/Attendance.php';
+require_once __DIR__ . '/../models/AttendancePolicy.php';
+require_once __DIR__ . '/../models/Leave.php';
+require_once __DIR__ . '/../models/LeavePolicy.php';
+require_once __DIR__ . '/../models/Holiday.php';
 require_once __DIR__ . '/../helpers/functions.php';
 
 class SalaryController
@@ -11,12 +16,22 @@ class SalaryController
     private $employee;
     private $salaryHistory;
     private $monthlyPayout;
+    private $attendance;
+    private $attendancePolicy;
+    private $leave;
+    private $leavePolicy;
+    private $holiday;
 
     public function __construct()
     {
         $this->employee = new Employee();
         $this->salaryHistory = new SalaryHistory();
         $this->monthlyPayout = new MonthlyPayout();
+        $this->attendance = new Attendance();
+        $this->attendancePolicy = new AttendancePolicy();
+        $this->leave = new Leave();
+        $this->leavePolicy = new LeavePolicy();
+        $this->holiday = new Holiday();
     }
 
     // Get salary history for a specific employee
@@ -188,29 +203,159 @@ class SalaryController
         $data = getRequestData();
         $month = isset($data['month']) ? (int)$data['month'] : (int)date('m');
         $year = isset($data['year']) ? (int)$data['year'] : (int)date('Y');
+        $force = !empty($data['force']);
 
         try {
             $companyId = $actor['id'];
+            
+            if ($force) {
+                // Delete existing pending payouts for this month/year to allow regeneration
+                $db = Database::getInstance()->getConnection();
+                $stmt = $db->prepare("DELETE FROM monthly_payouts WHERE company_id = ? AND month = ? AND year = ? AND status = 'pending'");
+                $stmt->execute([$companyId, $month, $year]);
+            }
+
             $employees = $this->employee->findByCompanyId($companyId, 1000, 0, '', 'name', 'ASC');
             
+            // Fetch Global Policies & Metadata
+            $policy = $this->attendancePolicy->findByCompanyId($companyId);
+            if (!$policy) {
+                $policy = ['max_late_allowed' => 2, 'late_deduction_amount' => 0, 'late_deduction_type' => 'fixed', 'weekly_holidays' => ['Friday']];
+            }
+            
+            $holidays = $this->holiday->findByCompanyId($companyId, $year);
+            $holidayDates = array_column($holidays, 'holiday_date');
+            
+            $daysInMonth = (int)date('t', strtotime("$year-$month-01"));
+            $today = date('Y-m-d');
+            $endCalcDate = ($month == date('m') && $year == date('Y')) ? $today : "$year-$month-$daysInMonth";
+
             $generatedCount = 0;
             $skippedCount = 0;
 
             foreach ($employees as $emp) {
                 if ($emp['status'] !== 'active') continue;
-
+            
+                // Skip if employee joined after this month/year
+                $empJoinDate = $emp['joinDate'] ? strtotime($emp['joinDate']) : null;
+                $monthStart = strtotime("$year-$month-01");
+                if ($empJoinDate && $empJoinDate > $monthStart) {
+                    // Employee joined after this month started, so skip
+                    continue;
+                }
+            
                 // Check if already exists
                 if ($this->monthlyPayout->checkExists($emp['id'], $month, $year)) {
                     $skippedCount++;
                     continue;
                 }
-
+            
                 $basicSalary = (float)($emp['salary'] ?? 0);
-                // Simple logic: net = basic + allowances - deductions
-                // In a real system, these would come from other tables
+                $perDaySalary = $basicSalary / 30;
+            
+                // Fetch Attendance and Leaves for this employee
+                $attendanceRecords = $this->attendance->getMonthlyHistory($emp['id'], $month, $year);
+                $attMap = [];
+                foreach ($attendanceRecords as $ar) $attMap[$ar['date']] = $ar;
+            
+                $leaves = $this->leave->findByEmployeeId($emp['id']); // Potentially filter by month in SQL for better performance
+                $leaveMap = [];
+                foreach ($leaves as $l) {
+                    if ($l['status'] !== 'approved') continue;
+                                    
+                    $curr = $l['start_date'];
+                    while ($curr <= $l['end_date']) {
+                        if (date('m', strtotime($curr)) == $month && date('Y', strtotime($curr)) == $year) {
+                            $leaveMap[$curr] = $l;
+                        }
+                        $curr = date('Y-m-d', strtotime($curr . ' +1 day'));
+                    }
+                }
+            
+                // Calculate for each day
+                $lateCount = 0;
+                $absentCount = 0;
+                $unpaidLeaveDays = 0;
+                
+                // Count total working days for this employee in the month
+                $totalWorkingDays = 0;
+                for ($d = 1; $dayNum = sprintf('%02d', $d), $d <= $daysInMonth; $d++) {
+                    $date = "$year-" . sprintf('%02d', $month) . "-$dayNum";
+                    if ($date > $endCalcDate) break;
+                
+                    // Check if employee was active on this date
+                    if ($empJoinDate && strtotime($date) < $empJoinDate) {
+                        // Employee hadn't joined yet, skip this day
+                        continue;
+                    }
+                
+                    $dayOfWeek = date('l', strtotime($date));
+                    $isWeekend = in_array($dayOfWeek, $policy['weekly_holidays'] ?? []);
+                    $isHoliday = in_array($date, $holidayDates);
+                
+                    if ($isWeekend || $isHoliday) continue;
+                                        
+                    $totalWorkingDays++;
+                }
+                
+                // Calculate per day salary based on actual working days
+                $perDaySalary = $totalWorkingDays > 0 ? $basicSalary / $totalWorkingDays : 0;
+                
+                for ($d = 1; $dayNum = sprintf('%02d', $d), $d <= $daysInMonth; $d++) {
+                    $date = "$year-" . sprintf('%02d', $month) . "-$dayNum";
+                    if ($date > $endCalcDate) break;
+                
+                    // Check if employee was active on this date
+                    if ($empJoinDate && strtotime($date) < $empJoinDate) {
+                        // Employee hadn't joined yet, skip this day
+                        continue;
+                    }
+                
+                    $dayOfWeek = date('l', strtotime($date));
+                    $isWeekend = in_array($dayOfWeek, $policy['weekly_holidays'] ?? []);
+                    $isHoliday = in_array($date, $holidayDates);
+                
+                    if ($isWeekend || $isHoliday) continue;
+                
+                    if (isset($attMap[$date])) {
+                        $status = strtolower($attMap[$date]['status']);
+                        if ($status === 'late') $lateCount++;
+                        if ($status === 'absent') $absentCount++;
+                    } else {
+                        // No attendance record found
+                        if (isset($leaveMap[$date])) {
+                            // Check if leave is unpaid
+                            $lp = $this->leavePolicy->find($leaveMap[$date]['leave_policy_id']);
+                            if ($lp && !$lp['is_paid']) {
+                                $unpaidLeaveDays++;
+                            }
+                        } else {
+                            // No leave, no attendance = ABSENT
+                            $absentCount++;
+                        }
+                    }
+                }
+
+                // 3. Calculate Deductions
+                $lateDeduction = 0;
+                if ($lateCount > (int)$policy['max_late_allowed']) {
+                    $excessLates = $lateCount - (int)$policy['max_late_allowed'];
+                    if ($policy['late_deduction_type'] === 'fixed') {
+                        $lateDeduction = $excessLates * (float)$policy['late_deduction_amount'];
+                    } elseif ($policy['late_deduction_type'] === 'percentage') {
+                        $lateDeduction = $excessLates * ($basicSalary * ((float)$policy['late_deduction_amount'] / 100));
+                    } elseif ($policy['late_deduction_type'] === 'per_day') {
+                        $lateDeduction = $excessLates * $perDaySalary;
+                    }
+                }
+
+                $unpaidDeduction = $unpaidLeaveDays * $perDaySalary;
+                $absenceDeduction = $absentCount * $perDaySalary;
+
+                $totalDeductions = $lateDeduction + $unpaidDeduction + $absenceDeduction;
                 $allowances = 0; 
-                $deductions = 0;
-                $netSalary = $basicSalary + $allowances - $deductions;
+                $netSalary = $basicSalary + $allowances - $totalDeductions;
+                if ($netSalary < 0) $netSalary = 0;
 
                 $this->monthlyPayout->create([
                     'employee_id' => $emp['id'],
@@ -219,8 +364,14 @@ class SalaryController
                     'year' => $year,
                     'basic_salary' => $basicSalary,
                     'allowances' => $allowances,
-                    'deductions' => $deductions,
+                    'deductions' => $totalDeductions,
                     'net_salary' => $netSalary,
+                    'late_count' => $lateCount,
+                    'late_deduction' => $lateDeduction,
+                    'unpaid_leave_days' => $unpaidLeaveDays,
+                    'unpaid_leave_deduction' => $unpaidDeduction,
+                    'absent_days' => $absentCount,
+                    'absence_deduction' => $absenceDeduction,
                     'status' => 'pending'
                 ]);
                 $generatedCount++;
@@ -228,7 +379,7 @@ class SalaryController
 
             jsonResponse([
                 'success' => true, 
-                'message' => "Payroll generated: $generatedCount processed, $skippedCount already existed.",
+                'message' => "Payroll generated: $generatedCount processed, $skippedCount skipped (already exist).",
                 'data' => ['generated' => $generatedCount, 'skipped' => $skippedCount]
             ]);
         } catch (Exception $e) {
@@ -298,6 +449,97 @@ class SalaryController
             $list = $this->monthlyPayout->findByEmployee($actor['id']);
             jsonResponse(['success' => true, 'data' => $list]);
         } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // Get single payout details
+    public function getPayoutDetails($id)
+    {
+        $actor = getActorFromToken();
+        if (!$actor) {
+            jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        try {
+            $payout = $this->monthlyPayout->findByIdWithDetails($id);
+            if (!$payout) {
+                jsonResponse(['success' => false, 'message' => 'Payout record not found'], 404);
+            }
+
+            // Authorization check
+            if ($actor['type'] === 'company' && $payout['company_id'] != $actor['id']) {
+                jsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
+            if ($actor['type'] === 'employee' && $payout['employee_id'] != $actor['id']) {
+                jsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
+
+            jsonResponse(['success' => true, 'data' => $payout]);
+        } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // Bulk update base salaries for multiple employees
+    public function bulkUpdateSalaries()
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
+            jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $data = getRequestData();
+        if (empty($data['updates']) || !is_array($data['updates'])) {
+            jsonResponse(['success' => false, 'message' => 'Updates data required'], 400);
+        }
+
+        try {
+            $db = Database::getInstance()->getConnection();
+            $db->beginTransaction();
+
+            $updatedCount = 0;
+            $currentDate = date('Y-m-d');
+
+            foreach ($data['updates'] as $update) {
+                if (empty($update['employee_id']) || !isset($update['salary'])) continue;
+
+                $employeeId = $update['employee_id'];
+                $newSalary = (float)$update['salary'];
+
+                // Get current employee info to record history
+                $employee = $this->employee->findById($employeeId);
+                if (!$employee || $employee['companyId'] != $actor['id']) continue;
+
+                $oldSalary = (float)($employee['salary'] ?? 0);
+                if ($oldSalary == $newSalary) continue; // No change
+
+                $incrementAmount = $newSalary - $oldSalary;
+                $incrementPercentage = $oldSalary > 0 ? ($incrementAmount / $oldSalary) * 100 : 0;
+
+                // 1. Update Employee
+                $this->employee->update($employeeId, ['salary' => $newSalary]);
+
+                // 2. Record History
+                $this->salaryHistory->create([
+                    'employee_id' => $employeeId,
+                    'company_id' => $actor['id'],
+                    'previous_salary' => $oldSalary,
+                    'current_salary' => $newSalary,
+                    'increment_amount' => $incrementAmount,
+                    'increment_percentage' => $incrementPercentage,
+                    'increment_date' => $currentDate,
+                    'reason' => $data['reason'] ?? 'Bulk Salary Adjustment',
+                    'created_by' => $actor['id']
+                ]);
+
+                $updatedCount++;
+            }
+
+            $db->commit();
+            jsonResponse(['success' => true, 'message' => "Successfully updated $updatedCount salaries."]);
+        } catch (Exception $e) {
+            if (isset($db)) $db->rollBack();
             jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }

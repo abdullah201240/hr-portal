@@ -293,7 +293,7 @@ export const salaryApi = {
   getHistory: (employeeId: number) => makeRequest(`/salary/history/${employeeId}`),
   getAllHistory: () => makeRequest('/salary/all'),
   getStats: () => makeRequest('/salary/stats'),
-  generatePayroll: (data: { month: number; year: number }) => 
+  generatePayroll: (data: { month: number; year: number; force?: boolean }) =>
     makeRequest('/salary/payroll/generate', { method: 'POST', body: data }),
   getPayrollList: (params?: { month?: number; year?: number }) => {
     const searchParams = new URLSearchParams();
@@ -302,9 +302,12 @@ export const salaryApi = {
     const url = searchParams.toString() ? `/salary/payroll/list?${searchParams.toString()}` : '/salary/payroll/list';
     return makeRequest(url);
   },
+  getPayoutDetails: (id: number) => makeRequest(`/salary/payroll/${id}`),
   updatePayoutStatus: (data: { ids: number[]; status: 'paid' | 'pending'; payment_date?: string; method?: string }) =>
     makeRequest('/salary/payroll/status', { method: 'POST', body: data }),
   getMyPayouts: () => makeRequest('/salary/payroll/my'),
+  bulkUpdateSalaries: (data: { updates: { employee_id: number; salary: number }[]; reason?: string }) =>
+    makeRequest('/salary/bulk-update', { method: 'POST', body: data }),
   addIncrement: (data: {
     employee_id: number;
     increment_date: string;

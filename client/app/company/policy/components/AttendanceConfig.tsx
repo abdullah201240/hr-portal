@@ -17,6 +17,9 @@ export function AttendanceConfig() {
   const [officeEnd, setOfficeEnd] = useState('18:00');
   const [lateAllow, setLateAllow] = useState(15);
   const [grace, setGrace] = useState(30);
+  const [maxLateAllowed, setMaxLateAllowed] = useState(2);
+  const [lateDeductionAmount, setLateDeductionAmount] = useState(0);
+  const [lateDeductionType, setLateDeductionType] = useState('fixed');
   const [weeklyHolidays, setWeeklyHolidays] = useState<string[]>(['Friday']);
 
   useEffect(() => {
@@ -34,6 +37,9 @@ export function AttendanceConfig() {
         setOfficeEnd(data.office_end_time.substring(0, 5));
         setLateAllow(data.late_allow_minutes);
         setGrace(data.grace_minutes);
+        setMaxLateAllowed(data.max_late_allowed || 2);
+        setLateDeductionAmount(data.late_deduction_amount || 0);
+        setLateDeductionType(data.late_deduction_type || 'fixed');
         setWeeklyHolidays(data.weekly_holidays || []);
       }
     } catch (error) {
@@ -52,6 +58,9 @@ export function AttendanceConfig() {
         office_end_time: officeEnd,
         late_allow_minutes: lateAllow,
         grace_minutes: grace,
+        max_late_allowed: maxLateAllowed,
+        late_deduction_amount: lateDeductionAmount,
+        late_deduction_type: lateDeductionType,
         weekly_holidays: weeklyHolidays
       });
 
@@ -128,6 +137,53 @@ export function AttendanceConfig() {
                   onChange={(e) => setGrace(parseInt(e.target.value) || 0)}
                   className="h-8 text-xs glass border-white/10" 
                 />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-white/10 space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <AlertCircle className="size-3 text-rose-400" />
+                Late Deduction Rules
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Max Late Allowed (Per Month)</Label>
+                  <Input 
+                    type="number" 
+                    value={maxLateAllowed}
+                    onChange={(e) => setMaxLateAllowed(parseInt(e.target.value) || 0)}
+                    className="h-8 text-xs glass border-white/10" 
+                    placeholder="e.g. 2"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Deduction Type</Label>
+                  <select
+                    value={lateDeductionType}
+                    onChange={(e) => setLateDeductionType(e.target.value)}
+                    className="flex h-8 w-full rounded-md border border-white/10 bg-white/5 px-3 py-1 text-xs glass focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500 transition-all"
+                  >
+                    <option value="fixed" className="bg-slate-900">Fixed Amount</option>
+                    <option value="percentage" className="bg-slate-900">Percentage of Basic</option>
+                    <option value="per_day" className="bg-slate-900">One Day Salary</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">
+                    {lateDeductionType === 'fixed' ? 'Deduction Amount (৳)' : 
+                     lateDeductionType === 'percentage' ? 'Deduction Percentage (%)' : 'Deduction Multiplier'}
+                  </Label>
+                  <Input 
+                    type="number" 
+                    step="0.01"
+                    value={lateDeductionAmount}
+                    onChange={(e) => setLateDeductionAmount(parseFloat(e.target.value) || 0)}
+                    disabled={lateDeductionType === 'per_day'}
+                    className="h-8 text-xs glass border-white/10" 
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
             </div>
 

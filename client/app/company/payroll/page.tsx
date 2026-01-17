@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCompanyAuth } from '@/hooks/useCompanyAuth';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { salaryApi } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -47,7 +48,10 @@ import {
     Coins,
     TrendingUp,
     MoreHorizontal,
-    FileText
+    FileText,
+    AlertTriangle,
+    Info,
+    ArrowDownRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -77,6 +81,9 @@ export default function PayrollPage() {
     const [paymentMethod, setPaymentMethod] = useState('Bank Transfer');
     const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
     const [submittingPayment, setSubmittingPayment] = useState(false);
+
+    const [selectedPayoutForDetails, setSelectedPayoutForDetails] = useState<any>(null);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -108,12 +115,13 @@ export default function PayrollPage() {
         }
     };
 
-    const handleGeneratePayroll = async () => {
+    const handleGeneratePayroll = async (force = false) => {
         try {
             setGenerating(true);
             const response = await salaryApi.generatePayroll({
                 month: parseInt(selectedMonth),
-                year: parseInt(selectedYear)
+                year: parseInt(selectedYear),
+                force
             });
             if (response.success) {
                 toast.success(response.message);
@@ -297,6 +305,7 @@ export default function PayrollPage() {
                                 <TableRow className="hover:bg-transparent border-white/5">
                                     <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employee</TableHead>
                                     <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Basic Salary</TableHead>
+                                    <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Deductions</TableHead>
                                     <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Net Salary</TableHead>
                                     <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</TableHead>
                                     <TableHead className="py-4 px-6 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</TableHead>
@@ -346,6 +355,29 @@ export default function PayrollPage() {
                                                 ৳{parseFloat(payout.basic_salary).toLocaleString()}
                                             </TableCell>
                                             <TableCell className="py-4 px-6">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={cn(
+                                                        "font-mono font-medium",
+                                                        parseFloat(payout.deductions) > 0 ? "text-rose-400" : "text-muted-foreground/50"
+                                                    )}>
+                                                        ৳{parseFloat(payout.deductions).toLocaleString()}
+                                                    </span>
+                                                    {parseFloat(payout.deductions) > 0 && (
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            className="h-6 w-6 rounded-full hover:bg-rose-500/10 text-rose-400"
+                                                            onClick={() => {
+                                                                setSelectedPayoutForDetails(payout);
+                                                                setShowDetailsModal(true);
+                                                            }}
+                                                        >
+                                                            <Info className="h-3 w-3" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="py-4 px-6">
                                                 <div className="font-mono font-bold text-emerald-500">
                                                     ৳{parseFloat(payout.net_salary).toLocaleString()}
                                                 </div>
@@ -362,27 +394,30 @@ export default function PayrollPage() {
                                                 )}
                                             </TableCell>
                                             <TableCell className="py-4 px-6 text-right">
-                                                {payout.status === 'pending' ? (
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => handleUpdateStatus([payout.id], 'paid')}
-                                                        className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20"
-                                                    >
-                                                        Mark as Paid
-                                                    </Button>
-                                                ) : (
+                                                <div className="flex justify-end gap-2">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="text-muted-foreground hover:bg-white/5"
-                                                        onClick={() => {
-                                                            // View payslip or something
-                                                            toast.info("Payslip viewing coming soon");
-                                                        }}
+                                                        className="text-emerald-500 hover:bg-emerald-500/10"
+                                                        onClick={() => router.push(`/company/payroll/${payout.id}`)}
                                                     >
-                                                        View Payslip
+                                                        <FileText className="h-4 w-4 mr-1" />
+                                                        View Statement
                                                     </Button>
-                                                )}
+                                                    {payout.status === 'pending' ? (
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => handleUpdateStatus([payout.id], 'paid')}
+                                                            className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20"
+                                                        >
+                                                            Mark as Paid
+                                                        </Button>
+                                                    ) : (
+                                                        <Badge variant="outline" className="text-emerald-500 border-emerald-500/20 bg-emerald-500/5">
+                                                            <CheckCircle2 className="h-3 w-3 mr-1" /> Paid
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -392,6 +427,74 @@ export default function PayrollPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Details Modal */}
+            <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+                <DialogContent className="glass sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <FileText className="h-5 w-5 text-emerald-500" />
+                            Deduction Breakdown
+                        </DialogTitle>
+                        <DialogDescription>
+                            Detailed breakdown for {selectedPayoutForDetails?.employee_name}
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="py-4 space-y-4">
+                        <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-muted-foreground">Basic Salary</span>
+                                <span className="font-mono font-bold text-foreground">৳{parseFloat(selectedPayoutForDetails?.basic_salary || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="h-px bg-white/5" />
+                            
+                            {/* Late Deduction */}
+                            <div className="space-y-1">
+                                <div className="flex justify-between items-center text-sm">
+                                    <div className="flex items-center gap-2 text-rose-400">
+                                        <Clock className="h-3.5 w-3.5" />
+                                        <span>Late Entry ({selectedPayoutForDetails?.late_count || 0})</span>
+                                    </div>
+                                    <span className="font-mono text-rose-400">-৳{parseFloat(selectedPayoutForDetails?.late_deduction || 0).toLocaleString()}</span>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground pl-5">Deduction applied after monthly limit.</p>
+                            </div>
+
+                            {/* Unpaid Leave */}
+                            <div className="space-y-1">
+                                <div className="flex justify-between items-center text-sm">
+                                    <div className="flex items-center gap-2 text-rose-400">
+                                        <Calendar className="h-3.5 w-3.5" />
+                                        <span>Unpaid Leaves ({selectedPayoutForDetails?.unpaid_leave_days || 0} days)</span>
+                                    </div>
+                                    <span className="font-mono text-rose-400">-৳{parseFloat(selectedPayoutForDetails?.unpaid_leave_deduction || 0).toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            {/* Absences */}
+                            <div className="space-y-1">
+                                <div className="flex justify-between items-center text-sm">
+                                    <div className="flex items-center gap-2 text-rose-400">
+                                        <AlertTriangle className="h-3.5 w-3.5" />
+                                        <span>Absences ({selectedPayoutForDetails?.absent_days || 0} days)</span>
+                                    </div>
+                                    <span className="font-mono text-rose-400">-৳{parseFloat(selectedPayoutForDetails?.absence_deduction || 0).toLocaleString()}</span>
+                                </div>
+                            </div>
+                            
+                            <div className="h-px bg-white/10" />
+                            <div className="flex justify-between items-center pt-2">
+                                <span className="text-sm font-bold text-foreground">Total Net Salary</span>
+                                <span className="text-xl font-bold text-emerald-500 font-mono">৳{parseFloat(selectedPayoutForDetails?.net_salary || 0).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button className="w-full bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20" onClick={() => setShowDetailsModal(false)}>Close Breakdown</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Generate Modal */}
             <Dialog open={showGenerateModal} onOpenChange={setShowGenerateModal}>
@@ -406,19 +509,35 @@ export default function PayrollPage() {
                         <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                             <Coins className="h-8 w-8 text-emerald-500" />
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                            This will use the current base salary from each employee's profile to create a monthly payout record.
-                        </p>
+                        <div className="space-y-2">
+                            <p className="text-sm text-foreground font-medium">Auto-Calculation Enabled</p>
+                            <p className="text-xs text-muted-foreground px-4">
+                                The system will automatically calculate deductions based on:
+                                <br />• Exceeded lates (Monthly limit applies)
+                                <br />• Absences & Unpaid leaves
+                            </p>
+                        </div>
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="gap-2">
                         <Button variant="ghost" onClick={() => setShowGenerateModal(false)}>Cancel</Button>
+                        {payrollList.length > 0 && (
+                            <Button 
+                                variant="outline"
+                                onClick={() => handleGeneratePayroll(true)} 
+                                disabled={generating}
+                                className="glass border-rose-500/20 text-rose-500 hover:bg-rose-500/10"
+                            >
+                                {generating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Recalculate All
+                            </Button>
+                        )}
                         <Button 
-                            onClick={handleGeneratePayroll} 
+                            onClick={() => handleGeneratePayroll(false)} 
                             disabled={generating}
-                            className="bg-emerald-500 hover:bg-emerald-600"
+                            className="bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20"
                         >
                             {generating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Process Payroll
+                            {payrollList.length > 0 ? 'Process Missing' : 'Process Payroll'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -16,8 +16,11 @@ class MonthlyPayout extends Model
     {
         $stmt = $this->db->prepare("INSERT INTO {$this->table} (
             employee_id, company_id, month, year, basic_salary, 
-            allowances, deductions, net_salary, status, note
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            allowances, deductions, net_salary, 
+            late_count, late_deduction, unpaid_leave_days, 
+            unpaid_leave_deduction, absent_days, absence_deduction,
+            status, note
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         $result = $stmt->execute([
             $data['employee_id'],
@@ -28,6 +31,12 @@ class MonthlyPayout extends Model
             $data['allowances'] ?? 0,
             $data['deductions'] ?? 0,
             $data['net_salary'],
+            $data['late_count'] ?? 0,
+            $data['late_deduction'] ?? 0,
+            $data['unpaid_leave_days'] ?? 0,
+            $data['unpaid_leave_deduction'] ?? 0,
+            $data['absent_days'] ?? 0,
+            $data['absence_deduction'] ?? 0,
             $data['status'] ?? 'pending',
             $data['note'] ?? null
         ]);
@@ -84,5 +93,18 @@ class MonthlyPayout extends Model
         $stmt = $this->db->prepare("SELECT id FROM {$this->table} WHERE employee_id = ? AND month = ? AND year = ?");
         $stmt->execute([$employeeId, $month, $year]);
         return $stmt->fetch();
+    }
+
+    public function findByIdWithDetails($id)
+    {
+        $sql = "SELECT mp.*, e.name as employee_name, e.employeeId as emp_code, e.designation, e.department, e.salary as current_base_salary,
+                       c.name as company_name, c.logo as company_logo
+                FROM {$this->table} mp
+                JOIN employees e ON mp.employee_id = e.id
+                JOIN companies c ON mp.company_id = c.id
+                WHERE mp.id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
