@@ -75,12 +75,32 @@ class CompanyController
     public function update($id)
     {
         try {
+            $actor = getActorFromToken();
+            if (!$actor) {
+                jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
+
+            // Authorization check
+            if ($actor['type'] !== 'admin' && ($actor['type'] !== 'company' || $actor['id'] != $id)) {
+                jsonResponse(['success' => false, 'message' => 'Unauthorized access'], 403);
+            }
+
             $data = getRequestData();
             
-            // Validate input for update (with email uniqueness check excluding current record)
+            // Validate input for update
             $errors = $this->company->validateForUpdate($data, $id);
             if (!empty($errors)) {
                 jsonResponse(['success' => false, 'errors' => $errors], 422);
+            }
+
+            // Restrict status change to Admins only
+            if (isset($data['status'])) {
+                if ($actor['type'] !== 'admin') {
+                     // If not admin, unset the status field so it doesn't get updated
+                     unset($data['status']);
+                     // Optional: You could throw an error instead if you want strict enforcement
+                     // jsonResponse(['success' => false, 'message' => 'Only admins can change company status'], 403);
+                }
             }
             
             $result = $this->company->update($id, $data);

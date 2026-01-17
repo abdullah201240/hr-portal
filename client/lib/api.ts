@@ -290,6 +290,8 @@ export const leaveApi = {
 // Salary API functions
 export const salaryApi = {
   getHistory: (employeeId: number) => makeRequest(`/salary/history/${employeeId}`),
+  getAllHistory: () => makeRequest('/salary/all'),
+  getStats: () => makeRequest('/salary/stats'),
   addIncrement: (data: {
     employee_id: number;
     increment_date: string;

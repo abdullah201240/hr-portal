@@ -76,6 +76,8 @@ $routes = [
     '@/api/attendance/company/monthly/?$@' => ['GET' => 'getCompanyMonthlyAttendance'],
     '@/api/salary/increment/?$@' => ['POST' => 'addIncrement'],
     '@/api/salary/history/(\d+)/?$@' => ['GET' => 'getHistory'],
+    '@/api/salary/all/?$@' => ['GET' => 'getAllHistory'],
+    '@/api/salary/stats/?$@' => ['GET' => 'getCompanyStats'],
     '@/api/dashboard/stats/?$@' => ['GET' => 'getDashboardStats']
 ];
 

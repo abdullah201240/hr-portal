@@ -108,4 +108,69 @@ class SalaryController
             jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
+    // Get all salary history for the current company
+    public function getAllHistory()
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
+            jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        try {
+            $history = $this->salaryHistory->findByCompanyId($actor['id']);
+            jsonResponse(['success' => true, 'data' => $history]);
+        } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // Get company-wide salary statistics
+    public function getCompanyStats()
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
+            jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        try {
+            $companyId = $actor['id'];
+            
+            // 1. Total Employees
+            $totalEmployees = $this->employee->countByCompanyId($companyId);
+            
+            // 2. Active Employees (We might need to update Employee model to handle status in count)
+            // For now, let's use a custom query
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->prepare("SELECT COUNT(*) FROM employees WHERE companyId = ? AND status = 'active'");
+            $stmt->execute([$companyId]);
+            $activeEmployees = (int)$stmt->fetchColumn();
+
+            // 3. Total Payroll
+            $stmt = $db->prepare("SELECT SUM(salary) as total FROM employees WHERE companyId = ? AND status = 'active'");
+            $stmt->execute([$companyId]);
+            $totalPayroll = (float)$stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+
+            // 4. Average Salary
+            $averageSalary = $activeEmployees > 0 ? $totalPayroll / $activeEmployees : 0;
+
+            // 5. Total Increments given (count)
+            $stmt = $db->prepare("SELECT COUNT(*) as count FROM salary_history WHERE company_id = ?");
+            $stmt->execute([$companyId]);
+            $totalIncrements = (int)$stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0;
+
+            jsonResponse([
+                'success' => true,
+                'data' => [
+                    'totalEmployees' => $totalEmployees,
+                    'activeEmployees' => $activeEmployees,
+                    'totalPayroll' => $totalPayroll,
+                    'averageSalary' => $averageSalary,
+                    'totalIncrements' => $totalIncrements
+                ]
+            ]);
+        } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }

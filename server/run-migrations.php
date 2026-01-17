@@ -18,6 +18,8 @@ require_once __DIR__ . '/migrations/CreateAttendancesTable.php';
 require_once __DIR__ . '/migrations/AddLineManagerToEmployees.php';
 require_once __DIR__ . '/migrations/CreateLeavesTable.php';
 require_once __DIR__ . '/migrations/CreateSalaryHistoryTable.php';
+require_once __DIR__ . '/migrations/UpdateSalaryHistoryPrecision.php';
+require_once __DIR__ . '/migrations/UpdateSalaryAndAmountPrecision.php';
 require_once __DIR__ . '/migrations/MigrationRunner.php';
 
 // First, create the migrations table if it doesn't exist
@@ -46,6 +48,8 @@ if (isset($argv[1]) && $argv[1] === 'rollback') {
         new AddLineManagerToEmployees(),
         new CreateLeavesTable(),
         new CreateSalaryHistoryTable(),
+        new UpdateSalaryHistoryPrecision(),
+        new UpdateSalaryAndAmountPrecision(),
     ]);
     
     // Run admin seeds after migrations

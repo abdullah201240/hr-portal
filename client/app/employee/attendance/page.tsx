@@ -7,15 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Clock, 
   Calendar as CalendarIcon, 
-  Filter, 
-  Download,
   Timer,
   LogIn,
-  LogOut,
   ChevronLeft,
   ChevronRight,
   AlertCircle,
-  TrendingUp
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { attendanceApi, holidayApi, policyApi } from '@/lib/api';

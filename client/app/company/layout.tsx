@@ -57,7 +57,7 @@ export default function CompanyLayout({
     }
 
     return (
-        <div className="flex min-h-screen flex-col bg-background text-foreground relative overflow-hidden">
+        <div className="flex min-h-screen flex-col bg-background text-foreground relative overflow-x-hidden">
             {/* Background Pattern */}
             <div className="fixed inset-0 bg-gradient-to-br from-emerald-500/5 via-background to-teal-500/5 pointer-events-none" />
             <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none" />

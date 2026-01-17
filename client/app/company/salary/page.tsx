@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCompanyAuth } from '@/hooks/useCompanyAuth';
+import { motion } from 'framer-motion';
 import { employeeApi, salaryApi } from '@/lib/api';
+import { Employee } from '@/types/employee';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,17 +44,32 @@ import {
     ArrowUpRight,
     Download,
     Loader2,
-    Calendar
+    Calendar,
+    CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
 export default function SalaryPage() {
-    const { companyProfile, isLoading: authLoading } = useCompanyAuth();
+    const { isAuthenticated, isLoading: authLoading } = useCompanyAuth();
     const router = useRouter();
-    const [employees, setEmployees] = useState<any[]>([]);
+    const [employees, setEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeTab, setActiveTab] = useState('employees');
+
+    // Backend Stats
+    const [stats, setStats] = useState<any>({
+        totalEmployees: 0,
+        activeEmployees: 0,
+        totalPayroll: 0,
+        averageSalary: 0,
+        totalIncrements: 0
+    });
+
+    // All History
+    const [allHistory, setAllHistory] = useState<any[]>([]);
+    const [loadingAllHistory, setLoadingAllHistory] = useState(false);
 
     // State for Increment Modal
     const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
@@ -69,16 +86,43 @@ export default function SalaryPage() {
     const [loadingHistory, setLoadingHistory] = useState(false);
 
     useEffect(() => {
-        if (!authLoading && !companyProfile) {
+        if (!authLoading && !isAuthenticated) {
             router.push('/login/company');
         }
-    }, [companyProfile, authLoading, router]);
+    }, [isAuthenticated, authLoading, router]);
 
     useEffect(() => {
-        if (companyProfile) {
+        if (isAuthenticated) {
             fetchEmployees();
+            fetchStats();
+            fetchAllHistory();
         }
-    }, [companyProfile]);
+    }, [isAuthenticated]);
+
+    const fetchStats = async () => {
+        try {
+            const response = await salaryApi.getStats();
+            if (response.success) {
+                setStats(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+        }
+    };
+
+    const fetchAllHistory = async () => {
+        try {
+            setLoadingAllHistory(true);
+            const response = await salaryApi.getAllHistory();
+            if (response.success) {
+                setAllHistory(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching all history:', error);
+        } finally {
+            setLoadingAllHistory(false);
+        }
+    };
 
     const fetchEmployees = async () => {
         try {
@@ -126,7 +170,7 @@ export default function SalaryPage() {
     };
 
     const calculateNewSalary = () => {
-        if (!selectedEmployee || !incrementValue) return selectedEmployee?.salary || 0;
+        if (!selectedEmployee || !incrementValue) return parseFloat(selectedEmployee?.salary || 0);
 
         const current = parseFloat(selectedEmployee.salary || 0);
         const value = parseFloat(incrementValue);
@@ -167,7 +211,9 @@ export default function SalaryPage() {
             if (response.success) {
                 toast.success(`Salary updated for ${selectedEmployee.name}`);
                 setShowIncrementModal(false);
-                fetchEmployees(); // Refresh list to show new salary
+                fetchEmployees();
+                fetchStats();
+                fetchAllHistory();
             } else {
                 toast.error(response.message || 'Failed to update salary');
             }
@@ -184,118 +230,342 @@ export default function SalaryPage() {
         employee.designation?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (authLoading) return null;
+    if (authLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background">
+                <div className="relative">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-emerald-500"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full animate-pulse"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) return null;
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+            >
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                    <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent mb-2">
                         Salary Management
                     </h1>
                     <p className="text-muted-foreground">Manage employee salaries, increments, and view history.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" className="glass border-amber-500/20 text-amber-500 hover:bg-amber-500/10">
+                    <Button variant="outline" className="glass border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/10 h-11">
                         <Download className="mr-2 h-4 w-4" />
                         Export Report
                     </Button>
                 </div>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                    { 
+                        label: 'Total Employees', 
+                        value: stats.totalEmployees, 
+                        icon: User, 
+                        colorClass: 'border-blue-500/20 hover:border-blue-500/40',
+                        bgClass: 'from-blue-500 to-cyan-500',
+                        iconColor: 'text-blue-600 dark:text-blue-400',
+                        iconBg: 'from-blue-500/30 to-cyan-500/30',
+                        glowColor: 'from-blue-400 to-cyan-500',
+                        pulseColor: 'bg-blue-500/20'
+                    },
+                    { 
+                        label: 'Active Payroll', 
+                        value: stats.activeEmployees, 
+                        icon: CheckCircle2, 
+                        colorClass: 'border-emerald-500/20 hover:border-emerald-500/40',
+                        bgClass: 'from-emerald-400 to-teal-500',
+                        iconColor: 'text-emerald-600 dark:text-emerald-400',
+                        iconBg: 'from-emerald-500/30 to-teal-500/30',
+                        glowColor: 'from-emerald-400 to-teal-500',
+                        pulseColor: 'bg-emerald-500/20'
+                    },
+                    { 
+                        label: 'Total Monthly Payroll', 
+                        value: `৳${stats.totalPayroll.toLocaleString()}`, 
+                        icon: Coins, 
+                        colorClass: 'border-amber-500/20 hover:border-amber-500/40',
+                        bgClass: 'from-amber-500 to-orange-500',
+                        iconColor: 'text-amber-600 dark:text-amber-400',
+                        iconBg: 'from-amber-500/30 to-orange-500/30',
+                        glowColor: 'from-amber-400 to-orange-500',
+                        pulseColor: 'bg-amber-500/20'
+                    },
+                    { 
+                        label: 'Recent Revisions', 
+                        value: stats.totalIncrements, 
+                        icon: History, 
+                        colorClass: 'border-purple-500/20 hover:border-purple-500/40',
+                        bgClass: 'from-purple-500 to-pink-500',
+                        iconColor: 'text-purple-600 dark:text-purple-400',
+                        iconBg: 'from-purple-500/30 to-pink-500/30',
+                        glowColor: 'from-purple-400 to-pink-500',
+                        pulseColor: 'bg-purple-500/20'
+                    },
+                ].map((stat, i) => (
+                    <motion.div
+                        key={stat.label}
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ delay: i * 0.1, type: "spring", stiffness: 200 }}
+                        whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                    >
+                        <Card className={`relative glass ${stat.colorClass} overflow-hidden group hover:shadow-2xl transition-all duration-500`}>
+                            {/* 3D Background Graphics */}
+                            <div className="absolute inset-0 opacity-30">
+                                <div className={`absolute top-0 right-0 w-32 h-32 bg-linear-to-br ${stat.glowColor} blur-3xl group-hover:scale-150 transition-transform duration-700`} />
+                                <div className={`absolute bottom-0 left-0 w-24 h-24 bg-linear-to-tr ${stat.glowColor} rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700`} />
+                                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 ${stat.pulseColor} rounded-full blur-xl animate-pulse`} />
+                            </div>
+
+                            <CardContent className="relative p-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <p className="text-xs font-medium text-foreground/70 mb-1.5">{stat.label}</p>
+                                        <motion.h3
+                                            className="text-2xl font-bold bg-linear-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent"
+                                            animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
+                                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                        >
+                                            {stat.value}
+                                        </motion.h3>
+                                    </div>
+                                    <motion.div
+                                        className="relative"
+                                        animate={{ 
+                                            rotate: [0, 5, 0, -5, 0],
+                                            scale: [1, 1.1, 1]
+                                        }}
+                                        transition={{ 
+                                            duration: 4, 
+                                            repeat: Infinity, 
+                                            ease: "easeInOut",
+                                            scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                                        }}
+                                    >
+                                        <div className={`absolute inset-0 bg-linear-to-br ${stat.bgClass} rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity`} />
+                                        <div className={`relative bg-linear-to-br ${stat.iconBg} p-3 rounded-xl backdrop-blur-sm border border-white/10`}>
+                                            <stat.icon className={`h-6 w-6 ${stat.iconColor} drop-shadow-lg`} />
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                ))}
             </div>
 
-            <Card className="glass border-white/10">
-                <CardHeader className="pb-4">
-                    <div className="flex flex-col md:flex-row justify-between gap-4">
-                        <div className="relative w-full md:w-[300px]">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by name, ID or designation..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-9 glass border-white/10"
-                            />
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+            >
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <div className="flex p-1 glass border-white/10 rounded-xl bg-white/5">
+                            <button
+                                onClick={() => setActiveTab('employees')}
+                                className={`flex items-center px-6 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    activeTab === 'employees'
+                                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                }`}
+                            >
+                                <User className="h-4 w-4 mr-2" />
+                                Payroll List
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('history')}
+                                className={`flex items-center px-6 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    activeTab === 'history'
+                                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                }`}
+                            >
+                                <History className="h-4 w-4 mr-2" />
+                                Revision History
+                            </button>
                         </div>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="rounded-md border border-white/10 overflow-hidden">
-                        <Table>
-                            <TableHeader className="bg-white/5">
-                                <TableRow className="hover:bg-transparent border-white/5">
-                                    <TableHead className="text-amber-500">Employee</TableHead>
-                                    <TableHead className="text-amber-500">Designation</TableHead>
-                                    <TableHead className="text-amber-500">Current Salary</TableHead>
-                                    <TableHead className="text-amber-500 text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {loading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="h-24 text-center">
-                                            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-r-transparent"></div>
-                                                Loading employee data...
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : filteredEmployees.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                                            No employees found.
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    filteredEmployees.map((employee) => (
-                                        <TableRow key={employee.id} className="hover:bg-white/5 border-white/5">
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                                                        <User className="h-4 w-4 text-amber-500" />
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-medium">{employee.name}</div>
-                                                        <div className="text-xs text-muted-foreground">{employee.employeeId}</div>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className="text-sm">{employee.designation || '-'}</span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2 font-mono font-bold text-emerald-500">
-                                                    <Coins className="h-4 w-4" />
-                                                    {parseFloat(employee.salary || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border-amber-500/20"
-                                                        onClick={() => handleOpenHistory(employee)}
-                                                    >
-                                                        <History className="h-4 w-4 mr-2" />
-                                                        History
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        className="bg-emerald-500 hover:bg-emerald-600 text-white"
-                                                        onClick={() => handleOpenIncrement(employee)}
-                                                    >
-                                                        <TrendingUp className="h-4 w-4 mr-2" />
-                                                        Increment
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+
+                    {activeTab === 'employees' ? (
+                        <Card className="glass border-none shadow-none rounded-2xl overflow-hidden">
+                            <CardHeader className="p-4 sm:p-6 bg-white/5 border-b border-white/10">
+                                <div className="flex flex-col md:flex-row justify-between gap-4">
+                                    <div className="relative w-full md:w-[400px]">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Search by name, ID or designation..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="pl-10 h-11 glass border-white/10"
+                                        />
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader className="bg-emerald-500/5 border-b border-white/5">
+                                            <TableRow className="hover:bg-transparent border-white/5">
+                                                <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employee</TableHead>
+                                                <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Designation</TableHead>
+                                                <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Current Salary</TableHead>
+                                                <TableHead className="py-4 px-6 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {loading ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={4} className="h-24 text-center">
+                                                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                                                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-r-transparent"></div>
+                                                            Loading payroll data...
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : filteredEmployees.length === 0 ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                                                        No employees found.
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : (
+                                                filteredEmployees.map((employee) => (
+                                                    <TableRow key={employee.id} className="hover:bg-white/5 border-white/5 transition-colors">
+                                                        <TableCell className="py-4 px-6">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                                                                    <User className="h-5 w-5 text-emerald-500" />
+                                                                </div>
+                                                                <div>
+                                                                    <div className="font-bold text-foreground">{employee.name}</div>
+                                                                    <div className="text-xs text-muted-foreground font-mono uppercase">{employee.employeeId}</div>
+                                                                </div>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="py-4 px-6">
+                                                            <span className="text-sm font-medium">{employee.designation || '-'}</span>
+                                                        </TableCell>
+                                                        <TableCell className="py-4 px-6">
+                                                            <div className="flex items-center gap-2 font-mono font-bold text-emerald-500">
+                                                                <Coins className="h-4 w-4" />
+                                                                {employee.salary ? `৳${parseFloat(employee.salary).toLocaleString()}` : 'Not Set'}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="py-4 px-6 text-right">
+                                                            <div className="flex justify-end gap-2">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="text-emerald-500 hover:bg-emerald-500/10"
+                                                                    onClick={() => handleOpenHistory(employee)}
+                                                                >
+                                                                    <History className="h-4 w-4 mr-2" />
+                                                                    History
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20"
+                                                                    onClick={() => handleOpenIncrement(employee)}
+                                                                >
+                                                                    <TrendingUp className="h-4 w-4 mr-2" />
+                                                                    Increment
+                                                                </Button>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <Card className="glass border-none shadow-none rounded-2xl overflow-hidden">
+                            <CardHeader className="p-4 sm:p-6 bg-white/5 border-b border-white/10">
+                                <CardTitle>Global Revision History</CardTitle>
+                                <CardDescription>All salary adjustments across the company</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader className="bg-emerald-500/5 border-b border-white/5">
+                                            <TableRow className="hover:bg-transparent border-white/5">
+                                                <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date</TableHead>
+                                                <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employee</TableHead>
+                                                <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Previous</TableHead>
+                                                <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">New Salary</TableHead>
+                                                <TableHead className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {loadingAllHistory ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={5} className="h-24 text-center">
+                                                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                                                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-r-transparent"></div>
+                                                            Loading history...
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : allHistory.length === 0 ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                                        No revisions found.
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : (
+                                                allHistory.map((record) => (
+                                                    <TableRow key={record.id} className="hover:bg-white/5 border-white/5 transition-colors">
+                                                        <TableCell className="py-4 px-6">
+                                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                                <Calendar className="h-3.5 w-3.5" />
+                                                                {new Date(record.increment_date).toLocaleDateString()}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="py-4 px-6">
+                                                            <div className="font-medium text-foreground">{record.employee_name}</div>
+                                                            <div className="text-xs text-muted-foreground font-mono">{record.employeeId}</div>
+                                                        </TableCell>
+                                                        <TableCell className="py-4 px-6 text-muted-foreground/70 font-mono">
+                                                            ৳{parseFloat(record.previous_salary || 0).toLocaleString()}
+                                                        </TableCell>
+                                                        <TableCell className="py-4 px-6">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-bold text-emerald-500 font-mono">৳{parseFloat(record.current_salary).toLocaleString()}</span>
+                                                                {parseFloat(record.increment_amount) > 0 && (
+                                                                    <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[10px] h-4 px-1">
+                                                                        +{record.increment_percentage}%
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="py-4 px-6 text-sm text-muted-foreground">
+                                                            {record.reason || 'Annual Increment'}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+            </motion.div>
 
             {/* Increment Modal */}
             <Dialog open={showIncrementModal} onOpenChange={setShowIncrementModal}>
@@ -310,14 +580,16 @@ export default function SalaryPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Current Salary</Label>
-                                <div className="p-2 rounded-md bg-white/5 border border-white/10 font-mono text-muted-foreground">
-                                    {parseFloat(selectedEmployee?.salary || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                                <div className="p-3 rounded-xl bg-white/5 border border-white/10 font-mono text-muted-foreground flex items-center gap-2">
+                                    <Coins className="h-4 w-4 text-emerald-500/50" />
+                                    {selectedEmployee?.salary ? `৳${parseFloat(selectedEmployee.salary).toLocaleString()}` : '৳0'}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>New Salary Preview</Label>
-                                <div className="p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 font-mono text-emerald-500 font-bold">
-                                    {calculateNewSalary().toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 font-mono text-emerald-500 font-bold flex items-center gap-2">
+                                    <TrendingUp className="h-4 w-4" />
+                                    ৳{calculateNewSalary().toLocaleString()}
                                 </div>
                             </div>
                         </div>
@@ -415,27 +687,28 @@ export default function SalaryPage() {
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-2xl font-bold text-emerald-500">
-                                                    {parseFloat(record.current_salary).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                                                    ৳{parseFloat(record.current_salary).toLocaleString()}
                                                 </p>
                                                 {parseFloat(record.increment_amount) > 0 && (
                                                     <div className="flex items-center justify-end gap-1 text-xs text-emerald-400">
                                                         <ArrowUpRight className="h-3 w-3" />
                                                         <span>
-                                                            {parseFloat(record.increment_amount).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                                                            +৳{parseFloat(record.increment_amount).toLocaleString()}
                                                             {record.increment_percentage > 0 && ` (${record.increment_percentage}%)`}
                                                         </span>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/5 text-sm">
-                                            <div className="flex justify-between text-muted-foreground text-xs uppercase mb-1">
+                                        <div className="mt-2 p-4 bg-white/5 rounded-2xl border border-white/5 text-sm">
+                                            <div className="flex justify-between text-muted-foreground text-xs uppercase mb-2 tracking-wider">
                                                 <span>Previous Salary</span>
                                                 <span>New Salary</span>
                                             </div>
-                                            <div className="flex justify-between font-mono">
-                                                <span>{parseFloat(record.previous_salary || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                                                <span className="text-foreground">{parseFloat(record.current_salary).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                                            <div className="flex justify-between font-mono items-center">
+                                                <span className="text-muted-foreground/70">৳{parseFloat(record.previous_salary || 0).toLocaleString()}</span>
+                                                <div className="h-px flex-1 border-t border-dashed border-white/10 mx-4" />
+                                                <span className="text-foreground font-bold">৳{parseFloat(record.current_salary).toLocaleString()}</span>
                                             </div>
                                         </div>
                                     </div>
