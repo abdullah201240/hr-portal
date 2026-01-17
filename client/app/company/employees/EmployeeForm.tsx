@@ -50,20 +50,23 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
     bankName: employee?.bankName || '',
     accountNumber: employee?.accountNumber || '',
     image: employee?.image || '',
+    line_manager_id: employee?.line_manager_id || null,
   });
 
   const [loading, setLoading] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [designations, setDesignations] = useState<Designation[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true); // Loading state for options
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
 
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [deptResponse, desigResponse] = await Promise.all([
+        const [deptResponse, desigResponse, empResponse] = await Promise.all([
           companyDepartmentApi.getAllDepartments(),
-          companyDesignationApi.getAllDesignations()
+          companyDesignationApi.getAllDesignations(),
+          employeeApi.getAllEmployees({ limit: 1000 })
         ]);
         
         if (deptResponse.success) {
@@ -71,6 +74,13 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
         }
         if (desigResponse.success) {
           setDesignations(desigResponse.data || []);
+        }
+        if (empResponse.success) {
+          // Filter out the current employee if we're in edit mode to prevent self-management
+          const filteredEmployees = isEdit 
+            ? (empResponse.data || []).filter((e: Employee) => e.id !== employee.id)
+            : (empResponse.data || []);
+          setEmployees(filteredEmployees);
         }
       } catch (error) {
         console.error('Error fetching departments/designations:', error);
@@ -96,7 +106,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
   const handleSelectChange = (name: keyof EmployeeFormData, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: name === 'line_manager_id' ? (value === 'none' ? null : parseInt(value)) : value
     }));
   };
 
@@ -391,6 +401,26 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess }) => {
                 <SelectItem value="part-time">Part-time</SelectItem>
                 <SelectItem value="contract">Contract</SelectItem>
                 <SelectItem value="intern">Intern</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="line_manager_id" className="text-sm font-semibold">Line Manager</Label>
+            <Select 
+              value={formData.line_manager_id?.toString() || 'none'} 
+              onValueChange={(value) => handleSelectChange('line_manager_id', value)}
+            >
+              <SelectTrigger className="h-11 glass border-border" disabled={loadingOptions}>
+                <SelectValue placeholder={loadingOptions ? "Loading employees..." : "Select line manager"} />
+              </SelectTrigger>
+              <SelectContent className="glass border-border max-h-60">
+                <SelectItem value="none">None (Top Level)</SelectItem>
+                {employees.map((emp: Employee) => (
+                  <SelectItem key={emp.id} value={emp.id.toString()}>
+                    {emp.name} ({emp.employeeId})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

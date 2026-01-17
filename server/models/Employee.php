@@ -98,10 +98,10 @@ class Employee extends Model
         
         $stmt = $this->db->prepare("INSERT INTO {$this->table} (
             employeeId, name, email, password, phone, dob, gender, bloodGroup, 
-            companyId, designation, department, maritalStatus, currentAddress, 
+            companyId, line_manager_id, designation, department, maritalStatus, currentAddress, 
             joinDate, salary, status, employeeType, personalMobile, 
             emergencyContactNumber, bankName, accountNumber, image
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         // Hash the password if provided, otherwise set a default/empty value
         $password = $data['password'] ?? '';
@@ -119,6 +119,7 @@ class Employee extends Model
             $data['gender'] ?? '',
             $data['bloodGroup'] ?? '',
             $data['companyId'],
+            $data['line_manager_id'] ?? null,
             $data['designation'] ?? null,
             $data['department'] ?? null,
             $data['maritalStatus'] ?? null,
@@ -150,7 +151,7 @@ class Employee extends Model
                 // Only include known fields in the update
                 $allowedFields = [
                     'employeeId', 'name', 'email', 'password', 'phone', 'dob', 'gender', 'bloodGroup',
-                    'companyId', 'designation', 'department', 'maritalStatus',
+                    'companyId', 'line_manager_id', 'designation', 'department', 'maritalStatus',
                     'currentAddress', 'joinDate', 'salary', 'status', 'employeeType',
                     'personalMobile', 'emergencyContactNumber', 'bankName', 'accountNumber', 'image'
                 ];
@@ -187,7 +188,10 @@ class Employee extends Model
 
     public function findById($id)
     {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = ?");
+        $stmt = $this->db->prepare("SELECT e.*, m.name as line_manager_name 
+                                    FROM {$this->table} e 
+                                    LEFT JOIN {$this->table} m ON e.line_manager_id = m.id 
+                                    WHERE e.id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -198,12 +202,12 @@ class Employee extends Model
         $params = [];
 
         if ($companyId) {
-            $whereClause .= ($whereClause ? ' AND ' : 'WHERE ') . "companyId = ?";
+            $whereClause .= ($whereClause ? ' AND ' : 'WHERE ') . "e.companyId = ?";
             $params[] = $companyId;
         }
 
         if (!empty($search)) {
-            $searchCondition = ($whereClause ? ' AND ' : 'WHERE ') . "(name LIKE ? OR email LIKE ? OR employeeId LIKE ?)";
+            $searchCondition = ($whereClause ? ' AND ' : 'WHERE ') . "(e.name LIKE ? OR e.email LIKE ? OR e.employeeId LIKE ?)";
             $whereClause .= $searchCondition;
             $params[] = "%{$search}%";
             $params[] = "%{$search}%";
@@ -220,7 +224,12 @@ class Employee extends Model
             $orderDir = 'DESC';
         }
 
-        $sql = "SELECT * FROM {$this->table} {$whereClause} ORDER BY {$orderBy} {$orderDir} LIMIT " . (int)$offset . ", " . (int)$limit;
+        $sql = "SELECT e.*, m.name as line_manager_name 
+                FROM {$this->table} e 
+                LEFT JOIN {$this->table} m ON e.line_manager_id = m.id 
+                {$whereClause} 
+                ORDER BY e.{$orderBy} {$orderDir} 
+                LIMIT " . (int)$offset . ", " . (int)$limit;
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

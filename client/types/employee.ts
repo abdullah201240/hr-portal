@@ -9,6 +9,8 @@ export interface Employee {
   gender?: string;
   bloodGroup?: string;
   companyId: number;
+  line_manager_id?: number | null;
+  line_manager_name?: string | null;
   designation?: string;
   department?: string;
   maritalStatus?: string;
@@ -36,6 +38,7 @@ export interface EmployeeFormData {
   gender?: string;
   bloodGroup?: string;
   companyId: number;
+  line_manager_id?: number | null;
   designation?: string;
   department?: string;
   maritalStatus?: string;

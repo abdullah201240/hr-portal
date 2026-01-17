@@ -219,6 +219,12 @@ const EmployeeDetailsPage = () => {
                   {employee.status}
                 </Badge>
               </div>
+              <div className="flex justify-between border-t border-white/5 pt-3">
+                <span className="text-muted-foreground">Line Manager</span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                  {employee.line_manager_name || 'No Manager (Top Level)'}
+                </span>
+              </div>
             </CardContent>
           </Card>
 

@@ -42,6 +42,11 @@ const navItems = [
     icon: Users,
   },
   {
+    title: 'Hierarchy',
+    href: '/company/employees/hierarchy',
+    icon: Users,
+  },
+  {
     title: 'Policy',
     href: '/company/policy',
     icon: ShieldCheck,
