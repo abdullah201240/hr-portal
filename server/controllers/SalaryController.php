@@ -192,6 +192,159 @@ class SalaryController
         }
     }
 
+    // Get comprehensive company analytics
+    public function getCompanyAnalytics()
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
+            jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        try {
+            $companyId = $actor['id'];
+            
+            // 1. Employee Statistics
+            $totalEmployees = $this->employee->countByCompanyId($companyId);
+            
+            // Count active employees manually since there's no specific method
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->prepare("SELECT COUNT(*) FROM employees WHERE companyId = ? AND status = 'active'");
+            $stmt->execute([$companyId]);
+            $activeEmployees = (int)$stmt->fetchColumn();
+            
+            $inactiveEmployees = $totalEmployees - $activeEmployees;
+            
+            // Gender distribution
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->prepare("SELECT gender, COUNT(*) as count FROM employees WHERE companyId = ? GROUP BY gender");
+            $stmt->execute([$companyId]);
+            $genderDistribution = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $maleCount = 0;
+            $femaleCount = 0;
+            foreach ($genderDistribution as $dist) {
+                if (strtolower($dist['gender']) === 'male') {
+                    $maleCount = (int)$dist['count'];
+                } elseif (strtolower($dist['gender']) === 'female') {
+                    $femaleCount = (int)$dist['count'];
+                }
+            }
+            
+            // Average tenure
+            $stmt = $db->prepare("SELECT AVG(DATEDIFF(NOW(), joinDate)/365.25) as avg_tenure FROM employees WHERE companyId = ? AND joinDate IS NOT NULL");
+            $stmt->execute([$companyId]);
+            $avgTenure = (float)$stmt->fetch(PDO::FETCH_ASSOC)['avg_tenure'] ?? 0;
+            
+            // Department distribution
+            $stmt = $db->prepare("SELECT department, COUNT(*) as count FROM employees WHERE companyId = ? GROUP BY department");
+            $stmt->execute([$companyId]);
+            $departments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // 2. Salary Statistics
+            $stmt = $db->prepare("SELECT SUM(salary) as total, AVG(salary) as average, MAX(salary) as highest, MIN(salary) as lowest FROM employees WHERE companyId = ? AND status = 'active'");
+            $stmt->execute([$companyId]);
+            $salaryData = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            $totalPayroll = (float)$salaryData['total'] ?? 0;
+            $averageSalary = (float)$salaryData['average'] ?? 0;
+            $highestPaid = (float)$salaryData['highest'] ?? 0;
+            $lowestPaid = (float)$salaryData['lowest'] ?? 0;
+            
+            // 3. Attendance Statistics
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM attendances WHERE company_id = ? AND date >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+            $stmt->execute([$companyId]);
+            $recentAttendanceCount = (int)$stmt->fetchColumn();
+            
+            $stmt = $db->prepare("SELECT COUNT(*) as late FROM attendances WHERE company_id = ? AND status = 'late' AND date >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+            $stmt->execute([$companyId]);
+            $lateCount = (int)$stmt->fetchColumn();
+            
+            $stmt = $db->prepare("SELECT COUNT(*) as absent FROM attendances WHERE company_id = ? AND status = 'absent' AND date >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+            $stmt->execute([$companyId]);
+            $absentCount = (int)$stmt->fetchColumn();
+            
+            $presentCount = $recentAttendanceCount - $lateCount - $absentCount;
+            $attendanceRate = $recentAttendanceCount > 0 ? ($presentCount / $recentAttendanceCount) * 100 : 0;
+            
+            // 4. Monthly attendance trend (last 6 months)
+            $stmt = $db->prepare(
+                "SELECT 
+                    DATE_FORMAT(date, '%b %Y') as month,
+                    SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present,
+                    SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late,
+                    SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent
+                FROM attendances 
+                WHERE company_id = ? AND date >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+                GROUP BY DATE_FORMAT(date, '%Y-%m')
+                ORDER BY date DESC"
+            );
+            $stmt->execute([$companyId]);
+            $attendanceTrend = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // 5. Monthly payroll trend (last 6 months)
+            $stmt = $db->prepare(
+                "SELECT 
+                    CONCAT(MONTHNAME(CONCAT(year, '-', month, '-01')), ' ', year) as month,
+                    SUM(net_salary) as amount
+                FROM monthly_payouts 
+                WHERE company_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+                GROUP BY year, month
+                ORDER BY year DESC, month DESC"
+            );
+            $stmt->execute([$companyId]);
+            $payrollTrend = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // 6. Leave statistics
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM leaves WHERE company_id = ? AND start_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+            $stmt->execute([$companyId]);
+            $recentLeaveRequests = (int)$stmt->fetchColumn();
+            
+            $stmt = $db->prepare("SELECT COUNT(*) as approved FROM leaves WHERE company_id = ? AND status = 'approved' AND start_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+            $stmt->execute([$companyId]);
+            $approvedLeaves = (int)$stmt->fetchColumn();
+            
+            jsonResponse([
+                'success' => true,
+                'data' => [
+                    'employees' => [
+                        'total' => $totalEmployees,
+                        'active' => $activeEmployees,
+                        'inactive' => $inactiveEmployees,
+                        'male' => $maleCount,
+                        'female' => $femaleCount,
+                        'averageTenure' => round($avgTenure, 1),
+                        'departments' => $departments
+                    ],
+                    'attendance' => [
+                        'totalPresent' => $presentCount,
+                        'totalLate' => $lateCount,
+                        'totalAbsent' => $absentCount,
+                        'attendanceRate' => round($attendanceRate, 1),
+                        'monthlyTrend' => $attendanceTrend
+                    ],
+                    'salary' => [
+                        'totalPayroll' => $totalPayroll,
+                        'averageSalary' => $averageSalary,
+                        'highestPaid' => $highestPaid,
+                        'lowestPaid' => $lowestPaid,
+                        'monthlyTrend' => $payrollTrend
+                    ],
+                    'leaves' => [
+                        'recentRequests' => $recentLeaveRequests,
+                        'approved' => $approvedLeaves
+                    ],
+                    'productivity' => [
+                        'averageRating' => 4.2, // Placeholder - would come from performance reviews
+                        'projectsCompleted' => 24, // Placeholder
+                        'onTimeRate' => 87 // Placeholder
+                    ]
+                ]
+            ]);
+        } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     // Process/Generate monthly payroll for all active employees
     public function generatePayroll()
     {
@@ -540,6 +693,80 @@ class SalaryController
             jsonResponse(['success' => true, 'message' => "Successfully updated $updatedCount salaries."]);
         } catch (Exception $e) {
             if (isset($db)) $db->rollBack();
+            jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+    
+    // Get recent activity for company dashboard
+    public function getRecentActivity()
+    {
+        $actor = getActorFromToken();
+        if (!$actor || $actor['type'] !== 'company') {
+            jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+        
+        try {
+            $companyId = $actor['id'];
+            
+            $db = Database::getInstance()->getConnection();
+            
+            // Query to get recent activity from multiple sources
+            $sql = "
+                SELECT 
+                    'employee' as type,
+                    e.name as name,
+                    'joined the company' as action,
+                    e.created_at as created_at,
+                    'onboarding' as event_type
+                FROM employees e
+                WHERE e.companyId = ? AND e.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                UNION ALL
+                SELECT 
+                    'salary' as type,
+                    e.name as name,
+                    CONCAT('received salary increment of ', sh.increment_percentage, '%') as action,
+                    sh.created_at as created_at,
+                    'increment' as event_type
+                FROM salary_history sh
+                JOIN employees e ON sh.employee_id = e.id
+                WHERE e.companyId = ? AND sh.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                UNION ALL
+                SELECT 
+                    'leave' as type,
+                    e.name as name,
+                    CONCAT('leave request ', l.status) as action,
+                    l.updated_at as created_at,
+                    'leave' as event_type
+                FROM leaves l
+                JOIN employees e ON l.employee_id = e.id
+                WHERE e.companyId = ? AND l.updated_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND l.status IN ('approved', 'rejected')
+                UNION ALL
+                SELECT 
+                    'attendance' as type,
+                    e.name as name,
+                    CASE 
+                        WHEN a.status = 'late' THEN 'was marked late'
+                        WHEN a.status = 'absent' THEN 'was marked absent'
+                        ELSE 'attended work'
+                    END as action,
+                    a.created_at as created_at,
+                    'attendance' as event_type
+                FROM attendances a
+                JOIN employees e ON a.employee_id = e.id
+                WHERE e.companyId = ? AND a.date >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND a.status IN ('late', 'absent')
+                ORDER BY created_at DESC
+                LIMIT 20
+            ";
+            
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$companyId, $companyId, $companyId, $companyId]);
+            $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            jsonResponse([
+                'success' => true,
+                'data' => $activities
+            ]);
+        } catch (Exception $e) {
             jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }

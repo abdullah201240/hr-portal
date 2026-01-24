@@ -569,3 +569,27 @@ export const companyDesignationApi = {
   // Delete a designation
   deleteDesignation: (id: number) => makeRequest(`/designations/${id}`, { method: 'DELETE' }),
 };
+
+// Company Dashboard API functions
+export const companyDashboardApi = {
+  // Get company dashboard statistics
+  getDashboardStats: () => companyAnalyticsApi.getCompanyStats(),
+};
+
+// Company Analytics API functions
+export const companyAnalyticsApi = {
+  // Get company-wide analytics and statistics
+  getCompanyAnalytics: () => makeRequest('/salary/analytics'),
+  
+  // Get company statistics
+  getCompanyStats: () => makeRequest('/salary/stats'),
+  
+  // Get recent activity
+  getRecentActivity: () => makeRequest('/salary/activity'),
+  
+  // Get company attendance analytics
+  getAttendanceAnalytics: (params?: { month?: number; year?: number }) => attendanceApi.getCompanyMonthlyAttendance(params),
+  
+  // Get employee demographics
+  getEmployeeDemographics: () => makeRequest('/employees/analytics'),
+};

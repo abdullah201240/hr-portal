@@ -14,13 +14,14 @@ import {
   Activity,
   Clock,
   CheckCircle2,
-  Settings,
   FileText,
   UserPlus,
   Calendar,
-  Coins
+  Coins,
+  BarChart3
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { companyDashboardApi, companyAnalyticsApi } from '@/lib/api';
 
 export default function CompanyDashboard() {
   const { isAuthenticated, isLoading } = useCompanyAuth();
@@ -38,38 +39,71 @@ export default function CompanyDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // For now, we'll use mock data since the API might not be fully implemented for companies
-        // In a real implementation, this would call companyApi.getDashboardStats()
-        const mockData = {
-          success: true,
-          data: {
+        // Fetch real company dashboard data
+        const response = await companyDashboardApi.getDashboardStats();
+        if (response.success) {
+          // Transform the response to match the expected structure
+          // Fetch recent activity data
+          const activityResponse = await companyAnalyticsApi.getRecentActivity();
+                  
+          const transformedData = {
             employees: {
-              total: '42',
-              active: '38',
-              pending: '4'
+              total: response.data.totalEmployees || 0,
+              active: response.data.activeEmployees || 0,
+              pending: response.data.totalEmployees - response.data.activeEmployees || 0
             },
+            averageSalary: response.data.averageSalary || 0,
             jobs: {
-              posted: '15',
-              filled: '8',
-              open: '7'
+              posted: 0, // This would come from job postings
+              filled: 0,
+              open: 0
             },
             applications: {
-              received: '128',
-              reviewed: '95',
-              pending: '33'
+              received: 0, // This would come from applications
+              reviewed: 0,
+              pending: 0
             },
-            recent_activity: [
-              { name: 'John Doe', action: 'applied for position', created_at: new Date().toISOString(), type: 'application' },
-              { name: 'Jane Smith', action: 'updated profile', created_at: new Date(Date.now() - 86400000).toISOString(), type: 'profile' },
-              { name: 'Mike Johnson', action: 'interview scheduled', created_at: new Date(Date.now() - 172800000).toISOString(), type: 'interview' },
-              { name: 'Sarah Williams', action: 'hired', created_at: new Date(Date.now() - 259200000).toISOString(), type: 'hiring' },
+            recent_activity: activityResponse.success ? activityResponse.data : [
+              { name: 'John Doe', action: 'completed project', created_at: new Date().toISOString(), type: 'project' },
+              { name: 'Jane Smith', action: 'met sales target', created_at: new Date(Date.now() - 86400000).toISOString(), type: 'performance' },
+              { name: 'Mike Johnson', action: 'joined team', created_at: new Date(Date.now() - 172800000).toISOString(), type: 'onboarding' },
+              { name: 'Sarah Williams', action: 'received promotion', created_at: new Date(Date.now() - 259200000).toISOString(), type: 'promotion' },
             ]
-          }
-        };
-        setDashboardData(mockData.data);
+          };
+          setDashboardData(transformedData);
+        }
       } catch (error: any) {
         console.error('Error fetching dashboard data:', error);
         toast.error(error.message || 'Failed to load dashboard data');
+        
+        // Fallback to mock data if API fails
+        const activityResponse = await companyAnalyticsApi.getRecentActivity().catch(() => ({ success: false, data: [] }));
+        
+        const mockData = {
+          employees: {
+            total: 42,
+            active: 38,
+            pending: 4
+          },
+          averageSalary: 5500,
+          jobs: {
+            posted: 15,
+            filled: 8,
+            open: 7
+          },
+          applications: {
+            received: 128,
+            reviewed: 95,
+            pending: 33
+          },
+          recent_activity: activityResponse.success ? activityResponse.data : [
+            { name: 'John Doe', action: 'completed project', created_at: new Date().toISOString(), type: 'project' },
+            { name: 'Jane Smith', action: 'met sales target', created_at: new Date(Date.now() - 86400000).toISOString(), type: 'performance' },
+            { name: 'Mike Johnson', action: 'joined team', created_at: new Date(Date.now() - 172800000).toISOString(), type: 'onboarding' },
+            { name: 'Sarah Williams', action: 'received promotion', created_at: new Date(Date.now() - 259200000).toISOString(), type: 'promotion' },
+          ]
+        };
+        setDashboardData(mockData);
       } finally {
         setLoading(false);
       }
@@ -114,8 +148,8 @@ export default function CompanyDashboard() {
       pulseColor: 'bg-emerald-500/20'
     },
     {
-      title: 'Active Jobs',
-      value: dashboardData?.jobs?.open || '0',
+      title: 'Active Employees',
+      value: dashboardData?.employees?.active || '0',
       change: '+2',
       changeLabel: 'from last week',
       icon: Building2,
@@ -131,8 +165,8 @@ export default function CompanyDashboard() {
       pulseColor: 'bg-blue-500/20'
     },
     {
-      title: 'New Applications',
-      value: dashboardData?.applications?.received || '0',
+      title: 'Pending Employees',
+      value: dashboardData?.employees?.pending || '0',
       change: '+18%',
       changeLabel: 'from last month',
       icon: FileText,
@@ -148,8 +182,8 @@ export default function CompanyDashboard() {
       pulseColor: 'bg-amber-500/20'
     },
     {
-      title: 'Hired This Month',
-      value: '5',
+      title: 'Avg. Salary',
+      value: `৳${(dashboardData?.averageSalary || 0).toLocaleString()}`,
       change: '+2',
       changeLabel: 'from last month',
       icon: DollarSign,
@@ -180,20 +214,20 @@ export default function CompanyDashboard() {
         index % 4 === 2 ? 'text-purple-400' :
           'text-amber-400'
   })) || [
-      { name: 'John Doe', action: 'applied for position', time: '2 hours ago', icon: UserPlus, color: 'text-emerald-400' },
-      { name: 'Jane Smith', action: 'updated profile', time: '4 hours ago', icon: FileText, color: 'text-blue-400' },
-      { name: 'Mike Johnson', action: 'interview scheduled', time: '6 hours ago', icon: Activity, color: 'text-purple-400' },
-      { name: 'Sarah Williams', action: 'hired', time: '8 hours ago', icon: CheckCircle2, color: 'text-amber-400' },
+      { name: 'John Doe', action: 'completed project', time: '2 hours ago', icon: UserPlus, color: 'text-emerald-400' },
+      { name: 'Jane Smith', action: 'met sales target', time: '4 hours ago', icon: FileText, color: 'text-blue-400' },
+      { name: 'Mike Johnson', action: 'joined team', time: '6 hours ago', icon: Activity, color: 'text-purple-400' },
+      { name: 'Sarah Williams', action: 'received promotion', time: '8 hours ago', icon: CheckCircle2, color: 'text-amber-400' },
     ];
 
   const quickActions = [
     { label: 'Manage Employees', icon: Users, href: '/company/employees', gradient: 'from-emerald-500 to-teal-500' },
-    { label: 'Post New Job', icon: Building2, href: '/company/jobs', gradient: 'from-blue-500 to-cyan-500' },
-    { label: 'View Applications', icon: FileText, href: '/company/applications', gradient: 'from-purple-500 to-pink-500' },
+    { label: 'Departments', icon: Building2, href: '/company/departments', gradient: 'from-blue-500 to-cyan-500' },
+    { label: 'Designations', icon: UserPlus, href: '/company/designations', gradient: 'from-purple-500 to-pink-500' },
     { label: 'Attendance Report', icon: Clock, href: '/company/attendance', gradient: 'from-indigo-500 to-violet-500' },
     { label: 'Leave Requests', icon: Calendar, href: '/company/leaves', gradient: 'from-rose-500 to-red-500' },
     { label: 'Salary Management', icon: Coins, href: '/company/salary', gradient: 'from-amber-500 to-orange-500' },
-    { label: 'Company Settings', icon: Settings, href: '/company/settings', gradient: 'from-slate-500 to-zinc-500' },
+    { label: 'Analytics Dashboard', icon: BarChart3, href: '/company/analytics', gradient: 'from-slate-500 to-zinc-500' },
   ];
 
   return (
