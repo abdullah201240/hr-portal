@@ -12,7 +12,9 @@ import {
   User, 
   Settings,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Lock,
+  UserCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -46,6 +48,11 @@ const navItems = [
     title: 'Profile',
     href: '/employee/profile',
     icon: User,
+  },
+  {
+    title: 'My Portal',
+    href: '/employee/portal',
+    icon: UserCheck,
   },
   {
     title: 'Settings',

@@ -16,6 +16,7 @@ require_once __DIR__ . '/controllers/LeavePolicyController.php';
 require_once __DIR__ . '/controllers/AttendanceController.php';
 require_once __DIR__ . '/controllers/LeaveController.php';
 require_once __DIR__ . '/controllers/SalaryController.php';
+require_once __DIR__ . '/controllers/RoleController.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -86,7 +87,17 @@ $routes = [
     '@/api/salary/bulk-update/?$@' => ['POST' => 'bulkUpdateSalaries'],
     '@/api/salary/analytics/?$@' => ['GET' => 'getCompanyAnalytics'],
     '@/api/salary/activity/?$@' => ['GET' => 'getRecentActivity'],
-    '@/api/dashboard/stats/?$@' => ['GET' => 'getDashboardStats']
+    '@/api/dashboard/stats/?$@' => ['GET' => 'getDashboardStats'],
+    
+    // Role Management Routes
+    '@/api/roles/?$@' => ['GET' => 'getRoles', 'POST' => 'createRole'],
+    '@/api/roles/(\d+)/?$@' => ['GET' => 'show', 'POST' => 'updateRole', 'PUT' => 'updateRole', 'DELETE' => 'deleteRole'],
+    '@/api/roles/(\d+)/permissions/?$@' => ['GET' => 'getRolePermissions', 'POST' => 'updateRolePermissions'],
+    '@/api/roles/(\d+)/employees/?$@' => ['GET' => 'getRoleEmployees'],
+    '@/api/roles/assign/?$@' => ['POST' => 'assignRoleToEmployee'],
+    '@/api/roles/remove/?$@' => ['POST' => 'removeRoleFromEmployee'],
+    '@/api/employees/(\d+)/roles/?$@' => ['GET' => 'getEmployeeRoles'],
+    '@/api/permissions/check/?$@' => ['POST' => 'checkEmployeePermission']
 ];
 
 $matched = false;
@@ -114,6 +125,8 @@ foreach ($routes as $pattern => $actions) {
             $controller = new LeaveController();
         } elseif (strpos($path, '/api/salary') !== false) {
             $controller = new SalaryController();
+        } elseif (strpos($path, '/api/roles') !== false || strpos($path, '/api/permissions') !== false || (strpos($path, '/api/employees') !== false && strpos($path, '/roles') !== false)) {
+            $controller = new RoleController();
         } else {
             $controller = new CompanyController();
         }

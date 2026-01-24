@@ -576,6 +576,30 @@ export const companyDashboardApi = {
   getDashboardStats: () => companyAnalyticsApi.getCompanyStats(),
 };
 
+// Role Management API functions
+export const roleApi = {
+  // Roles CRUD
+  getAllRoles: () => makeRequest('/roles'),
+  createRole: (data: any) => makeRequest('/roles', { method: 'POST', body: data }),
+  updateRole: (id: number, data: any) => makeRequest(`/roles/${id}`, { method: 'PUT', body: data }),
+  deleteRole: (id: number) => makeRequest(`/roles/${id}`, { method: 'DELETE' }),
+  
+  // Role Permissions
+  getRolePermissions: (roleId: number) => makeRequest(`/roles/${roleId}/permissions`),
+  updateRolePermissions: (roleId: number, data: any) => makeRequest(`/roles/${roleId}/permissions`, { method: 'POST', body: data }),
+  
+  // Role Assignments
+  assignRoleToEmployee: (data: { employee_id: number; role_id: number }) => makeRequest('/roles/assign', { method: 'POST', body: data }),
+  removeRoleFromEmployee: (data: { employee_id: number; role_id: number }) => makeRequest('/roles/remove', { method: 'POST', body: data }),
+  
+  // Employee Roles
+  getEmployeeRoles: (employeeId: number) => makeRequest(`/employees/${employeeId}/roles`),
+  getRoleEmployees: (roleId: number) => makeRequest(`/roles/${roleId}/employees`),
+  
+  // Permission Checking
+  checkEmployeePermission: (data: { employee_id?: number; feature_key: string; permission_type: string }) => makeRequest('/permissions/check', { method: 'POST', body: data }),
+};
+
 // Company Analytics API functions
 export const companyAnalyticsApi = {
   // Get company-wide analytics and statistics

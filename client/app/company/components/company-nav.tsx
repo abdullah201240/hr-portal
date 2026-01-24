@@ -11,6 +11,8 @@ import {
   BarChart3,
   ShieldCheck,
   Calendar,
+  UserCheck,
+  Lock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -76,6 +78,11 @@ const navItems = [
     title: 'Analytics',
     href: '/company/analytics',
     icon: BarChart3,
+  },
+  {
+    title: 'Roles Management',
+    href: '/company/roles',
+    icon: UserCheck,
   },
   {
     title: 'Settings',
