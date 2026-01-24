@@ -32,7 +32,7 @@ export default function CompanyAttendancePage() {
         present: attendanceData.filter(r => r.status?.toLowerCase() === 'present' || r.status?.toLowerCase() === 'late').length,
         late: attendanceData.filter(r => r.status?.toLowerCase() === 'late').length,
         absent: attendanceData.filter(r => r.status?.toLowerCase() === 'absent').length,
-        onLeave: attendanceData.filter(r => r.status?.toLowerCase() === 'on-leave').length,
+        onLeave: attendanceData.filter(r => r.status?.toLowerCase() === 'on-leave' || r.status?.toLowerCase() === 'half-day').length,
     };
 
     useEffect(() => {
@@ -76,6 +76,12 @@ export default function CompanyAttendancePage() {
             if (response.success) {
                 setMonthlyAttendanceData(response.data);
                 setMonthlyMeta(response.meta);
+
+                // Log the data to verify we're getting full month data
+                console.log('Monthly attendance data received:', response.data.length, 'employees');
+                if (response.data.length > 0) {
+                    console.log('First employee data:', response.data[0]);
+                }
             } else {
                 console.error('Monthly attendance API returned error:', response);
                 toast.error(response.message || 'Failed to load monthly attendance data');
@@ -170,8 +176,11 @@ export default function CompanyAttendancePage() {
                     employees={viewMode === 'daily' ? attendanceData : monthlyAttendanceData}
                 />
 
-                <CardContent className="p-0 sm:p-4 md:p-6 md:pt-0">
-                    <div className="rounded-lg md:rounded-xl border border-white/10 bg-black/20">
+                <CardContent className="p-0">
+                    <div
+                        className="rounded-lg md:rounded-xl border border-white/10 bg-black/20 w-full overflow-hidden"
+                        style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)' }}
+                    >
                         {viewMode === 'daily' ? (
                             <DailyAttendanceTable
                                 loading={loading}
