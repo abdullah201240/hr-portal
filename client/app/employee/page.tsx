@@ -345,7 +345,7 @@ export default function EmployeeDashboard() {
                     <Coffee className="h-4 w-4 text-white" />
                   </div>
                   <span className="text-xs font-bold">{attendance?.clock_in ? 'Clocked In' : 'Clock In'}</span>
-                  {attendance?.clock_in && <span className="text-[8px] opacity-80">{attendance.clock_in.substring(0, 5)}</span>}
+                  {attendance?.clock_in && <span className="text-[8px] opacity-80">{attendance.clock_in ? attendance.clock_in.substring(0, 5) : '--:--'}</span>}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -359,7 +359,7 @@ export default function EmployeeDashboard() {
                   <span className="text-xs font-bold text-muted-foreground">
                     {attendance?.clock_out ? 'Clocked Out' : 'Clock Out'}
                   </span>
-                  {attendance?.clock_out && <span className="text-[8px] text-muted-foreground opacity-80">{attendance.clock_out.substring(0, 5)}</span>}
+                  {attendance?.clock_out && <span className="text-[8px] text-muted-foreground opacity-80">{attendance.clock_out ? attendance.clock_out.substring(0, 5) : '--:--'}</span>}
                 </Button>
               </div>
 
@@ -410,8 +410,8 @@ export default function EmployeeDashboard() {
                         {activity.clock_out ? 'Full Shift' : 'Clock In'}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {new Date(activity.date).toLocaleDateString([], { month: 'short', day: 'numeric' })}, {activity.clock_in.substring(0, 5)}
-                        {activity.clock_out && ` - ${activity.clock_out.substring(0, 5)}`}
+                        {new Date(activity.date).toLocaleDateString([], { month: 'short', day: 'numeric' })}, {activity.clock_in ? activity.clock_in.substring(0, 5) : '--:--'}
+                        {activity.clock_out ? ` - ${activity.clock_out.substring(0, 5)}` : ''}
                       </p>
                     </div>
                   </div>
